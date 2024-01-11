@@ -173,8 +173,8 @@ async function getData({geoAttribute, geoid, version, hazard, colors, title, dat
                 .map(d => ({
                     building_id: d.building_id,
                     address: typeof d.address !== 'object' ? d.address : null,
-                    floodPlain : ['AH','A','VE','AO','AE'].includes(d.flood_zone) ? '100 Year' :
-                        ['X'].includes(d.flood_zone) ? '500 Year' : 'None',
+                    floodPlain : ['AH','A','VE','AO','AE'].includes(d.flood_zone) ? '1%' :
+                        ['X'].includes(d.flood_zone) ? '0.2%' : 'None',
                     ...hazard
                         .sort((a,b) => +d[`nri_${hazardsMeta[b]?.prefix}_eals`] - +d[`nri_${hazardsMeta[a]?.prefix}_eals`])
                         .reduce((acc, h) => ({
@@ -365,12 +365,12 @@ const Edit = ({value, onChange, size}) => {
                         options={
                             [
                                 {
-                                    label: '100 Year',
+                                    label: '1%',
                                     key: JSON.stringify({flood_zone: ['AH', 'A', 'VE', 'AO', 'AE']}),
                                     type: 'floodplain'
                                 },
                                 {
-                                    label: '500 Year',
+                                    label: '0.2%',
                                     key: JSON.stringify({flood_zone: ['X']}),
                                     type: 'floodplain'
                                 },

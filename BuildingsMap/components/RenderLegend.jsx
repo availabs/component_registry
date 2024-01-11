@@ -5,11 +5,11 @@ import React from "react";
 const floodPlainColors = {
     '{"flood_zone":["AH","A","VE","AO","AE"]}': {
         color: '#6e0093',
-        name: '100 Year'
+        name: '1%'
     },
     '{"flood_zone":["X"]}': {
         color: '#2a6400',
-        name: '500 Year'
+        name: '0.2%'
     },
 }
 
