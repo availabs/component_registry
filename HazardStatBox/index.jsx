@@ -140,7 +140,7 @@ async function getData({ealSourceId=343, ealViewId, isTotal, geoid, hazard, seve
 
     const hazardPercentileArray =
         get(falcorCache, ["comparative_stats", pgEnv, "byEalIds", "source", ealSourceId, "view", ealViewId, "byGeoid", geoid, "value"], [])
-            .filter(row => row.geoid === geoid && hazardsMeta[row.nri_category])
+            .filter(row => row.geoid == geoid && hazardsMeta[row.nri_category])
             .map(d => ({
                 key: d.nri_category,
                 label: hazardsMeta[d.nri_category].name,

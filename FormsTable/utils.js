@@ -138,8 +138,8 @@ const filterData = ({geoAttribute, geoid, data, actionType}) =>
     data.filter(d => {
             return !geoAttribute ||
                 actionType === 'shmp' ||
-                d[geoAttribute] === geoid ||
-                (geoid?.toString()?.length === 2 && d[geoAttribute]?.substring(0, 2) === geoid) // todo: geofilters should move to data call
+                d[geoAttribute] == geoid ||
+                (geoid?.toString()?.length === 2 && d[geoAttribute]?.substring(0, 2) == geoid) // todo: geofilters should move to data call
         }
     );
 

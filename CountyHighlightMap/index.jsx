@@ -16,7 +16,7 @@ const getGeoColors = ({geoid, colors = [], ...rest}) => {
 
     for (let id = 0; id <= 999; id += 1) {
         const gid = stateFips + id.toString().padStart(3, '0');
-        geoColors[gid] = gid === geoid ? '#ffda00' : '#d0d0ce';
+        geoColors[gid] = gid == geoid ? '#ffda00' : '#d0d0ce';
     }
 
     return {geoColors};
