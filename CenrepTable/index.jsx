@@ -80,8 +80,7 @@ async function getMeta({
                         }
                     });
                     console.log('options', options)
-                    const attributes = metaLookup.attributes;
-                    const keyAttribute = metaLookup.keyAttribute;
+                    const {attributes, keyAttribute, valueAttribute} = metaLookup;
 
                     const lenPath = ['dama', pgEnv, 'viewsbyId', metaLookup.view_id, 'options', options, 'length'];
 
@@ -110,6 +109,8 @@ async function getMeta({
     return {}
 }
 
+const assign = (originalValue, newValue, keepId) => keepId ? `${newValue} (${originalValue})` : newValue;
+
 const assignMeta = ({
                         metadata,
                         visibleCols,
@@ -136,19 +137,24 @@ const assignMeta = ({
             Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}))
             .map(row => {
                 metaLookupCols.forEach(mdC => {
+                    // const c = {"view_id": 827, "keyAttribute":"disaster_number", "valueAttribute": "declaration_title", "keepId": true, "attributes": ["disaster_number","declaration_title"]}
+
                     console.log(mdC.name)
                     const currentMetaLookup = parseJson(mdC.meta_lookup);
                     const currentColName = fn[mdC.name] || mdC.name;
+                    const {keepId, valueAttribute = 'name'} = currentMetaLookup;
+
+
                     if(currentMetaLookup?.view_id){
                         const currentViewIdLookup = metaLookupByViewId[mdC.name] || [];
                         const currentKeys = row[currentColName];
                         if(currentKeys?.includes(',')){
-                            row[currentColName] = currentKeys.split(',').map(ck => currentViewIdLookup[ck.trim()]?.name || ck.trim()).join(', ')
+                            row[currentColName] = currentKeys.split(',').map(ck => assign(ck.trim(), currentViewIdLookup[ck.trim()]?.[valueAttribute] || ck.trim(), keepId)).join(', ')
                         }else{
-                            row[currentColName] = currentViewIdLookup[currentKeys]?.name || currentKeys;
+                            row[currentColName] = assign(currentKeys, currentViewIdLookup[currentKeys]?.[valueAttribute] || currentKeys, keepId);
                         }
                     }else{
-                        row[currentColName] = currentMetaLookup[row[currentColName]] || row[currentColName];
+                        row[currentColName] = assign(row[currentColName], currentMetaLookup[row[currentColName]] || row[currentColName], keepId);
                     }
                 })
                 return row;
