@@ -548,11 +548,11 @@ const RenderCustomColNameControls = ({column, customColName, setCustomColName, m
 
 const RenderLinkColControls = ({column, linkCols, setLinkCols, metadata}) => {
     if (!setLinkCols) return null;
-    const currentValue = linkCols[column];
+    const currentValue = linkCols[column] || {};
     const [tmpValue, setTmpValue] = useState(currentValue);
 
     useEffect(() => {
-        setTimeout(() => setLinkCols({...linkCols, ...tmpValue}), 1500)
+        setTimeout(() => setLinkCols({...linkCols, ...{[column]: tmpValue}}), 500)
     }, [tmpValue]);
 
     return (
@@ -563,13 +563,15 @@ const RenderLinkColControls = ({column, linkCols, setLinkCols, metadata}) => {
                     <Switch
                         key={`islink-${column}`}
                         checked={currentValue || false}
-                        onChange={e =>
-                            setLinkCols(currentValue ?
+                        onChange={e => {
+                            const val = currentValue?.isLink ?
                                 {...linkCols, [column]: {...currentValue, isLink: false}} :
-                                {...linkCols, [column]: {isLink: true}})
+                                {...linkCols, [column]: {...currentValue, isLink: true}};
+                            setLinkCols(val)
+                        }
                         }
                         className={classNames(
-                            currentValue ? 'bg-indigo-600' : 'bg-gray-200',
+                            currentValue?.isLink ? 'bg-indigo-600' : 'bg-gray-200',
                             `relative inline-flex 
                                             h-4 w-10 
                                              cursor-pointer rounded-full border-2 border-transparent 
@@ -581,7 +583,7 @@ const RenderLinkColControls = ({column, linkCols, setLinkCols, metadata}) => {
                         <span
                             aria-hidden="true"
                             className={classNames(
-                                currentValue ? 'translate-x-5' : 'translate-x-0',
+                                currentValue?.isLink ? 'translate-x-5' : 'translate-x-0',
                                 `pointer-events-none inline-block 
                                                 h-3 w-4
                                                 transform rounded-full bg-white shadow ring-0 t
@@ -591,7 +593,7 @@ const RenderLinkColControls = ({column, linkCols, setLinkCols, metadata}) => {
                     </Switch>
                 </div>
                 {
-                    currentValue ?
+                    currentValue?.isLink ?
                         <>
                             <input
                                 type={'text'}
@@ -600,10 +602,7 @@ const RenderLinkColControls = ({column, linkCols, setLinkCols, metadata}) => {
                                 placeholder={'link text'}
                                 onChange={e => {
                                     setTmpValue(
-                                        {
-                                            // ...linkCols,
-                                            [column]: {...tmpValue, linkText: e.target.value}
-                                        }
+                                        {...currentValue, linkText: e.target.value}
                                     )
                                 }
                                 }
@@ -616,10 +615,7 @@ const RenderLinkColControls = ({column, linkCols, setLinkCols, metadata}) => {
                                 placeholder={'location'}
                                 onChange={e => {
                                     setTmpValue(
-                                        {
-                                            // ...linkCols,
-                                            [column]: {...tmpValue, location: e.target.value}
-                                        }
+                                        {...currentValue, location: e.target.value}
                                     )
                                 }
                                 }
