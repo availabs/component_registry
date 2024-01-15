@@ -61,37 +61,50 @@ async function getMeta({
     if(metaViewIdLookupCols?.length){
         const falcorCache = falcor.getCache();
         const fetchedData = Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}));
-        const cachedUniqueValues = metaViewIdLookupCols.reduce((acc, curr) => ({...acc, [cleanColName(curr.name)]: [...new Set(fetchedData.map(fd => fd[curr.name]))]}), {})
-        console.log('cd?', cachedUniqueValues, columns)
-        console.log('getting meta', metaViewIdLookupCols, metaViewIdLookupCols.map(md => parseJson(md.meta_lookup)))
+        const cachedUniqueValues = metaViewIdLookupCols.reduce((acc, curr) => {
+            const currentColName = fn[curr.name] || curr.name;
+
+            return {
+                ...acc,
+                [cleanColName(currentColName)]:
+                    [
+                        ...new Set(fetchedData.map(fd => fd[currentColName])) // split on comma?
+                    ]
+            }
+
+        }, {})
+        // console.log('cd?', cachedUniqueValues, columns)
+        // console.log('getting meta', metaViewIdLookupCols, metaViewIdLookupCols.map(md => parseJson(md.meta_lookup)))
         const data =
             await metaViewIdLookupCols
                 .filter(md => parseJson(md.meta_lookup)?.view_id)
                 .reduce(async (acc, md) => {
-                    console.log('md', md)
+                    // console.log('md', md)
                     const prev = await acc;
+
+                    const currentColName = fn[md.name] || md.name;
                     const metaLookup = parseJson(md.meta_lookup);
                     const options = JSON.stringify({
                         aggregatedLen: metaLookup.aggregatedLen,
                         filter: {
-                            ...cachedUniqueValues?.[cleanColName(md.name)] && {[cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]},
+                            ...cachedUniqueValues?.[cleanColName(md.name)] && {[cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
                             ...metaLookup?.geoAttribute && geoid?.toString()?.length && {[`substring(${metaLookup.geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
                             ...(metaLookup?.filter || {})
                         }
                     });
-                    console.log('options', options)
+                    // console.log('options', options)
                     const {attributes, keyAttribute, valueAttribute} = metaLookup;
 
                     const lenPath = ['dama', pgEnv, 'viewsbyId', metaLookup.view_id, 'options', options, 'length'];
 
                     const lenRes = await falcor.get(lenPath);
                     const len = get(lenRes, ['json', ...lenPath], 0);
-                    console.log('got len', lenPath)
+                    // console.log('got len', lenPath)
                     if(!len) return Promise.resolve();
 
                     const dataPath = ['dama', pgEnv, 'viewsbyId', metaLookup.view_id, 'options', options, 'databyIndex'];
                     const dataRes = await falcor.get([...dataPath, {from: 0, to: len - 1}, attributes]);
-                    console.log('got data', Object.values(get(dataRes, ['json', ...dataPath], {})), keyAttribute)
+                    // console.log('got data', Object.values(get(dataRes, ['json', ...dataPath], {})), keyAttribute)
                     const data = Object.values(get(dataRes, ['json', ...dataPath], {}))
                         .reduce((acc, d) => (
                             {
@@ -99,11 +112,11 @@ async function getMeta({
                                 ...{[d[keyAttribute]]: {...attributes.reduce((acc, attr) => ({...acc, ...{[attr]: d[attr]}}), {})}}
                             }
                         ), {})
-                    console.log('returning data', data)
-                    return {...prev, ...{[md.name]: data}};
+                    // console.log('returning data', data)
+                    return {...prev, ...{[currentColName]: data}}; // use fn name to assign data properly in next step
                 }, {});
         // setMetaLookupByViewId(data)
-        console.log('got meta')
+        // console.log('got meta')
         return data;
     }
     return {}
@@ -139,15 +152,16 @@ const assignMeta = ({
                 metaLookupCols.forEach(mdC => {
                     // const c = {"view_id": 827, "keyAttribute":"disaster_number", "valueAttribute": "declaration_title", "keepId": true, "attributes": ["disaster_number","declaration_title"]}
 
-                    console.log(mdC.name)
                     const currentMetaLookup = parseJson(mdC.meta_lookup);
                     const currentColName = fn[mdC.name] || mdC.name;
                     const {keepId, valueAttribute = 'name'} = currentMetaLookup;
+                    // console.log('assigning meta', mdC.name, currentColName, row)
 
 
                     if(currentMetaLookup?.view_id){
-                        const currentViewIdLookup = metaLookupByViewId[mdC.name] || [];
+                        const currentViewIdLookup = metaLookupByViewId[currentColName] || [];
                         const currentKeys = row[currentColName];
+                        // console.log('current keys', currentKeys, currentViewIdLookup)
                         if(currentKeys?.includes(',')){
                             row[currentColName] = currentKeys.split(',').map(ck => assign(ck.trim(), currentViewIdLookup[ck.trim()]?.[valueAttribute] || ck.trim(), keepId)).join(', ')
                         }else{
@@ -178,8 +192,7 @@ const handleExpandableRows = (data, columns, fn, disasterNumber) => {
     const expandableColumns = columns.filter(c => c.openOut);
     const disasterNumberCol = (fn?.['disaster_number'] || 'disaster_number');
     // if disaster number is being used to filter data, it should be in visible columns. Hide it if not needed.
-    console.log('handling exp rows')
-    console.time('handling expandable rows')
+    // console.log('handling exp rows')
     if (expandableColumns?.length) {
         const newData = data.map(row => {
             const newRow = {...row}
@@ -209,7 +222,6 @@ const handleExpandableRows = (data, columns, fn, disasterNumber) => {
                 !disasterNumber ||
                 (disasterNumber && row[disasterNumberCol] && row[disasterNumberCol]?.includes(disasterNumber))
             );
-        console.timeEnd('handling expandable rows')
         return newData;
     } else {
         return data.filter(row => {
@@ -269,7 +281,7 @@ async function getData({
 
         await falcor.get([...attributionPath, attributionAttributes]);
 
-        console.log('creating columns')
+        // console.log('creating columns')
         tmpColumns = (visibleCols || [])
             .map(c => metadata.find(md => md.name === c))
             .filter(c => c)
@@ -291,7 +303,7 @@ async function getData({
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
                 }
             });
-        console.log('columns created')
+        // console.log('columns created')
 
         const metaLookupByViewId = await getMeta({
                 dataSources,
@@ -451,7 +463,7 @@ const Edit = ({value, onChange}) => {
 
             setLoading(true);
             setStatus(undefined);
-            console.log('calling getData', dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version)
+            // console.log('calling getData', dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version)
             const data = await getData({
                 dataSources, dataSource, geoAttribute, geoid, disasterNumber,
                 pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
