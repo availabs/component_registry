@@ -150,7 +150,6 @@ const assignMeta = ({
             Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}))
             .map(row => {
                 metaLookupCols.forEach(mdC => {
-                    // const c = {"view_id": 827, "keyAttribute":"disaster_number", "valueAttribute": "declaration_title", "keepId": true, "attributes": ["disaster_number","declaration_title"]}
 
                     const currentMetaLookup = parseJson(mdC.meta_lookup);
                     const currentColName = fn[mdC.name] || mdC.name;
@@ -190,7 +189,8 @@ const assignMeta = ({
 
 const handleExpandableRows = (data, columns, fn, disasterNumber) => {
     const expandableColumns = columns.filter(c => c.openOut);
-    const disasterNumberCol = (fn?.['disaster_number'] || 'disaster_number');
+    const disasterNumberOriginalCol = columns.find(c => c.name?.includes('disaster_number'))?.name || 'disaster_number'
+    const disasterNumberCol = (fn?.[disasterNumberOriginalCol] || disasterNumberOriginalCol);
     // if disaster number is being used to filter data, it should be in visible columns. Hide it if not needed.
     // console.log('handling exp rows')
     if (expandableColumns?.length) {
