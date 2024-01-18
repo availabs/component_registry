@@ -65,6 +65,10 @@ export const FormsTable = ({
                     );
                 }, true)
         )
+        .map(row => Object.keys(row).reduce((acc, attr) => {
+            const value = getNestedValue(row[attr])
+            return {...acc, [attr]: Array.isArray(value) ? value.join(', ') : value};
+        } , {}))
 
     return (
         <>
