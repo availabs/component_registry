@@ -84,25 +84,34 @@ async function getMeta({
 
                     const currentColName = fn[md.name] || md.name;
                     const metaLookup = parseJson(md.meta_lookup);
+                    const {
+                        attributes, // to fetch from meta table
+                        geoAttribute, // if passed, apply geoid filter on data
+                        filterAttribute,  // if passed, use this column name instead of md.name to filtered using cached uniq data
+                        keyAttribute, // used to assign key for meta object to return
+                        valueAttribute, // not used here, but if passed, use this column name to get labels of meta ids
+                        view_id, // view id of the meta table
+                        filter, // filter
+                        aggregatedLen // if grouping by, true
+                    } = metaLookup;
+
                     const options = JSON.stringify({
-                        aggregatedLen: metaLookup.aggregatedLen,
+                        aggregatedLen,
                         filter: {
-                            ...cachedUniqueValues?.[cleanColName(md.name)] && {[cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
-                            ...metaLookup?.geoAttribute && geoid?.toString()?.length && {[`substring(${metaLookup.geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
-                            ...(metaLookup?.filter || {})
+                            ...cachedUniqueValues?.[cleanColName(md.name)] && {[filterAttribute || cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
+                            ...geoAttribute && geoid?.toString()?.length && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
+                            ...(filter || {})
                         }
                     });
-                    // console.log('options', options)
-                    const {attributes, keyAttribute, valueAttribute} = metaLookup;
 
-                    const lenPath = ['dama', pgEnv, 'viewsbyId', metaLookup.view_id, 'options', options, 'length'];
+                    const lenPath = ['dama', pgEnv, 'viewsbyId', view_id, 'options', options, 'length'];
 
                     const lenRes = await falcor.get(lenPath);
                     const len = get(lenRes, ['json', ...lenPath], 0);
                     // console.log('got len', lenPath)
                     if(!len) return Promise.resolve();
 
-                    const dataPath = ['dama', pgEnv, 'viewsbyId', metaLookup.view_id, 'options', options, 'databyIndex'];
+                    const dataPath = ['dama', pgEnv, 'viewsbyId', view_id, 'options', options, 'databyIndex'];
                     const dataRes = await falcor.get([...dataPath, {from: 0, to: len - 1}, attributes]);
                     // console.log('got data', Object.values(get(dataRes, ['json', ...dataPath], {})), keyAttribute)
                     const data = Object.values(get(dataRes, ['json', ...dataPath], {}))
@@ -116,9 +125,10 @@ async function getMeta({
                     return {...prev, ...{[currentColName]: data}}; // use fn name to assign data properly in next step
                 }, {});
         // setMetaLookupByViewId(data)
-        // console.log('got meta')
+        console.log('got meta', data)
         return data;
     }
+    console.log('<getMeta> returning {}')
     return {}
 }
 
@@ -146,6 +156,7 @@ const assignMeta = ({
         );
 
     if(metaLookupCols?.length){
+        console.log('in if <assignMeta>',)
         return handleExpandableRows(
             Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}))
             .map(row => {
@@ -154,7 +165,7 @@ const assignMeta = ({
                     const currentMetaLookup = parseJson(mdC.meta_lookup);
                     const currentColName = fn[mdC.name] || mdC.name;
                     const {keepId, valueAttribute = 'name'} = currentMetaLookup;
-                    // console.log('assigning meta', mdC.name, currentColName, row)
+                    console.log('assigning meta', mdC.name, currentColName, row, metaLookupByViewId)
 
 
                     if(currentMetaLookup?.view_id){
@@ -320,7 +331,7 @@ async function getData({
                 columns: tmpColumns
             }, falcor);
 
-
+        console.log('got meta:', metaLookupByViewId)
         tmpData = assignMeta({
             metadata,
             visibleCols,

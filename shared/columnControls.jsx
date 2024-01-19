@@ -365,23 +365,26 @@ const RenderFilterControls = ({column, filters, setFilters, anchorCols}) => {
     )
 }
 
-const RenderFilterValueControls = ({column, filterValue, setFilterValue}) => {
+const RenderFilterValueControls = ({column, filterValue, setFilterValue, fn}) => {
     if (!setFilterValue) return null;
+
+    const colNameWithFn = fn[column] || column;
+
     return (
         <div className={'w-full pt-2 mt-1 flex flex-row text-sm'}>
             <label className={'align-bottom shrink-0 pr-2 py-2 my-1 w-1/4'}> Filter by: </label>
             <input
                 type={'text'}
                 className={'align-bottom p-2 ml-0 my-1 bg-white rounded-md w-full shrink'}
-                value={filterValue[column]}
+                value={filterValue[colNameWithFn]}
                 placeholder={'filter by'}
                 onChange={e => {
                     const tmpVal = JSON.parse(JSON.stringify(filterValue));
-                    if (!e.target.value) delete tmpVal[column];
+                    if (!e.target.value) delete tmpVal[colNameWithFn];
                     const newValue = e.target.value ?
                         {
                             ...tmpVal,
-                            ...{[column]: e.target.value ? e.target.value : undefined}
+                            ...{[colNameWithFn]: e.target.value ? e.target.value : undefined}
                         } : tmpVal;
 
                     setFilterValue(newValue)
@@ -807,7 +810,7 @@ const RenderColumnBoxes = ({
                                                                                   filters={filters} setFilters={setFilters}/>
 
                                                             <RenderFilterValueControls column={col}
-                                                                                       filterValue={filterValue} setFilterValue={setFilterValue}/>
+                                                                                       filterValue={filterValue} setFilterValue={setFilterValue} fn={fn}/>
 
                                                             <RenderGroupControls column={col}
                                                                                  groupBy={groupBy} setGroupBy={setGroupBy} fn={fn}
