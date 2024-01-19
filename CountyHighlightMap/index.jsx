@@ -47,7 +47,6 @@ async function getData({
     const {geoColors} = getGeoColors({geoid});
 
     const geoLayer = 'counties';
-    console.log('geoColors', geoColors)
     const layerProps = {
         ccl: {
             view: {},

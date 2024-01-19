@@ -158,7 +158,7 @@ const assignMeta = ({
 
 
                     if(currentMetaLookup?.view_id){
-                        const currentViewIdLookup = metaLookupByViewId[currentColName] || [];
+                        const currentViewIdLookup = metaLookupByViewId?.[currentColName] || [];
                         const currentKeys = row[currentColName];
                         // console.log('current keys', currentKeys, currentViewIdLookup)
                         if(currentKeys?.includes(',')){
@@ -220,13 +220,13 @@ const handleExpandableRows = (data, columns, fn, disasterNumber) => {
         })
             .filter(row =>
                 !disasterNumber ||
-                (disasterNumber && row[disasterNumberCol] && row[disasterNumberCol]?.includes(disasterNumber))
+                (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' && row[disasterNumberCol]?.includes(disasterNumber))
             );
         return newData;
     } else {
         return data.filter(row => {
                 return !disasterNumber || !row[disasterNumberCol] ||
-                (disasterNumber && row[disasterNumberCol] && row[disasterNumberCol]?.includes(disasterNumber))
+                (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' && row[disasterNumberCol]?.includes(disasterNumber))
             }
         )
     }
