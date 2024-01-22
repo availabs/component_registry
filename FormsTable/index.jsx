@@ -30,12 +30,13 @@ const isValid = ({groupBy, fn, columnsToFetch}) => {
     }
 }
 
-async function getData({   formsConfig, actionType, form,
-                           geoAttribute, geoid, metaLookupByViewId,
-                           pageSize, sortBy, groupBy, fn, notNull, colSizes,
-                           filters, filterValue, visibleCols, hiddenCols, extFilterCols, extFilterValues, openOutCols,
-                           colJustify, striped, extFiltersDefaultOpen, customColName
-                       }, falcor) {
+async function getData({
+    formsConfig, actionType, form,
+    geoAttribute, geoid, metaLookupByViewId,
+    pageSize, sortBy, groupBy, fn, notNull, colSizes,
+    filters, filterValue, visibleCols, hiddenCols, extFilterCols, extFilterValues, openOutCols,
+    colJustify, striped, extFiltersDefaultOpen, customColName
+}, falcor) {
     const d = await dmsDataLoader(
         {
             format: formsConfig,
