@@ -84,6 +84,7 @@ async function getMeta({
 
                     const currentColName = fn[md.name] || md.name;
                     const metaLookup = parseJson(md.meta_lookup);
+                    // console.log('metaLookup', metaLookup)
                     const {
                         attributes, // to fetch from meta table
                         geoAttribute, // if passed, apply geoid filter on data
@@ -125,10 +126,10 @@ async function getMeta({
                     return {...prev, ...{[currentColName]: data}}; // use fn name to assign data properly in next step
                 }, {});
         // setMetaLookupByViewId(data)
-        console.log('got meta', data)
+        // console.log('got meta', data)
         return data;
     }
-    console.log('<getMeta> returning {}')
+    //console.log('<getMeta> returning {}')
     return {}
 }
 
@@ -156,7 +157,7 @@ const assignMeta = ({
         );
 
     if(metaLookupCols?.length){
-        console.log('in if <assignMeta>',)
+        //console.log('in if <assignMeta>',)
         return handleExpandableRows(
             Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}))
             .map(row => {
@@ -165,7 +166,7 @@ const assignMeta = ({
                     const currentMetaLookup = parseJson(mdC.meta_lookup);
                     const currentColName = fn[mdC.name] || mdC.name;
                     const {keepId, valueAttribute = 'name'} = currentMetaLookup;
-                    console.log('assigning meta', mdC.name, currentColName, row, metaLookupByViewId)
+                    //console.log('assigning meta', mdC.name, currentColName, row, metaLookupByViewId)
 
 
                     if(currentMetaLookup?.view_id){
@@ -258,7 +259,7 @@ async function getData({
                        }, falcor) {
     //console.log('getData called. fetchData:', fetchData)
     
-    console.time('getData ${version}')
+    console.time(`getData ${version}`)
     const options = ({groupBy, notNull, geoAttribute, geoid}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
@@ -283,7 +284,7 @@ async function getData({
     let tmpData, tmpColumns;
 
     if(fetchData){
-        console.time('getData falcor calls ${version}')
+        console.time(`getData falcor calls ${version}`)
         await falcor.get(lenPath(options({groupBy, notNull, geoAttribute, geoid})));
         const len = Math.min(
             get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute, geoid})), 0),
@@ -318,7 +319,7 @@ async function getData({
                 }
             });
         // console.log('columns created')
-        console.time('getData getMeta ${version}')
+        console.time(`getData getMeta ${version}`)
         const metaLookupByViewId = await getMeta({
                 dataSources,
                 dataSource,
@@ -335,7 +336,7 @@ async function getData({
             }, falcor);
 
         console.timeEnd('getData getMeta ${version}')
-        console.time('getData assignMeta ${version}')
+        console.time(`getData assignMeta ${version}`)
         //console.log('got meta:', metaLookupByViewId)
         tmpData = assignMeta({
             metadata,
@@ -352,9 +353,9 @@ async function getData({
             columns: tmpColumns
         }, falcor);
         console.timeEnd('getData assignMeta ${version}')
-        
         addTotalRow({showTotal, data: tmpData || data, columns, setLoading: () => {}});
     } else{
+        console.time(`getData noFetch ${version}`)
         
         tmpColumns = visibleCols
             .map(c => metadata.find(md => md.name === c))
@@ -376,6 +377,7 @@ async function getData({
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
                 }
             });
+        console.timeEnd('getData noFetch ${version}')
     }
 
     const attributionData =  get(falcor.getCache(), attributionPath, {});

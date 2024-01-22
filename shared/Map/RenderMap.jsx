@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {AvlMap} from '~/modules/avl-maplibre/src';
+import {Protocol, PMTiles} from '~/pages/DataManager/utils/pmtiles/index.ts'
 import {ChoroplethCountyFactory} from "./layers/choroplethCountyLayer.jsx";
 import * as d3scale from "d3-scale";
 import * as d3 from 'd3'
@@ -165,6 +166,21 @@ const DrawLegend = ({
         <RenderCirclesLegend domain={domain} range={range} fmt={fmt} size={size} title={title}/>
 
 }
+
+const PMTilesProtocol = {
+  type: "pmtiles",
+  protocolInit: maplibre => {
+    const protocol = new Protocol();
+    maplibre.addProtocol("pmtiles", protocol.tile);
+    return protocol;
+  },
+  sourceInit: (protocol, source, maplibreMap) => {
+    const p = new PMTiles(source.url);
+    protocol.add(p);
+  }
+}
+
+
 export const RenderMap = ({falcor, layerProps, legend, interactive=true, layers=['Choropleth']}) => {
     const layersMap = {
         Choropleth: ChoroplethCountyFactory,
@@ -181,6 +197,7 @@ export const RenderMap = ({falcor, layerProps, legend, interactive=true, layers=
             <AvlMap
                 falcor={falcor}
                 mapOptions={{
+                    protocols: [PMTilesProtocol],
                     interactive: interactive,
                     navigationControl: false,
                     styles: [

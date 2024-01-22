@@ -9,17 +9,19 @@ class EALChoroplethOptions extends LayerContainer {
     super(props);
   }
 
+  //{"tiles":{"layers":[{"id":"state_2010","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"state_2010"},{"id":"county_2010","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"county_2010"},{"id":"tract_2010","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"tract_2010"},{"id":"cousub_2010","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"cousub_2010"},{"id":"state_2020","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"state_2020"},{"id":"county_2020","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"county_2020"},{"id":"tract_2020","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"tract_2020"},{"id":"cousub_2020","type":"fill","paint":{"fill-color":"#0080ff","fill-opacity":0.5},"source":"hazmit_dama_s360_v750_1692038514334","source-layer":"cousub_2020"}],"sources":[{"id":"hazmit_dama_s360_v750_1692038514334","source":{"url":"$HOST/data/hazmit_dama_s360_v750_1692038514334.json","type":"vector"}}]},"layerNames":["state_2010","county_2010","tract_2010","cousub_2010","state_2020","county_2020","tract_2020","cousub_2020"]}
+
   name = "ccl";
   id = "ccl";
   data = [];
   sources = [
-    // {
-    //   id: "states",
-    //   source: {
-    //     "type": "vector",
-    //     "url": "https://api.mapbox.com/v4/mapbox.satellite/{x}/{y}/{z}.webp?sku=101PRSiEvYwSK&access_token=tk.eyJ1IjoiYW0zMDgxIiwiZXhwIjoxNjg2NTk1ODM1LCJpYXQiOjE2ODY1OTIyMzUsInNjb3BlcyI6WyJlc3NlbnRpYWxzIiwic2NvcGVzOmxpc3QiLCJtYXA6cmVhZCIsIm1hcDp3cml0ZSIsInVzZXI6cmVhZCIsInVzZXI6d3JpdGUiLCJ1cGxvYWRzOnJlYWQiLCJ1cGxvYWRzOmxpc3QiLCJ1cGxvYWRzOndyaXRlIiwic3R5bGVzOnRpbGVzIiwic3R5bGVzOnJlYWQiLCJmb250czpsaXN0IiwiZm9udHM6cmVhZCIsImZvbnRzOndyaXRlIiwic3R5bGVzOndyaXRlIiwic3R5bGVzOmxpc3QiLCJzdHlsZXM6ZG93bmxvYWQiLCJzdHlsZXM6cHJvdGVjdCIsInRva2VuczpyZWFkIiwidG9rZW5zOndyaXRlIiwiZGF0YXNldHM6bGlzdCIsImRhdGFzZXRzOnJlYWQiLCJkYXRhc2V0czp3cml0ZSIsInRpbGVzZXRzOmxpc3QiLCJ0aWxlc2V0czpyZWFkIiwidGlsZXNldHM6d3JpdGUiLCJkb3dubG9hZHM6cmVhZCIsInZpc2lvbjpyZWFkIiwidmlzaW9uOmRvd25sb2FkIiwibmF2aWdhdGlvbjpkb3dubG9hZCIsIm9mZmxpbmU6cmVhZCIsIm9mZmxpbmU6d3JpdGUiLCJzdHlsZXM6ZHJhZnQiLCJmb250czptZXRhZGF0YSIsInNwcml0ZS1pbWFnZXM6cmVhZCIsImRhdGFzZXRzOnN0dWRpbyIsImN1c3RvbWVyczp3cml0ZSIsImNyZWRlbnRpYWxzOnJlYWQiLCJjcmVkZW50aWFsczp3cml0ZSIsImFuYWx5dGljczpyZWFkIl0sImNsaWVudCI6Im1hcGJveC5jb20iLCJsbCI6MTY2NzMyNjMxNDMwMSwiaXUiOm51bGwsImVtYWlsIjoiYW0zMDgxQGdtYWlsLmNvbSJ9.MUxuViB3XLGcyKfIvNuP3A"
-    //   },
-    // },
+    {
+      id: "tiger",
+      source: {
+        "url":"pmtiles://graph.availabs.org/tiles/hazmit_dama_s360_v750_1692038514334.json",
+        "type":"vector"
+      }
+    },
     {
       id: "counties",
       source: {
@@ -27,20 +29,20 @@ class EALChoroplethOptions extends LayerContainer {
         "url": "https://dama-dev.availabs.org/tiles/data/hazmit_dama_s365_v778_1694455888142.json"
       },
     },
-    {
-      id: "tracts",
-      source: {
-        "type": "vector",
-        "url": "https://tiles.availabs.org/data/tl_2020_36_tract.json"
-      },
-    }
+    // {
+    //   id: "tracts",
+    //   source: {
+    //     "type": "vector",
+    //     "url": "https://tiles.availabs.org/data/tl_2020_36_tract.json"
+    //   },
+    // }
   ];
 
   layers = [
     {
       "id": "counties",
-      "source": "counties",
-      "source-layer": "s365_v778",
+      "source": "tiger",
+      "source-layer": "county_2020",
       "type": "fill",
       "paint": {
         "fill-color": '#e1e1e1',
@@ -48,8 +50,8 @@ class EALChoroplethOptions extends LayerContainer {
     },
     {
       "id": "tracts",
-      "source": "tracts",
-      "source-layer": "tl_2020_36_tract",
+      "source": "tiger",
+      "source-layer": "tract_2020",
       "type": "fill",
       "paint": {
         "fill-color": '#e1e1e1'
@@ -57,8 +59,8 @@ class EALChoroplethOptions extends LayerContainer {
     },
     {
       "id": "counties-line",
-      "source": "counties",
-      "source-layer": "s365_v778",
+      "source": "tiger",
+      "source-layer": "county_2020",
       "type": "line",
       "paint": {
         "line-width": [
