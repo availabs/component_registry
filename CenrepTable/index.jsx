@@ -257,6 +257,9 @@ async function getData({
                            extFiltersDefaultOpen, customColName, linkCols,
                        }, falcor) {
     // console.log('getData called. fetchData:', fetchData, dataSource, version)
+    //console.log('getData called. fetchData:', fetchData)
+
+    console.time('getData ${version}')
     const options = ({groupBy, notNull, geoAttribute, geoid}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
@@ -281,6 +284,7 @@ async function getData({
     let tmpData, tmpColumns;
 
     if(fetchData){
+        console.time('getData falcor calls ${version}')
         await falcor.get(lenPath(options({groupBy, notNull, geoAttribute, geoid})));
         const len = Math.min(
             get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute, geoid})), 0),
@@ -291,7 +295,7 @@ async function getData({
                 {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
 
         await falcor.get([...attributionPath, attributionAttributes]);
-
+        console.timeEnd('getData falcor calls ${version}')
         // console.log('creating columns')
         tmpColumns = (visibleCols || [])
             .map(c => metadata.find(md => md.name === c))
@@ -315,7 +319,7 @@ async function getData({
                 }
             });
         // console.log('columns created')
-
+        console.time('getData getMeta ${version}')
         const metaLookupByViewId = await getMeta({
                 dataSources,
                 dataSource,
@@ -331,6 +335,9 @@ async function getData({
                 columns: tmpColumns
             }, falcor);
 
+        console.timeEnd('getData getMeta ${version}')
+        console.time('getData assignMeta ${version}')
+        //console.log('got meta:', metaLookupByViewId)
         // console.log('got meta:', metaLookupByViewId)
         tmpData = assignMeta({
             metadata,
@@ -346,9 +353,11 @@ async function getData({
             metaLookupByViewId,
             columns: tmpColumns
         }, falcor);
+        console.timeEnd('getData assignMeta ${version}')
 
         addTotalRow({showTotal, data: tmpData || data, columns, setLoading: () => {}});
     } else{
+
         tmpColumns = visibleCols
             .map(c => metadata.find(md => md.name === c))
             .filter(c => c)
@@ -373,6 +382,7 @@ async function getData({
 
     const attributionData =  get(falcor.getCache(), attributionPath, {});
 
+    console.timeEnd('getData ${version}')
     return {
         data: fetchData ? tmpData : data, // new data is only available if fetchData is true
         columns: tmpColumns || columns, // always prioritize tmpColumns
