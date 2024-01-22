@@ -125,10 +125,10 @@ async function getMeta({
                     return {...prev, ...{[currentColName]: data}}; // use fn name to assign data properly in next step
                 }, {});
         // setMetaLookupByViewId(data)
-        console.log('got meta', data)
+        // console.log('got meta', data)
         return data;
     }
-    console.log('<getMeta> returning {}')
+    // console.log('<getMeta> returning {}')
     return {}
 }
 
@@ -156,7 +156,7 @@ const assignMeta = ({
         );
 
     if(metaLookupCols?.length){
-        console.log('in if <assignMeta>',)
+        // console.log('in if <assignMeta>',)
         return handleExpandableRows(
             Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}))
             .map(row => {
@@ -165,7 +165,7 @@ const assignMeta = ({
                     const currentMetaLookup = parseJson(mdC.meta_lookup);
                     const currentColName = fn[mdC.name] || mdC.name;
                     const {keepId, valueAttribute = 'name'} = currentMetaLookup;
-                    console.log('assigning meta', mdC.name, currentColName, row, metaLookupByViewId)
+                    // console.log('assigning meta', mdC.name, currentColName, row, metaLookupByViewId)
 
 
                     if(currentMetaLookup?.view_id){
@@ -256,7 +256,7 @@ async function getData({
                            extFilterCols, extFilterValues, openOutCols, colJustify, striped,
                            extFiltersDefaultOpen, customColName, linkCols,
                        }, falcor) {
-    console.log('getData called. fetchData:', fetchData)
+    // console.log('getData called. fetchData:', fetchData, dataSource, version)
     const options = ({groupBy, notNull, geoAttribute, geoid}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
@@ -331,7 +331,7 @@ async function getData({
                 columns: tmpColumns
             }, falcor);
 
-        console.log('got meta:', metaLookupByViewId)
+        // console.log('got meta:', metaLookupByViewId)
         tmpData = assignMeta({
             metadata,
             visibleCols,

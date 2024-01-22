@@ -31,7 +31,8 @@ const isValid = ({groupBy, fn, columnsToFetch}) => {
 }
 
 async function getData({   formsConfig, actionType, form,
-                           geoAttribute, geoid, metaLookupByViewId,
+                           geoAttribute, geoid,
+                           // metaLookupByViewId,
                            pageSize, sortBy, groupBy, fn, notNull, colSizes,
                            filters, filterValue, visibleCols, hiddenCols, extFilterCols, extFilterValues, openOutCols,
                            colJustify, striped, extFiltersDefaultOpen, customColName
@@ -75,6 +76,16 @@ async function getData({   formsConfig, actionType, form,
         },
         '/0/250'
     );
+
+    const metaLookupByViewId = await getMeta({
+        formsConfig: formsConfig,
+        // metaLookupByViewId,
+        // setMetaLookupByViewId,
+        visibleCols,
+        pgEnv,
+        falcor,
+        geoid
+    });
 
     const data = await setMeta({
         formsConfig: formsConfig,

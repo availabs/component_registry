@@ -80,7 +80,7 @@ const handleExpandableRows = (data, attributes, openOutCols, columns) => {
 export async function getMeta({
                                   formsConfig,
                                   metaLookupByViewId = {},
-                                  setMetaLookupByViewId,
+                                  // setMetaLookupByViewId,
                                   visibleCols,
                                   pgEnv,
                                   falcor,
@@ -130,7 +130,8 @@ export async function getMeta({
 
                     return {...prev, ...{[md.name]: data}};
                 }, {});
-        setMetaLookupByViewId({...metaLookupByViewId, ...data});
+        // setMetaLookupByViewId({...metaLookupByViewId, ...data});
+        return {...metaLookupByViewId, ...data}
     }
 }
 
