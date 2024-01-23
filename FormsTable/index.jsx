@@ -5,7 +5,7 @@ import {isJson} from "~/utils/macros.jsx";
 import {FormsTable} from "./components/FormsTable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import {Loading} from "~/utils/loading.jsx";
-import {RenderColumnControls} from "../shared/columnControls.jsx";
+import {getDefaultJustify, RenderColumnControls} from "../shared/columnControls.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {dmsDataLoader} from "~/modules/dms/src";
 import {getMeta, setMeta, getAccessor, getColAccessor, defaultOpenOutAttributes} from "./utils.js";
@@ -105,7 +105,7 @@ async function getData({   formsConfig, actionType, form,
             return {
                 Header: customColName?.[col?.name] || col?.display_name,
                 accessor: acc,
-                align: colJustify?.[col?.name] || col?.align || 'right',
+                align: colJustify?.[col?.name] || col?.align || getDefaultJustify(col?.type),
                 width: colSizes?.[col?.name] || '15%',
                 minWidth: colSizes?.[col?.name] || '15%',
                 maxWidth: colSizes?.[col?.name] || '15%',

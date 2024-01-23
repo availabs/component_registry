@@ -7,7 +7,7 @@ import {RenderBuildingsTable} from "./components/RenderBuildingsTable.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import {Loading} from "~/utils/loading.jsx";
-import {RenderColumnControls} from "../shared/columnControls.jsx";
+import {getDefaultJustify, RenderColumnControls} from "../shared/columnControls.jsx";
 import {addTotalRow} from "../utils/addTotalRow.js";
 import {Switch} from "@headlessui/react";
 import {defaultOpenOutAttributes, getNestedValue} from "../FormsTable/utils.js";
@@ -308,7 +308,7 @@ async function getData({
                 return {
                     Header: customColName?.[col.name] || col?.display_name || col?.name,
                     accessor: fn?.[col?.name] || col?.name,
-                    align: colJustify?.[col?.name] || col?.align || 'right',
+                    align: colJustify?.[col?.name] || col?.align || getDefaultJustify(col?.type),
                     width: colSizes?.[col.name] || '15%',
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
@@ -367,7 +367,7 @@ async function getData({
                 return {
                     Header: customColName?.[col.name] || col?.display_name || col?.name,
                     accessor: fn?.[col?.name] || col?.name,
-                    align: colJustify?.[col?.name] || col?.align || 'right',
+                    align: colJustify?.[col?.name] || col?.align || getDefaultJustify(col?.type),
                     width: colSizes?.[col.name] || '15%',
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
