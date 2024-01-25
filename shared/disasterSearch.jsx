@@ -57,9 +57,11 @@ export default ({
             "incident_type",
         ],
         disasterDetailsOptions = JSON.stringify({
-            filter: {
-                [geoid?.length === 2 ? 'fips_state_code' :
+            ...geoid && {
+                filter: {
+                    [geoid?.length === 2 ? 'fips_state_code' :
                         'fips_state_code || fips_county_code' ]: [geoid]
+                }
             },
             exclude: {
                 'disaster_number': range(3000, 3999)
@@ -77,7 +79,7 @@ export default ({
 
             const lenRes = await falcor.get([...disasterDetailsPath(ddsDeps.view_id), 'length']);
             const len = get(lenRes, ['json', ...disasterDetailsPath(ddsDeps.view_id), 'length'], 0);
-            await falcor.get([...disasterDetailsPath(ddsDeps.view_id), 'databyIndex', { from: 0, to: len - 1 }, disasterDetailsAttributes]);
+            await falcor.chunk([...disasterDetailsPath(ddsDeps.view_id), 'databyIndex', { from: 0, to: len - 1 }, disasterDetailsAttributes]);
         }
         fetchData();
     }, [falcor, view_id, geoid, pgEnv]);
