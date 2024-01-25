@@ -31,6 +31,7 @@ import CensusStackedBarChart from "./CensusStackedBarChart/index.jsx";
 import CensusLineChart from "./CensusLineChart/index.jsx";
 import CountyStatusMap from "./CountyStatusMap/index.jsx";
 import CountyHighlightMap from "./CountyHighlightMap/index.jsx";
+import SearchBar from "./SearchBar/index.jsx";
 
 const ComponentRegistry = {
     // "ColorBox": ColorBox,
@@ -68,7 +69,8 @@ const ComponentRegistry = {
         name: 'Rich Text',
         hideInSelector: false
     },
-    "Data Text Box": DataTextBox
+    "Data Text Box": DataTextBox,
+    "Search Bar": SearchBar
 }
 
 
