@@ -79,7 +79,7 @@ export default ({
 
             const lenRes = await falcor.get([...disasterDetailsPath(ddsDeps.view_id), 'length']);
             const len = get(lenRes, ['json', ...disasterDetailsPath(ddsDeps.view_id), 'length'], 0);
-            await falcor.get([...disasterDetailsPath(ddsDeps.view_id), 'databyIndex', { from: 0, to: len - 1 }, disasterDetailsAttributes]);
+            await falcor.chunk([...disasterDetailsPath(ddsDeps.view_id), 'databyIndex', { from: 0, to: len - 1 }, disasterDetailsAttributes]);
         }
         fetchData();
     }, [falcor, view_id, geoid, pgEnv]);
