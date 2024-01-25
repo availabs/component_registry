@@ -79,28 +79,18 @@ const handleExpandableRows = (data, attributes, openOutCols, columns) => {
 
 export async function getMeta({
                                   formsConfig,
-                                  metaLookupByViewId = {},
                                   // setMetaLookupByViewId,
                                   visibleCols,
                                   pgEnv,
                                   falcor,
                                   geoid
                               }) {
-    const metaViewIdLookupCols =
-        formsConfig.attributes
-            .filter(md =>
-                visibleCols.includes(md.name) &&
-                md.geoVariable &&
-                md.meta_lookup &&
-                !metaLookupByViewId[md.name]
-            );
+    const metaViewIdLookupCols = formsConfig.attributes?.filter(md => visibleCols.includes(md.name) && md.meta_lookup);
     if (metaViewIdLookupCols?.length) {
         const data =
-            await metaViewIdLookupCols
-                .filter(md => md.meta_lookup?.view_id)
-                .reduce(async (acc, md) => {
+            await metaViewIdLookupCols.reduce(async (acc, md) => {
                     const prev = await acc;
-                    const metaLookup = md.meta_lookup;
+                    const metaLookup = typeof md.meta_lookup === 'string' ? JSON.parse(md.meta_lookup) : md.meta_lookup;
                     const options = JSON.stringify({
                         aggregatedLen: metaLookup.aggregatedLen,
                         filter: {
@@ -128,11 +118,16 @@ export async function getMeta({
                             }
                         ), {})
 
+
+
                     return {...prev, ...{[md.name]: data}};
                 }, {});
         // setMetaLookupByViewId({...metaLookupByViewId, ...data});
-        return {...metaLookupByViewId, ...data}
+
+        return data
     }
+
+    return {}
 }
 
 const filterData = ({geoAttribute, geoid, data, actionType}) =>
@@ -155,11 +150,7 @@ export async function setMeta({
                                   fn, form
                               }) {
 
-    const metaLookupCols =
-        formsConfig.attributes?.filter(md =>
-            visibleCols.includes(md.name) && ['meta-variable', 'geoid-variable'].includes(md.display)
-        );
-
+    const metaLookupCols = formsConfig.attributes?.filter(md =>  visibleCols.includes(md.name) && md.meta_lookup);
     if (metaLookupCols?.length) {
         const dataWithMeta = filterData({
             geoAttribute: getColAccessor(fn, geoAttribute, formsConfig.attributes?.find(attr => attr.name === geoAttribute)?.origin, form),
@@ -169,7 +160,7 @@ export async function setMeta({
         })
             .map(row => {
                 metaLookupCols.forEach(mdC => {
-                    const currentMetaLookup = mdC.meta_lookup;
+                    const currentMetaLookup = typeof mdC.meta_lookup === 'string' ? JSON.parse(mdC.meta_lookup) : mdC.meta_lookup;
                     const modifiedName = fn[mdC.name] && fn[mdC.name].includes('data->') ? fn[mdC.name] :
                         fn[mdC.name] && !fn[mdC.name].includes('data->') && fn[mdC.name].toLowerCase().includes(' as ') ?
                             fn[mdC.name].replace(mdC.name, `${getAccessor(mdC.name, form)}'${mdC.name}'`) :
@@ -184,6 +175,7 @@ export async function setMeta({
                         if (currentRawValue?.includes(',')) {
                             row[modifiedName] = currentRawValue.split(',').reduce((acc, curr) => [...acc, currentViewIdLookup?.[curr?.trim()]?.name || curr], [])//.join(', ')
                         } else {
+
                             row[modifiedName] = currentViewIdLookup?.[row[modifiedName]]?.name || row[modifiedName];
                         }
                     } else {

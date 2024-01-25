@@ -515,7 +515,6 @@ const RenderJustifyControls = ({column, colJustify, setColJustify, metadata}) =>
     if (!setColJustify) return null;
     const defaultJustify = getDefaultJustify(metadata?.type);
     const currentValue = colJustify[column] || defaultJustify;
-    console.log('cm?', metadata, defaultJustify, currentValue)
 
     return (
         <ButtonSelector

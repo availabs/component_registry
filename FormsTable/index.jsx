@@ -32,7 +32,6 @@ const isValid = ({groupBy, fn, columnsToFetch}) => {
 
 async function getData({   formsConfig, actionType, form,
                            geoAttribute, geoid,
-                           // metaLookupByViewId,
                            pageSize, sortBy, groupBy, fn, notNull, colSizes,
                            filters, filterValue, visibleCols, hiddenCols, extFilterCols, extFilterValues, openOutCols,
                            colJustify, striped, extFiltersDefaultOpen, customColName
@@ -79,8 +78,6 @@ async function getData({   formsConfig, actionType, form,
 
     const metaLookupByViewId = await getMeta({
         formsConfig: formsConfig,
-        // metaLookupByViewId,
-        // setMetaLookupByViewId,
         visibleCols,
         pgEnv,
         falcor,
@@ -121,7 +118,7 @@ async function getData({   formsConfig, actionType, form,
     return {
         geoid,
         pageSize, sortBy, groupBy, fn, notNull, hiddenCols, colSizes, form, formsConfig,
-        data, columns, metaLookupByViewId, filters, filterValue, visibleCols, geoAttribute, actionType,
+        data, columns, filters, filterValue, visibleCols, geoAttribute, actionType,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen, customColName
     }
 }
@@ -133,7 +130,6 @@ const Edit = ({value, onChange}) => {
     const baseUrl = '/';
     const [form, setForm] = useState(cachedData?.form || 'Actions');
     const [geoAttribute, setGeoAttribute] = useState(cachedData?.geoAttribute);
-    const [metaLookupByViewId, setMetaLookupByViewId] = useState(cachedData.metaLookupByViewId || {});
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
     const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
@@ -188,8 +184,6 @@ const Edit = ({value, onChange}) => {
         if (!formsConfig) return;
         getMeta({
             formsConfig: formsConfig,
-            metaLookupByViewId,
-            setMetaLookupByViewId,
             visibleCols,
             pgEnv,
             falcor,
@@ -228,7 +222,7 @@ const Edit = ({value, onChange}) => {
 
             const data = await getData({
                 formsConfig, actionType, form,
-                geoAttribute, geoid, metaLookupByViewId,
+                geoAttribute, geoid,
                 pageSize, sortBy, groupBy, fn, notNull, colSizes,
                 filters, filterValue, visibleCols, hiddenCols,
                 extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
@@ -246,7 +240,7 @@ const Edit = ({value, onChange}) => {
         load()
     }, [
         formsConfig, actionType, form,
-        geoAttribute, geoid, metaLookupByViewId,
+        geoAttribute, geoid,
         pageSize, sortBy, groupBy, fn, notNull, colSizes,
         filters, filterValue, visibleCols, hiddenCols,
         extFilterCols, openOutCols, colJustify, striped, extFiltersDefaultOpen,
@@ -463,10 +457,10 @@ export default {
             name: 'actionType',
             hidden: true
         },
-        {
-            name: 'metaLookupByViewId',
-            hidden: true
-        },
+        // {
+        //     name: 'metaLookupByViewId',
+        //     hidden: true
+        // },
         {
             name: 'geoAttribute',
             hidden: true
