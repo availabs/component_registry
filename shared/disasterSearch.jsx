@@ -57,9 +57,11 @@ export default ({
             "incident_type",
         ],
         disasterDetailsOptions = JSON.stringify({
-            filter: {
-                [geoid?.length === 2 ? 'fips_state_code' :
+            ...geoid && {
+                filter: {
+                    [geoid?.length === 2 ? 'fips_state_code' :
                         'fips_state_code || fips_county_code' ]: [geoid]
+                }
             },
             exclude: {
                 'disaster_number': range(3000, 3999)
