@@ -5,7 +5,7 @@ import {isJson} from "~/utils/macros.jsx";
 import {FormsTable} from "./components/FormsTable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import {Loading} from "~/utils/loading.jsx";
-import {RenderColumnControls} from "../shared/columnControls.jsx";
+import {getDefaultJustify, RenderColumnControls} from "../shared/columnControls.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {dmsDataLoader} from "~/modules/dms/src";
 import {getMeta, setMeta, getAccessor, getColAccessor, defaultOpenOutAttributes} from "./utils.js";
@@ -30,13 +30,12 @@ const isValid = ({groupBy, fn, columnsToFetch}) => {
     }
 }
 
-async function getData({
-    formsConfig, actionType, form,
-    geoAttribute, geoid, metaLookupByViewId,
-    pageSize, sortBy, groupBy, fn, notNull, colSizes,
-    filters, filterValue, visibleCols, hiddenCols, extFilterCols, extFilterValues, openOutCols,
-    colJustify, striped, extFiltersDefaultOpen, customColName
-}, falcor) {
+async function getData({   formsConfig, actionType, form,
+                           geoAttribute, geoid,
+                           pageSize, sortBy, groupBy, fn, notNull, colSizes,
+                           filters, filterValue, visibleCols, hiddenCols, extFilterCols, extFilterValues, openOutCols,
+                           colJustify, striped, extFiltersDefaultOpen, customColName
+                       }, falcor) {
     const d = await dmsDataLoader(
         {
             format: formsConfig,
@@ -77,6 +76,14 @@ async function getData({
         '/0/250'
     );
 
+    const metaLookupByViewId = await getMeta({
+        formsConfig: formsConfig,
+        visibleCols,
+        pgEnv,
+        falcor,
+        geoid
+    });
+
     const data = await setMeta({
         formsConfig: formsConfig,
         visibleCols,
@@ -95,7 +102,7 @@ async function getData({
             return {
                 Header: customColName?.[col?.name] || col?.display_name,
                 accessor: acc,
-                align: colJustify?.[col?.name] || col?.align || 'right',
+                align: colJustify?.[col?.name] || col?.align || getDefaultJustify(col?.type),
                 width: colSizes?.[col?.name] || '15%',
                 minWidth: colSizes?.[col?.name] || '15%',
                 maxWidth: colSizes?.[col?.name] || '15%',
@@ -111,7 +118,7 @@ async function getData({
     return {
         geoid,
         pageSize, sortBy, groupBy, fn, notNull, hiddenCols, colSizes, form, formsConfig,
-        data, columns, metaLookupByViewId, filters, filterValue, visibleCols, geoAttribute, actionType,
+        data, columns, filters, filterValue, visibleCols, geoAttribute, actionType,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen, customColName
     }
 }
@@ -123,7 +130,6 @@ const Edit = ({value, onChange}) => {
     const baseUrl = '/';
     const [form, setForm] = useState(cachedData?.form || 'Actions');
     const [geoAttribute, setGeoAttribute] = useState(cachedData?.geoAttribute);
-    const [metaLookupByViewId, setMetaLookupByViewId] = useState(cachedData.metaLookupByViewId || {});
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
     const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
@@ -178,8 +184,6 @@ const Edit = ({value, onChange}) => {
         if (!formsConfig) return;
         getMeta({
             formsConfig: formsConfig,
-            metaLookupByViewId,
-            setMetaLookupByViewId,
             visibleCols,
             pgEnv,
             falcor,
@@ -218,7 +222,7 @@ const Edit = ({value, onChange}) => {
 
             const data = await getData({
                 formsConfig, actionType, form,
-                geoAttribute, geoid, metaLookupByViewId,
+                geoAttribute, geoid,
                 pageSize, sortBy, groupBy, fn, notNull, colSizes,
                 filters, filterValue, visibleCols, hiddenCols,
                 extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
@@ -236,7 +240,7 @@ const Edit = ({value, onChange}) => {
         load()
     }, [
         formsConfig, actionType, form,
-        geoAttribute, geoid, metaLookupByViewId,
+        geoAttribute, geoid,
         pageSize, sortBy, groupBy, fn, notNull, colSizes,
         filters, filterValue, visibleCols, hiddenCols,
         extFilterCols, openOutCols, colJustify, striped, extFiltersDefaultOpen,
@@ -453,10 +457,10 @@ export default {
             name: 'actionType',
             hidden: true
         },
-        {
-            name: 'metaLookupByViewId',
-            hidden: true
-        },
+        // {
+        //     name: 'metaLookupByViewId',
+        //     hidden: true
+        // },
         {
             name: 'geoAttribute',
             hidden: true

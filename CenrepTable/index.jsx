@@ -7,7 +7,7 @@ import {RenderBuildingsTable} from "./components/RenderBuildingsTable.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import {Loading} from "~/utils/loading.jsx";
-import {RenderColumnControls} from "../shared/columnControls.jsx";
+import {getDefaultJustify, RenderColumnControls} from "../shared/columnControls.jsx";
 import {addTotalRow} from "../utils/addTotalRow.js";
 import {Switch} from "@headlessui/react";
 import {defaultOpenOutAttributes, getNestedValue} from "../FormsTable/utils.js";
@@ -39,6 +39,9 @@ const parseJson = str => {
     }
 }
 
+const cleanColName = colName => colName.includes(' AS') ? colName.split(' AS')[0] : colName.split(' as')[0];
+
+
 async function getMeta({
                            dataSources,
                            dataSource,
@@ -51,16 +54,16 @@ async function getMeta({
                            notNull,
                            geoAttribute,
                            disasterNumber,
+                           disasterNumberCol,
                            columns
                        }, falcor){
     const metadata = (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata?.columns;
     const metaViewIdLookupCols =
         metadata?.filter(md => visibleCols.includes(md.name) && ['meta-variable', 'geoid-variable'].includes(md.display) && md.meta_lookup);
-    const cleanColName = colName => colName.includes(' AS') ? colName.split(' AS')[0] : colName.split(' as')[0];
 
     if(metaViewIdLookupCols?.length){
         const falcorCache = falcor.getCache();
-        const fetchedData = Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}));
+        const fetchedData = Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {}));
         const cachedUniqueValues = metaViewIdLookupCols.reduce((acc, curr) => {
             const currentColName = fn[curr.name] || curr.name;
 
@@ -130,6 +133,7 @@ async function getMeta({
         return data;
     }
     //console.log('<getMeta> returning {}')
+    // console.log('<getMeta> returning {}')
     return {}
 }
 
@@ -144,7 +148,7 @@ const assignMeta = ({
                         fn,
                         notNull,
                         geoAttribute,
-                        geoid, disasterNumber,
+                        geoid, disasterNumber, disasterNumberCol,
                         metaLookupByViewId,
                         columns
                     }, falcor) => {
@@ -159,7 +163,7 @@ const assignMeta = ({
     if(metaLookupCols?.length){
         //console.log('in if <assignMeta>',)
         return handleExpandableRows(
-            Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {}))
+            Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {}))
             .map(row => {
                 metaLookupCols.forEach(mdC => {
 
@@ -186,23 +190,23 @@ const assignMeta = ({
             }),
             columns,
             fn,
-            disasterNumber
+            disasterNumber,
+            disasterNumberCol
         )
     }
 
     return handleExpandableRows(
-        Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid})), {})),
+        Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {})),
         columns,
         fn,
-        disasterNumber
+        disasterNumber,
+        disasterNumberCol
     )
 
 }
 
-const handleExpandableRows = (data, columns, fn, disasterNumber) => {
+const handleExpandableRows = (data, columns, fn, disasterNumber, disasterNumberCol) => {
     const expandableColumns = columns.filter(c => c.openOut);
-    const disasterNumberOriginalCol = columns.find(c => c.name?.includes('disaster_number'))?.name || 'disaster_number'
-    const disasterNumberCol = (fn?.[disasterNumberOriginalCol] || disasterNumberOriginalCol);
     // if disaster number is being used to filter data, it should be in visible columns. Hide it if not needed.
     // console.log('handling exp rows')
     if (expandableColumns?.length) {
@@ -232,13 +236,15 @@ const handleExpandableRows = (data, columns, fn, disasterNumber) => {
         })
             .filter(row =>
                 !disasterNumber ||
-                (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' && row[disasterNumberCol]?.includes(disasterNumber))
+                (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' &&
+                    row[disasterNumberCol]?.toString()?.includes(disasterNumber))
             );
         return newData;
     } else {
         return data.filter(row => {
                 return !disasterNumber || !row[disasterNumberCol] ||
-                (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' && row[disasterNumberCol]?.includes(disasterNumber))
+                (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' &&
+                    row[disasterNumberCol]?.toString()?.includes(disasterNumber))
             }
         )
     }
@@ -257,14 +263,17 @@ async function getData({
                            extFilterCols, extFilterValues, openOutCols, colJustify, striped,
                            extFiltersDefaultOpen, customColName, linkCols,
                        }, falcor) {
+    // console.log('getData called. fetchData:', fetchData, dataSource, version)
     //console.log('getData called. fetchData:', fetchData)
     
     console.time(`getData ${version}`)
-    const options = ({groupBy, notNull, geoAttribute, geoid}) => {
+
+    const options = ({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
             filter: {
                 ...geoAttribute && geoid?.toString()?.length && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
+                ...disasterNumber && disasterNumberCol && {[cleanColName(disasterNumberCol)]: [disasterNumber]} // assumes disasterNumber to be single value
             },
             exclude: {
                 ...notNull?.length && notNull.reduce((acc, col) => ({...acc, [col]: ['null']}), {}) // , '', ' ' error out for numeric columns.
@@ -284,18 +293,6 @@ async function getData({
     let tmpData, tmpColumns;
 
     if(fetchData){
-        console.time(`getData falcor calls ${version}`)
-        await falcor.get(lenPath(options({groupBy, notNull, geoAttribute, geoid})));
-        const len = Math.min(
-            get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute, geoid})), 0),
-            590);
-
-        await falcor.get(
-            [...dataPath(options({groupBy, notNull, geoAttribute, geoid})),
-                {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
-
-        await falcor.get([...attributionPath, attributionAttributes]);
-        console.timeEnd('getData falcor calls ${version}')
         // console.log('creating columns')
         tmpColumns = (visibleCols || [])
             .map(c => metadata.find(md => md.name === c))
@@ -305,7 +302,7 @@ async function getData({
                 return {
                     Header: customColName?.[col.name] || col?.display_name || col?.name,
                     accessor: fn?.[col?.name] || col?.name,
-                    align: colJustify?.[col?.name] || col?.align || 'right',
+                    align: colJustify?.[col?.name] || col?.align || getDefaultJustify(col?.type),
                     width: colSizes?.[col.name] || '15%',
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
@@ -318,7 +315,25 @@ async function getData({
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
                 }
             });
+
+        const disasterNumberOriginalCol = tmpColumns.find(c => c.name?.includes('disaster_number'))?.name || 'disaster_number'
+        const disasterNumberCol = (fn?.[disasterNumberOriginalCol] || disasterNumberOriginalCol);
+
         // console.log('columns created')
+
+
+        console.time(`getData falcor calls ${version}`)
+        await falcor.get(lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})));
+        const len = Math.min(
+            get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), 0),
+            590);
+
+        await falcor.get(
+            [...dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})),
+                {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
+
+        await falcor.get([...attributionPath, attributionAttributes]);
+        console.timeEnd('getData falcor calls ${version}')
         console.time(`getData getMeta ${version}`)
         const metaLookupByViewId = await getMeta({
                 dataSources,
@@ -332,6 +347,7 @@ async function getData({
                 notNull,
                 geoAttribute,
                 disasterNumber,
+                disasterNumberCol,
                 columns: tmpColumns
             }, falcor);
 
@@ -349,6 +365,7 @@ async function getData({
             geoAttribute,
             geoid,
             disasterNumber,
+            disasterNumberCol,
             metaLookupByViewId,
             columns: tmpColumns
         }, falcor);
@@ -356,7 +373,7 @@ async function getData({
         addTotalRow({showTotal, data: tmpData || data, columns, setLoading: () => {}});
     } else{
         console.time(`getData noFetch ${version}`)
-        
+
         tmpColumns = visibleCols
             .map(c => metadata.find(md => md.name === c))
             .filter(c => c)
@@ -364,7 +381,7 @@ async function getData({
                 return {
                     Header: customColName?.[col.name] || col?.display_name || col?.name,
                     accessor: fn?.[col?.name] || col?.name,
-                    align: colJustify?.[col?.name] || col?.align || 'right',
+                    align: colJustify?.[col?.name] || col?.align || getDefaultJustify(col?.type),
                     width: colSizes?.[col.name] || '15%',
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',

@@ -509,9 +509,12 @@ const RenderSizeControls = ({column, colSizes, setColSizes}) => {
     )
 }
 
-const RenderJustifyControls = ({column, colJustify, setColJustify}) => {
+export const getDefaultJustify = type => ['integer', 'number'].includes(type) ? 'right' : 'left';
+
+const RenderJustifyControls = ({column, colJustify, setColJustify, metadata}) => {
     if (!setColJustify) return null;
-    const currentValue = colJustify[column] || 'right';
+    const defaultJustify = getDefaultJustify(metadata?.type);
+    const currentValue = colJustify[column] || defaultJustify;
 
     return (
         <ButtonSelector
@@ -828,7 +831,7 @@ const RenderColumnBoxes = ({
                                                                                 colSizes={colSizes} setColSizes={setColSizes} />
 
                                                             <RenderJustifyControls column={col}
-                                                                                   colJustify={colJustify} setColJustify={setColJustify}/>
+                                                                                   colJustify={colJustify} setColJustify={setColJustify} metadata={currentMetaData}/>
 
                                                             <RenderNullControls column={col}
                                                                                 notNull={notNull} setNotNull={setNotNull}/>

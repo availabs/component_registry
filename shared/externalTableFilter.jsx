@@ -44,7 +44,7 @@ export const RenderExternalTableFilter = ({defaultOpen=false, data, columns, fil
                                 <Multiselect
                                     className={'flex-row-reverse border-2'}
                                     value={filters[column.accessor]}
-                                    options={uniqueValues[column.accessor].map(uv => ({key: uv, label: uv}))}
+                                    options={uniqueValues[column.accessor].map(uv => ({key: uv, label: uv})).sort((a,b) => a.label?.localeCompare(b.label))}
                                     onChange={e => {
                                         if(setExtFilterValues) setExtFilterValues({...filters, [column.accessor]: e.map(e1 => e1.key)});
 
