@@ -25,7 +25,7 @@ export const RenderExternalTableFilter = ({defaultOpen=false, data, columns, fil
 
     return (
         <div className={'flex flex-col'}>
-            <div className={`justify-end flex items-center px-2 ${open ? `text-red-300 hover:text-red-500` : `text-blue-300 hover:text-blue-600`} transition ease-in`}
+            <div className={`justify-end flex items-center pl-2 ${open ? `text-red-300 hover:text-red-500` : `text-blue-300 hover:text-blue-600`} transition ease-in`}
                  title={open ? 'Close Filters' : 'Open Filters'}
                  onClick={e => setOpen(!open)}
             >

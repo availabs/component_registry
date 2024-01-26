@@ -80,7 +80,7 @@ export const FormsTable = ({
                 setFilters={setFilters}
                 setExtFilterValues={setExtFilterValues}
             />
-            <div className={'py-5'}>
+            <div className={'py-1'}>
                 <Table
                     columns={updatedColumns}
                     data={filteredData}

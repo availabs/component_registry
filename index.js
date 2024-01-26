@@ -24,7 +24,7 @@ import FusionEventsMap from "./FusionEventsMap/index.jsx";
 import OpenFemaDataTable from "./OpenFemaDataTable/index.jsx";
 import CenrepTable from "./CenrepTable/index.jsx";
 import DataTextBox from "./DataTextBox/index.jsx";
-// import FormsTable from "./FormsTable/index.jsx";
+import FormsTable from "./FormsTable/index.jsx";
 import CensusStatBox from "./CensusStatBox/index.jsx"
 import CensusBarChart from "./CensusBarChart/index.jsx";
 import CensusStackedBarChart from "./CensusStackedBarChart/index.jsx";
@@ -48,7 +48,7 @@ const ComponentRegistry = {
     "Table: Social Vulnerability Summary": SocialVulnerabilitySummaryTable,
     "Table: Buildings": BuildingsTable, // deprecated
     "Table: Open Fema Data": OpenFemaDataTable, // deprecated
-    // "Table: Forms": FormsTable,
+    "Table: Forms": FormsTable,
     "Table: Cenrep": CenrepTable,
     "Graph: Historic Loss by Disaster Number": LossByDisasterNumberChart,
     "Graph: Historic Loss by Hazard Type": LossByHazardTypeChart,

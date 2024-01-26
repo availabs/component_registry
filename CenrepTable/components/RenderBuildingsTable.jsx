@@ -25,7 +25,8 @@ export const RenderBuildingsTable = ({
                                          striped,
                                          fetchData,
                                          extFiltersDefaultOpen,
-                                         hiddenCols
+                                         hiddenCols,
+                                         showCsvDownload
                                      }) => {
     const [filters, setFilters] = useState(extFilterValues);
 
@@ -76,7 +77,7 @@ export const RenderBuildingsTable = ({
                 setFilters={setFilters}
                 setExtFilterValues={setExtFilterValues}
             />
-            <div className={'py-5'}>
+            <div className={'py-1'}>
                 <Table
                     columns={updatedColumns}
                     data={filteredData}
@@ -85,6 +86,7 @@ export const RenderBuildingsTable = ({
                     striped={striped}
                     sortBy={sortColRaw}
                     sortOrder={Object.values(sortBy)?.[0] || 'asc'}
+                    csvDownload={showCsvDownload}
                     fetchData={fetchData}
                 />
             </div>

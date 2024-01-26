@@ -261,7 +261,7 @@ async function getData({
                            pageSize, sortBy,  notNull,  colSizes,
                            filters, filterValue, hiddenCols, showTotal,
                            extFilterCols, extFilterValues, openOutCols, colJustify, striped,
-                           extFiltersDefaultOpen, customColName, linkCols,
+                           extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
                        }, falcor) {
     // console.log('getData called. fetchData:', fetchData, dataSource, version)
     //console.log('getData called. fetchData:', fetchData)
@@ -409,7 +409,7 @@ async function getData({
         filters, filterValue, visibleCols, hiddenCols,
         dataSource, dataSources, version,
         extFilterCols, extFilterValues, colJustify, striped, extFiltersDefaultOpen,
-        customColName, linkCols, openOutCols
+        customColName, linkCols, openOutCols, showCsvDownload
     }
 }
 
@@ -448,6 +448,7 @@ const Edit = ({value, onChange}) => {
     const [extFiltersDefaultOpen, setExtFiltersDefaultOpen] = useState(cachedData?.extFiltersDefaultOpen || false);
     const [customColName, setCustomColName] = useState(cachedData?.customColName || {});
     const [linkCols, setLinkCols] = useState(cachedData?.linkCols || {});
+    const [showCsvDownload, setShowCsvDownload] = useState(cachedData?.showCsvDownload || false)
     const category = 'Cenrep';
 
     const dataSourceByCategoryPath = ['dama', pgEnv, 'sources', 'byCategory', category];
@@ -535,7 +536,7 @@ const Edit = ({value, onChange}) => {
                 filters, filterValue, visibleCols, hiddenCols,
                 version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
                 customColName, linkCols,
-                data, columns,
+                data, columns, showCsvDownload,
                 fetchData: false
             }, falcor);
 
@@ -553,7 +554,7 @@ const Edit = ({value, onChange}) => {
         pageSize, sortBy,  notNull,  colSizes,
         filters, filterValue, hiddenCols, showTotal,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped,
-        extFiltersDefaultOpen, customColName, linkCols,
+        extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
     ]);
 
     const data = cachedData.data;
@@ -674,6 +675,39 @@ const Edit = ({value, onChange}) => {
                         </div>
                     </div>
 
+                    <div className={'block w-full flex mt-1'}>
+                        <label className={'align-bottom shrink-0pr-2 py-2 my-1 w-1/4'}> Show CSV Download: </label>
+                        <div className={'align-bottom p-2 pl-0 my-1 rounded-md shrink self-center'}>
+                            <Switch
+                                key={`striped-table`}
+                                checked={showCsvDownload}
+                                onChange={e => setShowCsvDownload(!showCsvDownload)}
+                                className={
+                                    `
+                                ${showCsvDownload ? 'bg-indigo-600' : 'bg-gray-200'}
+                                relative inline-flex 
+                                 h-4 w-10 shrink
+                                 cursor-pointer rounded-full border-2 border-transparent 
+                                 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0.5
+                                 focus:ring-indigo-600 focus:ring-offset-2`
+                                }
+                            >
+                                <span className="sr-only">toggle External filters default open by</span>
+                                <span
+                                    aria-hidden="true"
+                                    className={
+                                        `
+                                    ${showCsvDownload ? 'translate-x-5' : 'translate-x-0'}
+                                    pointer-events-none inline-block 
+                                    h-3 w-4
+                                    transform rounded-full bg-white shadow ring-0 t
+                                    transition duration-200 ease-in-out`
+                                    }
+                                />
+                            </Switch>
+                        </div>
+                    </div>
+
                     <RenderColumnControls
                         cols={
                            (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
@@ -732,6 +766,7 @@ const Edit = ({value, onChange}) => {
                                 sortBy={sortBy}
                                 attributionData={attributionData}
                                 striped={striped}
+                                showCsvDownload={showCsvDownload}
                                 baseUrl={baseUrl}
                                 // fetchData={fetchData}
                             />
@@ -876,6 +911,11 @@ export default {
             name: 'extFilterValues',
             hidden: true,
             default: {}
+        },
+        {
+            name: 'showCsvDownload',
+            hidden: true,
+            default: false
         },
     ],
     getData,
