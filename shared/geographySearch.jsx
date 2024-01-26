@@ -83,19 +83,20 @@ const getCountyData = async ({ falcor, pgEnv, statesData, setGeoData }) => {
 }
 
 export default ({
+                         showLabel=true,
                          className,
                          value,
                          onChange // if not passed, navigate to geography page
 }) => {
   const navigate = useNavigate();
-  const { falcor, falcorCache } = useFalcor();
+  const {falcor, falcorCache} = useFalcor();
   const [geoData, setGeoData] = useState([]);
   const [selected, setSelected] = useState([]);
 
-  useEffect( () => {
-    async function getData(){
-      const statesData = await getStateData({ falcor, pgEnv });
-      await getCountyData({ falcor, pgEnv, statesData, setGeoData });
+  useEffect(() => {
+    async function getData() {
+      const statesData = await getStateData({falcor, pgEnv});
+      await getCountyData({falcor, pgEnv, statesData, setGeoData});
     }
 
     getData();
@@ -105,28 +106,37 @@ export default ({
     setSelected(geoData.filter(gd => value && gd.geoid === value))
   }, [geoData, value]);
 
-  return (
-      <div className={'flex flex-row flex-wrap justify-between'}>
-        <label className={'shrink-0 pr-2 py-1 my-1 w-1/4'}>Geography:</label>
-        <div className={`flex flex row ${className} w-3/4 shrink my-1`}>
-          <i className={`fa fa-search font-light text-xl bg-white pr-2 pt-1 rounded-r-md`} />
+  const Search = () => (
+      <>
+          <i className={`fa fa-search font-light text-xl bg-white pr-2 pt-1 rounded-r-md`}/>
           <AsyncTypeahead
               className={'w-full'}
               isLoading={false}
               onSearch={handleSearch}
-              minLength = {2}
+              minLength={2}
               id="geography-search"
               key="geography-search"
               placeholder="Search for a Geography..."
               options={geoData}
               labelKey={(option) => `${option.name}`}
-              defaultSelected={ selected }
-              onChange = {(selected) => onChangeFilter(selected, setSelected, value, geoData, navigate, onChange)}
-              selected={ selected }
-              inputProps={{ className: 'bg-white  w-full p-1 pl-3 rounded-l-md' }}
+              defaultSelected={selected}
+              onChange={(selected) => onChangeFilter(selected, setSelected, value, geoData, navigate, onChange)}
+              selected={selected}
+              inputProps={{className: 'bg-white  w-full p-1 pl-3 rounded-l-md'}}
               renderMenu={renderMenu}
           />
-        </div>
-      </div>
+      </>
+  )
+  return (
+      showLabel ?
+          <div className={'flex flex-row flex-wrap justify-between'}>
+            <label className={'shrink-0 pr-2 py-1 my-1 w-1/4'}>Geography:</label>
+            <div className={`flex flex row ${className} w-3/4 shrink my-1`}>
+              <Search />
+            </div>
+          </div> :
+          <div className={`flex w-full ${className}`}>
+            <Search />
+          </div>
   )
 }

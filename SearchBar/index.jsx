@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import GeographySearch from "../shared/geographySearch.jsx";
 import DisasterSearch from "../shared/disasterSearch.jsx";
+import DisasterAndGeographySearch from "../shared/disasterAndGeographySearch.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {isJson} from "~/utils/macros.jsx";
 
@@ -22,21 +23,23 @@ const Edit = ({value, onChange}) => {
                     type={type}
                     setType={setType}
                     types={['Geography', 'Disaster']}
-                    multi={false}
+                    multi={true}
                 />
 
                 {
-                    type?.includes('Geography') ?
-                        <GeographySearch className={className} showLabel={false}/> : null
-                }
-
-                {
-                    type?.includes('Disaster') ?
-                        <DisasterSearch
+                    type?.includes('Disaster') && type?.includes('Geography') ?
+                        <DisasterAndGeographySearch
                             view_id={837}
                             className={className}
                             showLabel={false}
-                        /> : null
+                        /> :
+                        type?.includes('Disaster') ?
+                            <DisasterSearch
+                                view_id={837}
+                                className={className}
+                                showLabel={false}
+                            /> :
+                            <GeographySearch className={className} showLabel={false}/>
                 }
             </div>
         </div>
@@ -51,23 +54,23 @@ Edit.settings = {
 const View = ({value}) => {
     const type = isJson(value) ? JSON.parse(value)?.type : value;
 
-    console.log('loads.', type)
     return (
         <div className='relative w-full p-6'>
             <div className='w-full'>
                 <div className='relative'>
                     {
-                        type?.includes('Geography') ?
-                            <GeographySearch className={className} showLabel={false}/> : null
-                    }
-
-                    {
-                        type?.includes('Disaster') ?
-                            <DisasterSearch
-                                view_id={837}
+                        type?.includes('Disaster') && type?.includes('Geography') ?
+                            <DisasterAndGeographySearch
                                 className={className}
                                 showLabel={false}
-                            /> : null
+                            /> :
+                            type?.includes('Disaster') ?
+                                <DisasterSearch
+                                    view_id={837}
+                                    className={className}
+                                    showLabel={false}
+                                /> :
+                                <GeographySearch className={className} showLabel={false}/>
                     }
                 </div>
             </div>

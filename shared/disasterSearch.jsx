@@ -16,7 +16,7 @@ const onChangeFilter = (selected, setSelected, view_id, views, navigate, onChang
     console.log('changed', id)
     // if (id) {
         setSelected(selected);
-        onChange && onChange(id)
+        onChange ? onChange(id) : navigate(`/disaster/${id}`)
     // } else {
     //     setSelected([])
     // }
@@ -42,7 +42,8 @@ export default ({
                     value,
                     geoid,
                     onChange,
-                    showAll = false
+                    showAll = false,
+                    showLabel = true
                 }) => {
     const navigate = useNavigate();
     const {falcor, falcorCache} = useFalcor();
@@ -60,7 +61,7 @@ export default ({
             ...geoid && {
                 filter: {
                     [geoid?.length === 2 ? 'fips_state_code' :
-                        'fips_state_code || fips_county_code' ]: [geoid]
+                        'fips_state_code || fips_county_code']: [geoid]
                 }
             },
             exclude: {
@@ -71,7 +72,7 @@ export default ({
 
     useEffect(() => {
         async function fetchData() {
-                        const depsRes = await falcor.get(dependencyPath(view_id));
+            const depsRes = await falcor.get(dependencyPath(view_id));
             const deps = get(depsRes, ["json", ...dependencyPath(view_id), "dependencies"]);
             const ddsDeps = deps.find(d => d.type === "disaster_declarations_summaries_v2");
             if (!ddsDeps) return;
@@ -79,21 +80,25 @@ export default ({
 
             const lenRes = await falcor.get([...disasterDetailsPath(ddsDeps.view_id), 'length']);
             const len = get(lenRes, ['json', ...disasterDetailsPath(ddsDeps.view_id), 'length'], 0);
-            await falcor.chunk([...disasterDetailsPath(ddsDeps.view_id), 'databyIndex', { from: 0, to: len - 1 }, disasterDetailsAttributes]);
+            await falcor.chunk([...disasterDetailsPath(ddsDeps.view_id), 'databyIndex', {
+                from: 0,
+                to: len - 1
+            }, disasterDetailsAttributes]);
         }
+
         fetchData();
     }, [falcor, view_id, geoid, pgEnv]);
 
     const disasters = useMemo(() => {
-        return  [
+        return [
             ...showAll ? [{key: undefined, label: 'All Disasters'}] : [],
             ...Object.values(get(falcorCache, [...disasterDetailsPath(ddsView), 'databyIndex'], {}))
-            .filter(d => typeof d['distinct disaster_number as disaster_number'] !== 'object')
-            .map(d => (
-                {
-                    key: d['distinct disaster_number as disaster_number'],
-                    label:`${d.declaration_title} (${d['distinct disaster_number as disaster_number']})`
-                }))
+                .filter(d => typeof d['distinct disaster_number as disaster_number'] !== 'object')
+                .map(d => (
+                    {
+                        key: d['distinct disaster_number as disaster_number'],
+                        label: `${d.declaration_title} (${d['distinct disaster_number as disaster_number']})`
+                    }))
         ]
     }, [falcorCache, view_id, geoid, ddsView, pgEnv]);
 
@@ -101,28 +106,37 @@ export default ({
         setSelected(disasters.filter(gd => value && gd.key === value))
     }, [disasters, value]);
 
+    const Search = () => (
+        <>
+            <i className={`fa fa-search font-light text-xl bg-white pr-2 pt-1 rounded-r-md`}/>
+            <AsyncTypeahead
+                className={'w-full'}
+                isLoading={false}
+                onSearch={handleSearch}
+                minLength={0}
+                id="geography-search"
+                key="geography-search"
+                placeholder="Search for a FEMA Disaster..."
+                options={disasters}
+                labelKey={(option) => `${option?.label}`}
+                defaultSelected={selected}
+                onChange={(selected) => onChangeFilter(selected, setSelected, view_id, disasters, navigate, onChange)}
+                selected={selected}
+                inputProps={{className: 'bg-white w-full p-1 pl-3 rounded-l-md'}}
+                renderMenu={renderMenu}
+            />
+        </>
+    )
     return (
-        <div className={'flex justify-between'}>
-            <label className={'shrink-0 pr-2 py-1 my-1 w-1/4'}>FEMA Disaster:</label>
-            <div className={`flex flex row ${className} w-full shrink my-1`}>
-                <i className={`fa fa-search font-light text-xl bg-white pr-2 pt-1 rounded-r-md`}/>
-                <AsyncTypeahead
-                    className={'w-full'}
-                    isLoading={false}
-                    onSearch={handleSearch}
-                    minLength={0}
-                    id="geography-search"
-                    key="geography-search"
-                    placeholder="Search for a FEMA Disaster..."
-                    options={disasters}
-                    labelKey={(option) => `${option?.label}`}
-                    defaultSelected={selected}
-                    onChange={(selected) => onChangeFilter(selected, setSelected, view_id, disasters, navigate, onChange)}
-                    selected={selected}
-                    inputProps={{className: 'bg-white w-full p-1 pl-3 rounded-l-md'}}
-                    renderMenu={renderMenu}
-                />
+        showLabel ?
+            <div className={'flex justify-between'}>
+                <label className={'shrink-0 pr-2 py-1 my-1 w-1/4'}>FEMA Disaster:</label>
+                <div className={`flex flex row ${className} w-full shrink my-1`}>
+                    <Search/>
+                </div>
+            </div> :
+            <div className={`flex w-full ${className}`}>
+                <Search />
             </div>
-        </div>
     )
 }
