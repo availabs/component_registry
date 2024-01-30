@@ -326,7 +326,7 @@ async function getData({
         await falcor.get(lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})));
         const len = Math.min(
             get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), 0),
-            590);
+            100);
 
         await falcor.get(
             [...dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})),
