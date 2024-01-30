@@ -418,6 +418,7 @@ const Edit = ({value, onChange}) => {
     const {falcor, falcorCache} = useFalcor();
 
     let cachedData = value && isJson(value) ? JSON.parse(value) : {};
+    console.log('geoid', cachedData?.geoid)
     const baseUrl = '/';
 
     const [dataSources, setDataSources] = useState(cachedData?.dataSources || []);
@@ -427,7 +428,7 @@ const Edit = ({value, onChange}) => {
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
     const [disasterNumber, setDisasterNumber] = useState(cachedData?.disasterNumber);
     const [filters, setFilters] = useState(cachedData?.filters || {});
     const [filterValue, setFilterValue] = useState(cachedData?.filterValue || {});

@@ -119,7 +119,7 @@ const Edit = ({value, onChange}) => {
     const [disasterNumber, setDisasterNumber] = useState(cachedData?.disasterNumber);
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
     const [type, setType] = useState(cachedData?.type || 'ihp');
     const [filters, setFilters] = useState(cachedData?.filters || {});
     const [filterValue, setFilterValue] = useState(cachedData?.filterValue || {});

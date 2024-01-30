@@ -81,7 +81,7 @@ const Edit = ({value, onChange, size}) => {
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
     const [numColors, setNumColors] = useState(cachedData?.numColors || 5);
     const [shade, setShade] = useState(cachedData?.shade || 'Oranges');
     const [height, setHeight] = useState(cachedData?.height || 500);

@@ -240,7 +240,7 @@ const Edit = ({value, onChange, size}) => {
     const [hazardScoreThreshold, setHazardScoreThreshold] = useState(cachedData?.hazardScoreThreshold || 70);
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
     const [data, setData] = useState(cachedData?.data);
     const [mapFocus, setMapfocus] = useState(cachedData?.mapFocus);
     const [numColors, setNumColors] = useState(cachedData?.numColors || 5);

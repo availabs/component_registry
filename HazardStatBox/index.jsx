@@ -206,7 +206,7 @@ const Edit = ({value, onChange}) => {
     const [type, setType] = useState(cachedData?.type || 'card');
     const [style, setStyle] = useState(cachedData?.style || 'compact');
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
     const [isTotal, setIsTotal] = useState(cachedData?.isTotal || (hazard === 'total' && type === 'card'));
     const [visibleCols, setVisibleCols] = useState(cachedData?.visibleCols || []);
     const [severeEventThreshold, setSevereEventsThreshold] = useState(cachedData.severeEventThreshold || 1_000_000);
