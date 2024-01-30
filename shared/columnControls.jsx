@@ -105,6 +105,7 @@ const RenderFnControls = ({column, fn, setFn, groupBy, metadata}) => {
         {label: 'None', value: column},
         {label: 'List', value: `array_to_string(array_agg(distinct ${groupableName}), ', ') as ${nonGroupableTitle}`},
         {label: 'Sum', value: `sum(${groupableName}) as ${nonGroupableTitle}`},
+        {label: 'Count', value: `count(${groupableName}) as ${nonGroupableTitle}`},
     ]
 
     const alreadyAggregated = groupableName.includes('count(') || groupableName.includes('sum(');
