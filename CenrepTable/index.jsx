@@ -102,7 +102,7 @@ async function getMeta({
                     const options = JSON.stringify({
                         aggregatedLen,
                         filter: {
-                            ...cachedUniqueValues?.[cleanColName(md.name)] && {[filterAttribute || cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
+                            ...cachedUniqueValues?.[cleanColName(md.name)]?.length && {[filterAttribute || cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
                             ...geoAttribute && geoid?.toString()?.length && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
                             ...(filter || {})
                         }
