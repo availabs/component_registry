@@ -601,7 +601,7 @@ const Edit = ({value, onChange}) => {
 
                     {
                         (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
-                        .find(c => c.name === 'disaster_number') // change this to type like fips-variable
+                        .find(c => c.name.includes('disaster_number')) // change this to type like fips-variable
                         ? <DisasterSearch
                                 view_id={837}
                                 value={disasterNumber}
