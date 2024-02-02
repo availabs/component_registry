@@ -64,6 +64,8 @@ async function getMeta({
     if(metaViewIdLookupCols?.length){
         const falcorCache = falcor.getCache();
         const fetchedData = Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {}));
+        if(!fetchedData?.length) return {};
+
         const cachedUniqueValues = metaViewIdLookupCols.reduce((acc, curr) => {
             const currentColName = fn[curr.name] || curr.name;
 
@@ -76,7 +78,7 @@ async function getMeta({
             }
 
         }, {})
-        // console.log('cd?', cachedUniqueValues, columns)
+        // console.log('cd?', Object.keys(cachedUniqueValues), cachedUniqueValues)
         // console.log('getting meta', metaViewIdLookupCols, metaViewIdLookupCols.map(md => parseJson(md.meta_lookup)))
         const data =
             await metaViewIdLookupCols
@@ -116,9 +118,9 @@ async function getMeta({
                     if(!len) return Promise.resolve();
 
                     const dataPath = ['dama', pgEnv, 'viewsbyId', view_id, 'options', options, 'databyIndex'];
-                    const dataRes = await falcor.get([...dataPath, {from: 0, to: len - 1}, attributes]);
+                    await falcor.chunk([...dataPath, {from: 0, to: len - 1}, attributes]);
                     // console.log('got data', Object.values(get(dataRes, ['json', ...dataPath], {})), keyAttribute)
-                    const data = Object.values(get(dataRes, ['json', ...dataPath], {}))
+                    const data = Object.values(get(falcor.getCache(), dataPath, {}))
                         .reduce((acc, d) => (
                             {
                                 ...acc,
@@ -333,8 +335,6 @@ async function getData({
                 {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
 
         await falcor.get([...attributionPath, attributionAttributes]);
-        console.timeEnd('getData falcor calls ${version}')
-        console.time(`getData getMeta ${version}`)
         const metaLookupByViewId = await getMeta({
                 dataSources,
                 dataSource,
@@ -351,8 +351,6 @@ async function getData({
                 columns: tmpColumns
             }, falcor);
 
-        console.timeEnd('getData getMeta ${version}')
-        console.time(`getData assignMeta ${version}`)
         //console.log('got meta:', metaLookupByViewId)
         tmpData = assignMeta({
             metadata,
@@ -369,11 +367,8 @@ async function getData({
             metaLookupByViewId,
             columns: tmpColumns
         }, falcor);
-        console.timeEnd('getData assignMeta ${version}')
         addTotalRow({showTotal, data: tmpData || data, columns, setLoading: () => {}});
     } else{
-        console.time(`getData noFetch ${version}`)
-
         tmpColumns = visibleCols
             .map(c => metadata.find(md => md.name === c))
             .filter(c => c)
@@ -394,12 +389,10 @@ async function getData({
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
                 }
             });
-        console.timeEnd('getData noFetch ${version}')
     }
 
     const attributionData =  get(falcor.getCache(), attributionPath, {});
 
-    console.timeEnd('getData ${version}')
     return {
         data: fetchData ? tmpData : data, // new data is only available if fetchData is true
         columns: tmpColumns || columns, // always prioritize tmpColumns
