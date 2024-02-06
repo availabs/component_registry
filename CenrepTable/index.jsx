@@ -178,8 +178,7 @@ const assignMeta = ({
                     if(currentMetaLookup?.view_id){
                         const currentViewIdLookup = metaLookupByViewId?.[currentColName] || [];
                         const currentKeys = row[currentColName];
-                        // console.log('current keys', currentKeys, currentViewIdLookup)
-                        if(currentKeys?.includes(',')){
+                        if(typeof currentKeys === 'string' && currentKeys?.includes(',')){
                             row[currentColName] = currentKeys.split(',').map(ck => assign(ck.trim(), currentViewIdLookup[ck.trim()]?.[valueAttribute] || ck.trim(), keepId)).join(', ')
                         }else{
                             row[currentColName] = assign(currentKeys, currentViewIdLookup[currentKeys]?.[valueAttribute] || currentKeys, keepId);
