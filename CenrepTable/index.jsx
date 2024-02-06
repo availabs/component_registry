@@ -514,7 +514,7 @@ const Edit = ({value, onChange}) => {
         }
 
         load()
-    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version]);
+    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, visibleCols, version]);
 
 
     useEffect(() => {
