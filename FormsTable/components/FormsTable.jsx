@@ -67,7 +67,7 @@ export const FormsTable = ({
         )
         .map(row => Object.keys(row).reduce((acc, attr) => {
             const value = getNestedValue(row[attr])
-            return {...acc, [attr]: Array.isArray(value) ? value.join(', ') : value};
+            return {...acc, [attr]: Array.isArray(value) && attr !== 'expand' ? value.join(', ') : value};
         } , {}))
 
     return (

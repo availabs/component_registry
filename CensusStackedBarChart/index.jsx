@@ -148,7 +148,7 @@ const Edit = ({value, onChange}) => {
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
     const [category, setCategory] = useState(cachedData.category || 'Economy');
     const [titles, setTitles] = useState([]);
     const [title, setTitle] = useState(cachedData.title || 'Industries by civilian employed population 16 years and over')

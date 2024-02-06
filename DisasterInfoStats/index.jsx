@@ -72,7 +72,7 @@ const Edit = ({value, onChange}) => {
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(undefined);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
 
     useEffect( () => {
         async function load () {

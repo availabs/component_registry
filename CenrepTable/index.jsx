@@ -64,6 +64,8 @@ async function getMeta({
     if(metaViewIdLookupCols?.length){
         const falcorCache = falcor.getCache();
         const fetchedData = Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {}));
+        if(!fetchedData?.length) return {};
+
         const cachedUniqueValues = metaViewIdLookupCols.reduce((acc, curr) => {
             const currentColName = fn[curr.name] || curr.name;
 
@@ -76,7 +78,7 @@ async function getMeta({
             }
 
         }, {})
-        // console.log('cd?', cachedUniqueValues, columns)
+        // console.log('cd?', Object.keys(cachedUniqueValues), cachedUniqueValues)
         // console.log('getting meta', metaViewIdLookupCols, metaViewIdLookupCols.map(md => parseJson(md.meta_lookup)))
         const data =
             await metaViewIdLookupCols
@@ -102,7 +104,7 @@ async function getMeta({
                     const options = JSON.stringify({
                         aggregatedLen,
                         filter: {
-                            ...cachedUniqueValues?.[cleanColName(md.name)] && {[filterAttribute || cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
+                            ...cachedUniqueValues?.[cleanColName(md.name)]?.length && {[filterAttribute || cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
                             ...geoAttribute && geoid?.toString()?.length && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
                             ...(filter || {})
                         }
@@ -116,9 +118,9 @@ async function getMeta({
                     if(!len) return Promise.resolve();
 
                     const dataPath = ['dama', pgEnv, 'viewsbyId', view_id, 'options', options, 'databyIndex'];
-                    const dataRes = await falcor.get([...dataPath, {from: 0, to: len - 1}, attributes]);
+                    await falcor.chunk([...dataPath, {from: 0, to: len - 1}, attributes]);
                     // console.log('got data', Object.values(get(dataRes, ['json', ...dataPath], {})), keyAttribute)
-                    const data = Object.values(get(dataRes, ['json', ...dataPath], {}))
+                    const data = Object.values(get(falcor.getCache(), dataPath, {}))
                         .reduce((acc, d) => (
                             {
                                 ...acc,
@@ -176,8 +178,7 @@ const assignMeta = ({
                     if(currentMetaLookup?.view_id){
                         const currentViewIdLookup = metaLookupByViewId?.[currentColName] || [];
                         const currentKeys = row[currentColName];
-                        // console.log('current keys', currentKeys, currentViewIdLookup)
-                        if(currentKeys?.includes(',')){
+                        if(typeof currentKeys === 'string' && currentKeys?.includes(',')){
                             row[currentColName] = currentKeys.split(',').map(ck => assign(ck.trim(), currentViewIdLookup[ck.trim()]?.[valueAttribute] || ck.trim(), keepId)).join(', ')
                         }else{
                             row[currentColName] = assign(currentKeys, currentViewIdLookup[currentKeys]?.[valueAttribute] || currentKeys, keepId);
@@ -326,15 +327,13 @@ async function getData({
         await falcor.get(lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})));
         const len = Math.min(
             get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), 0),
-            590);
+            100);
 
         await falcor.get(
             [...dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})),
                 {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
 
         await falcor.get([...attributionPath, attributionAttributes]);
-        console.timeEnd('getData falcor calls ${version}')
-        console.time(`getData getMeta ${version}`)
         const metaLookupByViewId = await getMeta({
                 dataSources,
                 dataSource,
@@ -351,8 +350,6 @@ async function getData({
                 columns: tmpColumns
             }, falcor);
 
-        console.timeEnd('getData getMeta ${version}')
-        console.time(`getData assignMeta ${version}`)
         //console.log('got meta:', metaLookupByViewId)
         tmpData = assignMeta({
             metadata,
@@ -369,11 +366,8 @@ async function getData({
             metaLookupByViewId,
             columns: tmpColumns
         }, falcor);
-        console.timeEnd('getData assignMeta ${version}')
         addTotalRow({showTotal, data: tmpData || data, columns, setLoading: () => {}});
     } else{
-        console.time(`getData noFetch ${version}`)
-
         tmpColumns = visibleCols
             .map(c => metadata.find(md => md.name === c))
             .filter(c => c)
@@ -394,12 +388,10 @@ async function getData({
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
                 }
             });
-        console.timeEnd('getData noFetch ${version}')
     }
 
     const attributionData =  get(falcor.getCache(), attributionPath, {});
 
-    console.timeEnd('getData ${version}')
     return {
         data: fetchData ? tmpData : data, // new data is only available if fetchData is true
         columns: tmpColumns || columns, // always prioritize tmpColumns
@@ -418,6 +410,7 @@ const Edit = ({value, onChange}) => {
     const {falcor, falcorCache} = useFalcor();
 
     let cachedData = value && isJson(value) ? JSON.parse(value) : {};
+    console.log('geoid', cachedData?.geoid)
     const baseUrl = '/';
 
     const [dataSources, setDataSources] = useState(cachedData?.dataSources || []);
@@ -427,7 +420,7 @@ const Edit = ({value, onChange}) => {
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid || '36');
+    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
     const [disasterNumber, setDisasterNumber] = useState(cachedData?.disasterNumber);
     const [filters, setFilters] = useState(cachedData?.filters || {});
     const [filterValue, setFilterValue] = useState(cachedData?.filterValue || {});
@@ -521,7 +514,7 @@ const Edit = ({value, onChange}) => {
         }
 
         load()
-    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version]);
+    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, visibleCols, version]);
 
 
     useEffect(() => {
@@ -600,7 +593,7 @@ const Edit = ({value, onChange}) => {
 
                     {
                         (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
-                        .find(c => c.name === 'disaster_number') // change this to type like fips-variable
+                        .find(c => c.name.includes('disaster_number')) // change this to type like fips-variable
                         ? <DisasterSearch
                                 view_id={837}
                                 value={disasterNumber}

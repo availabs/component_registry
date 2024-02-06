@@ -51,7 +51,7 @@ const getStateData = async ({ falcor, pgEnv }) => {
   if(len > 0){
     const geoRouteIndices = {from: 0, to:  len - 1}
     const indexRes = await falcor.get([...geoRoute, 'databyIndex', geoRouteIndices, geoAttributes]);
-    return Object.values(get(indexRes, ['json', ...geoRoute, 'databyIndex'], {}));
+    return Object.values(get(indexRes, ['json', ...geoRoute, 'databyIndex'], {})).filter(d => d.geoid);
   }
 }
 const getCountyData = async ({ falcor, pgEnv, statesData, setGeoData }) => {
@@ -103,7 +103,7 @@ export default ({
   }, [pgEnv, falcor]);
 
   useEffect(() => {
-    setSelected(geoData.filter(gd => value && gd.geoid === value))
+    setSelected(geoData.filter(gd => (value || value === '') && gd.geoid === value))
   }, [geoData, value]);
 
   const Search = () => (

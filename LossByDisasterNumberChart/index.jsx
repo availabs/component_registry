@@ -26,7 +26,7 @@ async function getData({
         disasterNamePath = (view_id) => ['dama', pgEnv,  "viewsbyId", view_id, "options"];
 
     const res = await falcor.get(dependencyPath);
-    const deps = get(res, ["json", ...dependencyPath, "dependencies"]);
+    const deps = get(res, ["json", ...dependencyPath, "dependencies"], []);
 
     const fusionView = deps.find(d => d.type === "fusion");
     if(!fusionView) {
