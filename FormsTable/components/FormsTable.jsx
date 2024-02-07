@@ -19,6 +19,7 @@ export const FormsTable = ({
     extFiltersDefaultOpen,
     extFilterValues = {},
     setExtFilterValues,
+    showCsvDownload
 }) => {
     const [filters, setFilters] = useState(extFilterValues);
 
@@ -89,6 +90,7 @@ export const FormsTable = ({
                     striped={striped}
                     sortBy={sortColRaw}
                     sortOrder={Object.values(sortBy)?.[0] || 'asc'}
+                    csvDownload={showCsvDownload}
                     fetchData={fetchData}
                 />
             </div>
