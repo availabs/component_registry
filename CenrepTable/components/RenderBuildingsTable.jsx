@@ -49,14 +49,16 @@ export const RenderBuildingsTable = ({
     })
     const sortColRaw = updatedColumns.find(c => c.accessor === Object.keys(sortBy)?.[0])?.accessor;
 
-    const filteredData = data.filter(row =>
-        !Object.keys(filterValue || {}).length ||
-        Object.keys(filterValue)
-            .reduce((acc, col) => {
-                const value = getNestedValue(row[col]);
-                return acc && value?.toString().toLowerCase().includes(filterValue[col]?.toLowerCase())
-            }, true)
-    )
+    const filteredData =
+        data
+    //         .filter(row =>
+    //     !Object.keys(filterValue || {}).length ||
+    //     Object.keys(filterValue)
+    //         .reduce((acc, col) => {
+    //             const value = getNestedValue(row[col]);
+    //             return acc && value?.toString().toLowerCase().includes(filterValue[col]?.toLowerCase())
+    //         }, true)
+    // )
         .filter(row => !Object.keys(filters)?.length ||
             Object.keys(filters)
                 .filter(f => filters[f].length)

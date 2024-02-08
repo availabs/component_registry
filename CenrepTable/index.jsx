@@ -366,7 +366,23 @@ async function getData({
             metaLookupByViewId,
             columns: tmpColumns
         }, falcor);
-        addTotalRow({showTotal, data: tmpData || data, columns, setLoading: () => {}});
+
+        tmpData = (tmpData || data).filter(row =>
+            row.totalRow ||
+            !Object.keys(filterValue || {}).length ||
+            Object.keys(filterValue)
+                .reduce((acc, col) => {
+                    const value = getNestedValue(row[col]);
+                    return acc && value?.toString().toLowerCase().includes(filterValue[col]?.toLowerCase())
+                }, true)
+        );
+        console.log('data?', showTotal, tmpData, filterValue)
+        addTotalRow({
+            showTotal,
+            data: tmpData,
+            columns: tmpColumns,
+            filterValue,
+            setLoading: () => {}});
     } else{
         tmpColumns = visibleCols
             .map(c => metadata.find(md => md.name === c))
@@ -514,7 +530,7 @@ const Edit = ({value, onChange}) => {
         }
 
         load()
-    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, visibleCols, version]);
+    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, showTotal, filterValue, visibleCols, version]);
 
 
     useEffect(() => {
