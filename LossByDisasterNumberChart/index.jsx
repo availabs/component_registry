@@ -14,7 +14,7 @@ import {ButtonSelector} from "../shared/buttonSelector.jsx";
 async function getData({
                            ealSourceId,
                            ealViewId,
-                           fusionSourceId,
+                           fusionSourceId = 336,
                            fusionViewId,
                            consequence,
                            hazard,
@@ -32,6 +32,8 @@ async function getData({
     if(!fusionView) {
         return {};
     }
+
+    //console.log('test 123', fusionSourceId, fusionView.view_id)
 
     const dataPath = hazard !== 'total' ?
         ["fusion", pgEnv, "source", fusionSourceId, "view", fusionView.view_id, "byGeoid", geoid,

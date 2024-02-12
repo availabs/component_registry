@@ -29,15 +29,17 @@ export function Header ({position = 'above',bgImg = '/img/header.png', logo = '/
 }
 
 const getData = ({position='above',bgImg='/img/header.png', logo='/img/nygov-logo.png',bgClass = '', title='MitigateNY', subTitle='New York State Hazard Mitigation Plan', note='2023 Update'}) =>{
-  return {
-    position,
-    bgImg,
-    bgClass,
-    logo,
-    title,
-    sunTitle,
-    note
-  }
+  return new Promise((resolve, reject) => {
+    resolve({
+      position,
+      bgImg,
+      bgClass,
+      logo,
+      title,
+      subTitle,
+      note
+    })
+  })
 }
 
 const Edit = ({value, onChange, size}) => {
