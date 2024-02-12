@@ -267,7 +267,7 @@ async function getData({
     // console.log('getData called. fetchData:', fetchData, dataSource, version)
     //console.log('getData called. fetchData:', fetchData)
     
-    console.time(`getData ${version}`)
+    //console.time(`getData ${version}`)
 
     const options = ({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol}) => {
         return JSON.stringify({
@@ -308,7 +308,7 @@ async function getData({
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
                     filter: col?.filter || filters?.[col?.name],
-                    extFilter: extFilterCols?.includes(col.name),
+                    extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
                     openOut: (openOutCols || [])?.includes(col?.name),
                     link: linkCols?.[col?.name],
@@ -366,7 +366,23 @@ async function getData({
             metaLookupByViewId,
             columns: tmpColumns
         }, falcor);
-        addTotalRow({showTotal, data: tmpData || data, columns, setLoading: () => {}});
+
+        tmpData = (tmpData || data).filter(row =>
+            row.totalRow ||
+            !Object.keys(filterValue || {}).length ||
+            Object.keys(filterValue)
+                .reduce((acc, col) => {
+                    const value = getNestedValue(row[col]);
+                    return acc && value?.toString().toLowerCase().includes(filterValue[col]?.toLowerCase())
+                }, true)
+        );
+        // console.log('data?', showTotal, tmpData, filterValue)
+        addTotalRow({
+            showTotal,
+            data: tmpData,
+            columns: tmpColumns,
+            filterValue,
+            setLoading: () => {}});
     } else{
         tmpColumns = visibleCols
             .map(c => metadata.find(md => md.name === c))
@@ -380,7 +396,7 @@ async function getData({
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
                     filter: col?.filter || filters?.[col?.name],
-                    extFilter: extFilterCols?.includes(col.name),
+                    extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
                     openOut: (openOutCols || [])?.includes(col?.name),
                     link: linkCols?.[col?.name],
@@ -410,7 +426,7 @@ const Edit = ({value, onChange}) => {
     const {falcor, falcorCache} = useFalcor();
 
     let cachedData = value && isJson(value) ? JSON.parse(value) : {};
-    console.log('geoid', cachedData?.geoid)
+    //console.log('geoid', cachedData?.geoid)
     const baseUrl = '/';
 
     const [dataSources, setDataSources] = useState(cachedData?.dataSources || []);
@@ -514,7 +530,7 @@ const Edit = ({value, onChange}) => {
         }
 
         load()
-    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, visibleCols, version]);
+    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, showTotal, filterValue, visibleCols, version]);
 
 
     useEffect(() => {

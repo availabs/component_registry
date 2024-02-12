@@ -34,7 +34,7 @@ async function getData({   formsConfig, actionType, form,
                            geoAttribute, geoid,
                            pageSize, sortBy, groupBy, fn, notNull, colSizes,
                            filters, filterValue, visibleCols, hiddenCols, extFilterCols, extFilterValues, openOutCols,
-                           colJustify, striped, extFiltersDefaultOpen, customColName
+                           colJustify, striped, extFiltersDefaultOpen, customColName, showCsvDownload
                        }, falcor) {
     const d = await dmsDataLoader(
         {
@@ -119,7 +119,7 @@ async function getData({   formsConfig, actionType, form,
         geoid,
         pageSize, sortBy, groupBy, fn, notNull, hiddenCols, colSizes, form, formsConfig,
         data, columns, filters, filterValue, visibleCols, geoAttribute, actionType,
-        extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen, customColName
+        extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen, customColName, showCsvDownload
     }
 }
 
@@ -152,6 +152,7 @@ const Edit = ({value, onChange}) => {
     const [striped, setStriped] = useState(cachedData?.striped || false);
     const [extFiltersDefaultOpen, setExtFiltersDefaultOpen] = useState(cachedData?.extFiltersDefaultOpen || false);
     const [customColName, setCustomColName] = useState(cachedData?.customColName || {})
+    const [showCsvDownload, setShowCsvDownload] = useState(cachedData?.showCsvDownload || false)
 
     useEffect(() => {
         async function getFormsConfig() {
@@ -226,7 +227,7 @@ const Edit = ({value, onChange}) => {
                 pageSize, sortBy, groupBy, fn, notNull, colSizes,
                 filters, filterValue, visibleCols, hiddenCols,
                 extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
-                customColName
+                customColName, showCsvDownload
             }, falcor);
 
             onChange(JSON.stringify({
@@ -244,7 +245,7 @@ const Edit = ({value, onChange}) => {
         pageSize, sortBy, groupBy, fn, notNull, colSizes,
         filters, filterValue, visibleCols, hiddenCols,
         extFilterCols, openOutCols, colJustify, striped, extFiltersDefaultOpen,
-        customColName
+        customColName, showCsvDownload
     ]);
 
     return (
@@ -323,7 +324,8 @@ const Edit = ({value, onChange}) => {
 
 
                     <div className={'block w-full flex mt-1'}>
-                        <label className={'align-bottom shrink-0pr-2 py-2 my-1 w-1/4'}> External filters default open: </label>
+                        <label className={'align-bottom shrink-0pr-2 py-2 my-1 w-1/4'}> External filters default
+                            open: </label>
                         <div className={'align-bottom p-2 pl-0 my-1 rounded-md shrink self-center'}>
                             <Switch
                                 key={`striped-table`}
@@ -355,6 +357,38 @@ const Edit = ({value, onChange}) => {
                         </div>
                     </div>
 
+                    <div className={'block w-full flex mt-1'}>
+                        <label className={'align-bottom shrink-0pr-2 py-2 my-1 w-1/4'}> Show CSV Download: </label>
+                        <div className={'align-bottom p-2 pl-0 my-1 rounded-md shrink self-center'}>
+                            <Switch
+                                key={`striped-table`}
+                                checked={showCsvDownload}
+                                onChange={e => setShowCsvDownload(!showCsvDownload)}
+                                className={
+                                    `
+                                ${showCsvDownload ? 'bg-indigo-600' : 'bg-gray-200'}
+                                relative inline-flex 
+                                 h-4 w-10 shrink
+                                 cursor-pointer rounded-full border-2 border-transparent 
+                                 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0.5
+                                 focus:ring-indigo-600 focus:ring-offset-2`
+                                }
+                            >
+                                <span className="sr-only">toggle External filters default open by</span>
+                                <span
+                                    aria-hidden="true"
+                                    className={
+                                        `
+                                    ${showCsvDownload ? 'translate-x-5' : 'translate-x-0'}
+                                    pointer-events-none inline-block 
+                                    h-3 w-4
+                                    transform rounded-full bg-white shadow ring-0 t
+                                    transition duration-200 ease-in-out`
+                                    }
+                                />
+                            </Switch>
+                        </div>
+                    </div>
 
                     <RenderColumnControls
                         cols={formsConfig?.attributes?.filter(c => ['data-variable', 'meta-variable', 'geoid-variable'].includes(c.display))?.map(c => c.name)}
@@ -409,6 +443,7 @@ const Edit = ({value, onChange}) => {
                                 sortBy={sortBy}
                                 striped={striped}
                                 extFiltersDefaultOpen={extFiltersDefaultOpen}
+                                showCsvDownload={showCsvDownload}
                                 baseUrl={baseUrl}
                             />
 
@@ -543,6 +578,11 @@ export default {
             name: 'customColName',
             hidden: true,
             default: {}
+        },
+        {
+            name: 'showCsvDownload',
+            hidden: true,
+            default: false
         },
     ],
     getData,
