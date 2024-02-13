@@ -12,14 +12,14 @@ import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimpl
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 
 async function getData({
-                           ealSourceId,
-                           ealViewId,
-                           fusionSourceId = 336,
-                           fusionViewId,
-                           consequence,
-                           hazard,
-                           geoid,
-                       }, falcor){
+       ealSourceId,
+       ealViewId,
+       fusionSourceId = 336,
+       fusionViewId,
+       consequence,
+       hazard,
+       geoid,
+   }, falcor){
 
     const dependencyPath = ["dama", pgEnv, "viewDependencySubgraphs", "byViewId", ealViewId];
     const disasterNameAttributes = ['distinct disaster_number as disaster_number', 'declaration_title'],
