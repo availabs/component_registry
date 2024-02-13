@@ -317,7 +317,7 @@ async function getData({
                 }
             });
 
-        const disasterNumberOriginalCol = tmpColumns.find(c => c.name?.includes('disaster_number'))?.name || 'disaster_number'
+        const disasterNumberOriginalCol = tmpColumns.find(c => c.name?.includes('disaster_number') && !c.name?.toLowerCase().includes('CASE'))?.name || 'disaster_number'
         const disasterNumberCol = (fn?.[disasterNumberOriginalCol] || disasterNumberOriginalCol);
 
         // console.log('columns created')
@@ -609,7 +609,7 @@ const Edit = ({value, onChange}) => {
 
                     {
                         (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
-                        .find(c => c.name.includes('disaster_number')) // change this to type like fips-variable
+                        .find(c => c.name.includes('disaster_number') && !c.name.toLowerCase().includes('CASE')) // change this to type like fips-variable
                         ? <DisasterSearch
                                 view_id={837}
                                 value={disasterNumber}
