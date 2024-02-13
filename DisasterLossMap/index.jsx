@@ -401,11 +401,7 @@ const View = ({value}) => {
     return (
         <div className='relative w-full p-6'>
             {
-               data.img  ?
-                    <div className='h-80vh flex-1 flex flex-col'>
-                        <img alt='Choroplath Map' src={get(data, ['img'])}/>
-                        
-                    </div> : 
+
                     <div className={`flex-none w-full p-1`} style={{height: `${data.height}px`}}>
                         <ViewMap
                             layerProps={layerProps}
