@@ -73,7 +73,10 @@ async function getMeta({
                 ...acc,
                 [cleanColName(currentColName)]:
                     [
-                        ...new Set(fetchedData.map(fd => fd[currentColName])) // split on comma?
+                        ...new Set(
+                            fetchedData.map(fd => fd[currentColName])
+                                .filter(fd => !(fd['$type'] === 'atom' && !fd.value)) // filtering nulls
+                        ) // split on comma?
                     ]
             }
 
