@@ -76,6 +76,9 @@ async function getMeta({
                         ...new Set(
                             fetchedData.map(fd => fd[currentColName])
                                 .filter(fd => !(fd['$type'] === 'atom' && !fd.value)) // filtering nulls
+                                .reduce((acc, fd) => {
+                                    return fd?.includes(',') ? [...acc, ...fd.split(',').map(f => f.trim())] : [...acc, fd]
+                                } , [])
                         ) // split on comma?
                     ]
             }
@@ -187,7 +190,13 @@ const assignMeta = ({
                             row[currentColName] = assign(currentKeys, currentViewIdLookup[currentKeys]?.[valueAttribute] || currentKeys, keepId);
                         }
                     }else{
-                        row[currentColName] = assign(row[currentColName], currentMetaLookup[row[currentColName]] || row[currentColName], keepId);
+                        const currentKeys = row[currentColName];
+                        if(typeof currentKeys === 'string' && currentKeys?.includes(',')){
+                            row[currentColName] = currentKeys.split(',').map(ck => assign(ck.trim(), currentMetaLookup[ck.trim()] || ck.trim(), keepId)).join(', ')
+                        }else{
+                            row[currentColName] = assign(row[currentColName], currentMetaLookup[row[currentColName]] || row[currentColName], keepId);
+                        }
+
                     }
                 })
                 return row;
