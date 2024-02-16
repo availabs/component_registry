@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import get from "lodash/get";
 import { useFalcor } from '~/modules/avl-falcor';
-import { pgEnv } from "~/utils/";
+import { pgEnv } from "~/utils";
 import { isJson } from "~/utils/macros.jsx";
 import { RenderBarChart } from "./components/RenderBarChart.jsx";
 import { ProcessDataForMap } from "./utils";

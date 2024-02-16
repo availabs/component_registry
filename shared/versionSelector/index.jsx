@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo} from "react"
 import get from "lodash/get";
 import { useFalcor } from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils/index.js";
+import {pgEnv} from "~/utils";
 import {getAttributes, SourceAttributes, ViewAttributes} from "~/utils/attributes.jsx";
 
 export default function VersionSelector ({ source_id, view_id, onChange}) {

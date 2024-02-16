@@ -5,7 +5,7 @@ import {RenderCalloutBox} from "./components/RenderCalloutBox.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import { dmsDataTypes } from "~/modules/dms/src"
 import get from "lodash/get.js";
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 import {useFalcor} from "~/modules/avl-falcor/index.jsx";
 import {Loading} from "~/utils/loading.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
