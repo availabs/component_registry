@@ -13,11 +13,34 @@ import {getColorRange} from "~/pages/DataManager/utils/color-ranges.js";
 import ckmeans from '~/utils/ckmeans';
 import {RenderMap} from "../shared/Map/RenderMap.jsx";
 import {EditMap,ViewMap} from "../shared/TemplateMap";
+import { SimpleMapLayer } from "../shared/TemplateMap/layers/simpleLayer"
 import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimple.jsx";
 import {hazardsMeta} from "~/utils/colors.jsx";
 import {Attribution} from "../shared/attribution.jsx";
 import {useNavigate} from "react-router-dom";
 
+
+class CountyMapLayer extends SimpleMapLayer {
+    onHover = {
+        layers: ["counties", "tracts"],
+        HoverComp: ({ data, layer }) => {
+          return (
+            <div style={{ maxHeight: "300px" }} className={`rounded relative p-4 overflow-auto scrollbarXsm bg-white`}>
+              <div className='text-blue-500 font-bold'>{data?.county}</div>
+              <div className='text-xs text-slate-400 uppercase font-bold'>Plan status</div>
+              <div className='text-sm'>{data?.plan_status}</div>
+              <div className='text-xs text-slate-400 uppercase font-bold'>Plan Approval Date</div>
+              <div className='text-sm'>{data?.approval_date}</div>
+            </div>
+          );
+        },
+        callback: (layerId, features, lngLat) => {
+          let { data } = this.props;
+          let record = data.find(d => ''+d.geoid === ''+features?.[0]?.properties?.geoid) || {}
+          return record
+        }
+  };
+}
 
 /*
 
@@ -37,9 +60,24 @@ approved > 1 years : green
 
 */
 
-const defaultColors = ['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837']
+const defaultColors = ['#a50026','#fee08b','#1a9850']
+//  ['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837']
 
-
+const CountyStatusLegend = () => (
+    <div className='absolute top-4 left-4 bg-white p-4'>
+        County LHMP Status
+        {[
+            {name: 'Approved Plan', color: '#1a9850'},
+            {name: 'Plan Update in Progress', color: '#fee08b'},
+            {name: 'No Approved Plan', color: '#a50026'}
+        ].map(d => (
+            <div className='flex items-center py-1'>
+                <div className='h-6 w-6 rounded' style={{backgroundColor:d.color}} />
+                <div className = 'flex-1 px-2 text-sm text-slate-600'> {d.name} </div>
+            </div>
+        ))}
+    </div>
+)
 
 
 const getDateDiff = (date) => {
@@ -55,12 +93,38 @@ const getDateDiff = (date) => {
 
 
 
-async function getData({geoid, data = [], columns = [], geoAttribute, colors = defaultColors, size = 1, height=500, ...rest}, falcor) {
+async function getData({geoid,  version,  colors = defaultColors, size = 1, height=500, ...rest}, falcor) {
     //return {}
+    const geoAttribute = 'geoid'
+    // console.log('version', version)
+    version = 880
+    const columns = ['county','approval_date', 'under_fema_review_yes_no', 'update_in_progress'];
+
+    const options = JSON.stringify({
+        filter: {...geoAttribute && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]}},
+    });
+    const lenPath = ['dama', pgEnv, 'viewsbyId', version, 'options', options, 'length'];
+    const dataPath = ['dama', pgEnv, 'viewsbyId', version, 'options', options, 'databyIndex'];
+    //const dataSourceByCategoryPath = ['dama', pgEnv, 'sources', 'byCategory', category];
+    const attributionPath = ['dama', pgEnv, 'views', 'byId', version, 'attributes'],
+        attributionAttributes = ['source_id', 'view_id', 'version', '_modified_timestamp'];
+
+
+    const lendata = await falcor.get(lenPath);
+    const len = get(lendata, ['json',...lenPath], 0);
+
     
+
+    const dataResponse = await falcor.get([...dataPath, {from: 0, to: len - 1}, [geoAttribute, ...columns]]);
+    const attrResp = await falcor.get([...attributionPath, attributionAttributes]);
+    const attributionData = get(attrResp, ['json', ...attributionPath], {});
+
+    const data =  Object.values(get(dataResponse, ['json',...dataPath], {}))
+  
+
     if (!data?.length || !colors?.length) return {};
 
-    const geoids = data.map(d => d[geoAttribute]);
+    const geoids = data.map(d => d[geoAttribute] + '');
     const stateFips = (geoid?.substring(0, 2) || geoids[0] || '00').substring(0, 2);
     const geoColors = {}
     const geoLayer = geoids[0]?.toString().length === 5 ? 'counties' : 'tracts';
@@ -69,21 +133,28 @@ async function getData({geoid, data = [], columns = [], geoAttribute, colors = d
         return getDateDiff(d[columns?.[0]]) || -5
     })
 
-    console.log('data diff', diffData)
-
 
     const colorScale = scaleThreshold()
-        .domain([-5,-4,-3,-2,-1,1,2,3,4,5])
-        .range(['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837']);
+        .domain([-22,-0.01,0])
+        .range(['#efb700','#d73027','#1a9850']);
     
-    const domain = [-5,-4,-3,-2,-1,1,2,3,4,5]
+    const domain = [-22,-1,0]
 
     data.forEach(record => {
-        const value = (getDateDiff(record[columns?.[0]]) || -5);
-        geoColors[record[geoAttribute]] = value ? colorScale(value) : '#d0d0ce';
+        let value = (getDateDiff(record['approval_date']) || -5);
+        record.plan_status = "Plan Approved"
+        if(value < 0 && (record['under_fema_review_yes_no'] || record['update_in_progress'])) {
+            value = -23
+            record.plan_status = 'Update in Progress'
+        } else if (value < 0) {
+          record.plan_status = "No Plan"
+        } else {
+           record.plan_status = "Plan Approved"
+        }
+        geoColors[(record[geoAttribute]+'')] = value ? colorScale(value) : '#d0d0ce';
     })
 
-    const attributionData = {} //get(falcorCache, ['dama', pgEnv, 'views', 'byId', typeId, 'attributes'], {});
+    
     //console.log('test', geoColors)
     //const geoids = [...new Set(Object.keys(geoColors || {}).map(geoId => geoId.substring(0, 5)))]
 
@@ -131,7 +202,7 @@ async function getData({geoid, data = [], columns = [], geoAttribute, colors = d
     
     //console.log('mapfocus', geom ? get(JSON.parse(geom), 'bbox', null ) : null)
     const title = 'County Plan Status Map'
-            
+    
     return {
         //view: metaData[type],
         geoid,
@@ -143,15 +214,8 @@ async function getData({geoid, data = [], columns = [], geoAttribute, colors = d
         size,
         height,
         colors,
-        // legend: {
-        //     size,
-        //     domain, 
-        //     range: colors, 
-        //     title, 
-        //     show: metaData[type].legend !== false
-        // },
-        // mapFocus: geom ? get(JSON.parse(geom), 'bbox', null ) : null,
-        showLegend:  true// metaData[type].legend !== false
+        mapFocus: [-79.761313,40.477399,-71.777491,45.01084],
+        data
     }
 }
 
@@ -165,11 +229,10 @@ const Edit = ({value, onChange, size}) => {
 
     const [dataSources, setDataSources] = useState(cachedData?.dataSources || []);
     const [dataSource, setDataSource] = useState(cachedData?.dataSource);
-    const [version, setVersion] = useState(cachedData?.version);
-
+    const [version, setVersion] = useState(cachedData?.version || 880);
+    const [geoAttribute, setGeoAttribute] = useState(cachedData?.geoAttribute || 'geoid');
     // const [attribute, setAttribute] = useState(/*cachedData?.attribute ||*/ 'plan_approval_date');
-    const attribute = 'plan_approval_date';
-    const [geoAttribute, setGeoAttribute] = useState(cachedData?.geoAttribute);
+    
 
 
     const [loading, setLoading] = useState(true);
@@ -180,26 +243,21 @@ const Edit = ({value, onChange, size}) => {
         data: cachedData?.data || [],
         type: cachedData?.type || 'total_losses',
         typeId: cachedData?.typeId,
-        mapFocus: cachedData.mapFocus,
+        mapFocus: cachedData.mapFocus || [-79.761313,40.477399,-71.777491,45.01084],
         numColors: cachedData?.numColors || 5,
         colors: cachedData?.colors || defaultColors,
         title: cachedData?.title || 'County Plan Status Map',
         height: cachedData?.height || 500,
+        attributionData: cachedData.attributionData || {},
         size: 1,
-        stateView: 285
+        
     })
   
-    const stateView = 285; // need to pull this based on categories
-    const category = 'County Descriptions';
+    const category = 'county statuses';
 
-    const options = JSON.stringify({
-        filter: {...geoAttribute && {[`substring(${geoAttribute}::text, 1, ${compData?.geoid?.toString()?.length})`]: [compData?.geoid]}},
-    });
-    const lenPath = ['dama', pgEnv, 'viewsbyId', version, 'options', options, 'length'];
-    const dataPath = ['dama', pgEnv, 'viewsbyId', version, 'options', options, 'databyIndex'];
+    
     const dataSourceByCategoryPath = ['dama', pgEnv, 'sources', 'byCategory', category];
-    const attributionPath = ['dama', pgEnv, 'views', 'byId', version, 'attributes'],
-        attributionAttributes = ['source_id', 'view_id', 'version', '_modified_timestamp'];
+    
 
     const navigate = useNavigate();
 
@@ -216,100 +274,15 @@ const Edit = ({value, onChange, size}) => {
         getData()
     }, []);
 
-    useEffect(() => {
-        const geoAttribute =
-            (
-                dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns  ||
-                dataSources.find(ds => ds.source_id === dataSource)?.metadata ||
-                [])
-                .find(c => c.display === 'geoid-variable');
-        geoAttribute?.name && setGeoAttribute(geoAttribute?.name);
-    }, [dataSources, dataSource]);
-
-    useEffect(() => {
-        async function getData() {
-            if(!attribute || !geoAttribute || !version || !dataSource) {
-                !dataSource && setStatus('Please select a Datasource.');
-                !version && setStatus('Please select a version.');
-                !geoAttribute?.length && setStatus('No geo attribute found.');
-                !attribute?.length && setStatus('Please select columns.');
-                setLoading(false);
-                return;
-            }
-            setLoading(true);
-            setStatus(undefined);
-            // setTitle(metaData.title(hazardsMeta[hazard]?.name, attribute, consequence))
-
-            await falcor.get(lenPath);
-            const len = get(falcor.getCache(), lenPath, 0);
-
-            await falcor.get([...dataPath, {from: 0, to: len - 1}, [geoAttribute, attribute]]);
-            await falcor.get([...attributionPath, attributionAttributes]);
-
-            setLoading(false);
-
-        }
-
-        getData()
-    }, [dataSource, version, geoAttribute, attribute]);
-
-    useEffect(() => {
-        setCompData({ ...compData, data: Object.values(get(falcorCache, dataPath, {}))}) ;
-    }, [falcorCache, dataSource, version, geoAttribute, attribute])
-
-    // useEffect(() => {
-    //     async function getData() {
-    //         const {geoid} = compData
-    //         if (!geoid || !attribute) {
-    //             !geoid && setStatus('Please Select a Geography.');
-    //             return Promise.resolve();
-    //         } else {
-    //             setStatus(undefined)
-    //         }
-    //         setLoading(true);
-    //         setStatus(undefined);
-
-    //         const geomColTransform = [`st_asgeojson(st_envelope(ST_Simplify(geom, ${false && geoid?.toString()?.length === 5 ? `0.1` : `0.5`})), 9, 1) as geom`],
-    //         geoIndices = {from: 0, to: 0},
-    //         stateFips = get(data, [0, 'geoid']) || geoid?.substring(0, 2),
-    //         geoPath = (view_id) =>
-    //             ['dama', pgEnv, 'viewsbyId', view_id,
-    //                 'options', JSON.stringify({filter: {geoid: [false && geoid?.toString()?.length === 5 ? geoid : stateFips.substring(0, 2)]}}),
-    //                 'databyIndex'
-    //             ];
-    //         const geomRes = await falcor.get([...geoPath(stateView), geoIndices, geomColTransform]);
-    //         const geom = get(geomRes, ["json", ...geoPath(stateView), 0, geomColTransform]);
-
-    //         if (geom) {
-    //             setMapfocus(get(JSON.parse(geom), 'bbox'));
-    //         }
-    //         setLoading(false);
-    //     }
-
-    //     getData()
-    // }, [compData, attribute, dataSource]);
-
-    const attributionData = get(falcorCache, attributionPath, {});
-
-    // const {geoColors, domain, geoLayer} =
-    //     getGeoColors({});
-
-    // console.log('testing', geoColors, domain, geoLayer)
-
-    // ----------------- Map Sources Code---------------
-    // useEffect(() => {
-    //     // if data is set outside map delete image
-    //     delete compData.img;
-    //     setCompData({...compData, ...cachedData})   
-    // },[cachedData])
-
+    
     
     useEffect(() => {
         const load = async () => {
+            console.log('load on compdataChange')
             const {
-                geoid,data, colors, height, size
+                geoid, colors, height, size
             } = compData
-            //console.log(geoid, disasterNumber)
+           
             
             if (!geoid ) {
                 console.log('not going to load mfer')
@@ -322,35 +295,36 @@ const Edit = ({value, onChange, size}) => {
                 //console.log('EDIT: get data',geoid,disasterNumber,ealViewId, type)
         
                 let out = await getData({
-                    geoid, 
-                    data, 
-                    columns: [attribute], 
-                    geoAttribute, 
+                    geoid,
+                    version,
                     colors,
                     size,
                     height
                 }, falcor)
-                console.log(
-                    'testing got data', value === JSON.stringify({...cachedData, ...out}), 
-                    'args', )
+                // console.log(
+                //     'testing got data', value === JSON.stringify({...cachedData, ...out}), 
+                //     'args', )
                 if(value !== JSON.stringify({...cachedData, ...out})) {
+                    //console.log('changing value')
                     onChange(JSON.stringify({...cachedData, ...out}))
                 }
                 setLoading(false)
             }
         }
         load();
-    }, [compData]);
+    }, [compData, version]);
 
     const layerProps = useMemo(() => { 
-        console.log('setting Layer Props', cachedData)
+        //console.log('setting Layer Props', cachedData)
         return {
             ccl: {
                 ...cachedData,
                 change: e => {
-                    
+                    // turn off image saving
+                    e.img = undefined
                     if(value !== JSON.stringify({...cachedData, ...e})){
-                        console.log('change from map')
+                        //console.log('change from map', e)
+
                         onChange(JSON.stringify({...cachedData,...e}))
                     }
                 }
@@ -370,6 +344,7 @@ const Edit = ({value, onChange, size}) => {
                         label={'Data Source:'}
                         types={dataSources.map(ds => ({label: ds.name, value: ds.source_id}))}
                         type={dataSource}
+                      
                         setType={e => {
                             // setAttribute(undefined);
                             setGeoAttribute(undefined);
@@ -405,26 +380,16 @@ const Edit = ({value, onChange, size}) => {
                     loading ? <Loading/> :
                         status ? <div className={'p-5 text-center'}>{status}</div> :
                             <React.Fragment>
-                                <div className={`flex-none w-full p-1`} style={{height: `${compData.height || '500'}px`}}>
-                                    {/*<RenderMap
+                                <div className={`flex-none w-full p-1 relative`} style={{height: `${compData.height || '500'}px`}}>
+                                    <CountyStatusLegend />
+                                    <EditMap
                                         falcor={falcor}
+                                        layerType= {() => new CountyMapLayer()}
                                         layerProps={layerProps}
-                                        legend={{domain, range: colors, title, size}}
-                                        layers={['Choropleth']}
-                                    />*/}
-                                <EditMap
-                                        falcor={falcor}
-                                        layerProps={layerProps}
-                                        legend={{
-                                            size,
-                                            domain: compData?.domain || [], 
-                                            range: compData.colors, 
-                                            title: compData.title, 
-                                            show: true//metaData[compData.type].legend !== false
-                                        }}
+                                        legend={false}
                                     />
                                 </div>
-                                <Attribution baseUrl={baseUrl} attributionData={attributionData}/>
+                                <Attribution baseUrl={baseUrl} attributionData={compData.attributionData}/>
                             </React.Fragment>
                 }
             </div>
@@ -445,25 +410,23 @@ const View = ({value}) => {
         JSON.parse(value)
     const baseUrl = '/';
     const attributionData = data?.attributionData;
+    console.log('test 123', data)
 
     return (
         <div className='relative w-full p-6'>
             {
                data.img  ?
-                    <div className='h-80vh flex-1 flex flex-col'>
+                    <div className='h-80vh flex-1 flex flex-col relative'>
+                         <CountyStatusLegend />
                         <img alt='Choroplath Map' src={get(data, ['img'])}/>
                         
                     </div> : 
-                    <div className={`flex-none w-full p-1`} style={{height: `${data.height}px`}}>
+                    <div className={`flex-none w-full p-1 relative`} style={{height: `${data.height}px`}}>
+                        <CountyStatusLegend />
                         <ViewMap
-                            layerProps={layerProps}
-                            legend={{
-                                size: data.size,
-                                domain: data?.domain || [], 
-                                range: data.colors, 
-                                title: data.title, 
-                                show: data.showLegend
-                            }}
+                            layerProps={{ccl: data}}
+                            layerType= {() => new CountyMapLayer()}
+                            legend={{show:false}}
                         />
                     </div> 
                     
