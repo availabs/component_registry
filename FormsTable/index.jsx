@@ -9,8 +9,11 @@ import {getDefaultJustify, RenderColumnControls} from "../shared/columnControls.
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {dmsDataLoader} from "~/modules/dms/src";
 import {getMeta, setMeta, getAccessor, getColAccessor, defaultOpenOutAttributes} from "./utils.js";
-import {formsConfigFormat} from "~/sites/www/pages/forms/index.jsx";
+//import {formsConfigFormat} from "~/sites/www/pages/forms/index.jsx";
+
 import {Switch} from "@headlessui/react";
+
+const formsConfigFormat = {}
 
 const isValid = ({groupBy, fn, columnsToFetch}) => {
     const fns = columnsToFetch.map(ctf => ctf.includes(' AS') ? ctf.split(' AS')[0] : ctf.split(' as')[0]);
