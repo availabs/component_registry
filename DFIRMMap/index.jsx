@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import get from "lodash/get";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import {Loading} from "~/utils/loading.jsx";

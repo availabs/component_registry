@@ -5,28 +5,15 @@ import {SimpleMapLayerFactory} from "./layers/simpleLayer"
 
 import { DrawLegend } from './Legends'
 
-import {Protocol, PMTiles} from '~/pages/DataManager/utils/pmtiles/index.ts'
+import {PMTilesProtocol} from '~/pages/DataManager/utils/pmtiles/index.ts'
 
-const PMTilesProtocol = {
-  type: "pmtiles",
-  protocolInit: maplibre => {
-    const protocol = new Protocol();
-    maplibre.addProtocol("pmtiles", protocol.tile);
-    return protocol;
-  },
-  sourceInit: (protocol, source, maplibreMap) => {
-    const p = new PMTiles(source.url);
-    protocol.add(p);
-  }
-}
+export const EditMap = ({falcor, layerProps, legend, layerType}) => {
 
-export const EditMap = ({falcor, layerProps, legend}) => {
-   
-    const mapLayer = React.useRef(SimpleMapLayerFactory())
+    const mapLayer = React.useRef(layerType ? layerType() : SimpleMapLayerFactory())
     
     return (
         <div className='w-full h-full border border-pink-400'>
-            <DrawLegend {...legend} />
+            {legend && <DrawLegend {...legend} />}
             <AvlMap
                 falcor={falcor}
                 mapOptions={{
@@ -57,11 +44,9 @@ export const EditMap = ({falcor, layerProps, legend}) => {
 }
 
 
-export const ViewMap = ({falcor, layerProps, legend}) => {
+export const ViewMap = ({falcor, layerProps, legend, layerType}) => {
     
-    const mapLayer = React.useRef(SimpleMapLayerFactory())
-
-    // console.log('ViewMap', legend)
+    const mapLayer = React.useRef(layerType ? layerType() : SimpleMapLayerFactory())
 
     return (
         <div className='w-full h-full'>

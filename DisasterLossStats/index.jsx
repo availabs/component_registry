@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import get from "lodash/get";
 import { useFalcor } from '~/modules/avl-falcor';
-import { pgEnv } from "~/utils/";
+import { pgEnv } from "~/utils";
 import { isJson } from "~/utils/macros.jsx";
 import { RenderDisasterLossStats } from "./components/RenderDisasterLossStats.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
@@ -127,11 +127,11 @@ async function getData ({ealViewId, geoid, disasterNumber, type}, falcor) {
     const finalResp = await falcor.get(...paths);
 
     const
-        // ihpLoss = get(finalResp, ['json', ...disasterDetailsPath(disasterLossView), "databyIndex", 0, disasterDetailsAttributes.ihp_loss], 0),
-        // paLoss = get(finalResp, ['json', ...disasterDetailsPath(disasterLossView), "databyIndex", 0, disasterDetailsAttributes.pa_loss], 0),
+        ihpLoss = get(finalResp, ['json', ...disasterDetailsPath(disasterLossView), "databyIndex", 0, disasterDetailsAttributes.ihp_loss], 0),
+        paLoss = get(finalResp, ['json', ...disasterDetailsPath(disasterLossView), "databyIndex", 0, disasterDetailsAttributes.pa_loss], 0),
         // ihp and pa pulled from WDS slightly differ from ihp and pa tables.
-        ihpLoss = get(finalResp, ['json', ...disasterWebSummariesPath(disasterWebSummariesView), "databyIndex", 0, disasterWebSummariesAttributes.ihp_loss], 0),
-        paLoss = get(finalResp, ['json', ...disasterWebSummariesPath(disasterWebSummariesView), "databyIndex", 0, disasterWebSummariesAttributes.pa_loss], 0),
+        // ihpLoss = get(finalResp, ['json', ...disasterWebSummariesPath(disasterWebSummariesView), "databyIndex", 0, disasterWebSummariesAttributes.ihp_loss], 0),
+        // paLoss = get(finalResp, ['json', ...disasterWebSummariesPath(disasterWebSummariesView), "databyIndex", 0, disasterWebSummariesAttributes.pa_loss], 0),
         sbaLoss = get(finalResp, ['json', ...disasterDetailsPath(disasterLossView), "databyIndex", 0, disasterDetailsAttributes.sba_loss], 0),
         nfipLoss = get(finalResp, ['json', ...disasterDetailsPath(disasterLossView), "databyIndex", 0, disasterDetailsAttributes.nfip_loss], 0),
         usdaLoss = get(finalResp, ['json', ...disasterDetailsPath(disasterLossView), "databyIndex", 0, disasterDetailsAttributes.fema_crop_damage], 0),

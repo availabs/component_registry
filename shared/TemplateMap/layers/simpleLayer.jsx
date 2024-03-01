@@ -4,7 +4,7 @@ import { getColorRange } from "~/modules/avl-components/src";
 import {drawLegend} from "./drawLegend.jsx";
 import {d3Formatter} from "~/utils/macros.jsx";
 
-class SimpleMapLayer extends LayerContainer {
+export class SimpleMapLayer extends LayerContainer {
   constructor(props) {
     super(props);
   }
@@ -19,61 +19,9 @@ class SimpleMapLayer extends LayerContainer {
     format: "0.2s",
     domain: [0, 25, 50, 75, 100],
     range: getColorRange(5, "RdYlGn", false),
-    show: true
+    show: false
   };
 
-  //onHover = {
-  //  layers: ["counties", "tracts"],
-  //   HoverComp: ({ data, layer }) => {
-  //     return (
-  //       <div style={{ maxHeight: "300px" }} className={`rounded relative px-1 overflow-auto scrollbarXsm bg-white`}>
-  //         {
-  //           data?.length && data.map((row, i) =>
-  //             <div key={i} className="flex">
-  //               {
-  //                 row?.length && row.map((d, ii) =>
-  //                   <div key={ii}
-  //                     // style={{maxWidth: '200px'}}
-  //                        className={`
-  //                   ${ii === 0 ? "flex-1 font-bold" : "overflow-auto scrollbarXsm"}
-  //                   ${row.length > 1 && ii === 0 ? "mr-4" : ""}
-  //                   ${row.length === 1 && ii === 0 ? `border-b-2 text-lg ${i > 0 ? "mt-1" : ""}` : ""}
-  //                   `}>
-  //                     {d}
-  //                   </div>
-  //                 )
-  //               }
-  //             </div>
-  //           )
-  //         }
-  //       </div>
-  //     );
-  //   },
-  //   callback: (layerId, features, lngLat) => {
-  //     return features.reduce((a, feature) => {
-  //       let { view: currentView, data } = this.props;
-  //       const fmt = d3Formatter('0.2s');
-        
-  //       const keyMapping = key => {
-  //         console.log('keymap', key)
-  //         console.log('keymapping', Object.keys(currentView?.columns || {}), key)
-  //         return Array.isArray(currentView?.columns) ? 
-  //           currentView?.columns : 
-  //           Object.keys(currentView?.columns || {}).find(k => currentView.columns[k] === key);
-  //       }
-  //       console.log('data', data)
-  //       let record = data.find(d => d.geoid === feature.properties.geoid),
-  //         response = [
-  //           [feature.properties.geoid, ''],
-  //           ...Object.keys(record || {})
-  //             .filter(key => key !== 'geoid')
-  //             .map(key => keyMapping(key) ? [keyMapping(key), fmt(get(record, key))] : [fmt(get(record, key))]),
-  //           currentView?.paintFn ? ['Total', fmt(currentView.paintFn(record || {}) || 0)] : null,
-  //         ];
-  //       return response;
-  //     }, []);
-  //   }
-  // };
 
   init(map, falcor, props) {
     map.fitBounds([-125.0011, 24.9493, -66.9326, 49.5904], {duration: 10});
@@ -91,21 +39,24 @@ class SimpleMapLayer extends LayerContainer {
         const context = newCanvas.getContext("2d")
         context.drawImage(canvas, 0, 0);
 
-         drawLegend({
-          legend: this.legend, 
-          showLegend: this.props.showLegend, 
-          filters: this.filters, 
-          size: this.props.size
-        }, newCanvas, canvas);
+        if(this?.legend?.show) {
+          console.log('drawLegend', this)
+          drawLegend({
+            legend: this.legend, 
+            showLegend: this.props.showLegend, 
+            filters: this.filters, 
+            size: this.props.size
+          }, newCanvas, canvas);
+        }
 
-         console.log('idle save', { filters: this.filters, 
-          img, 
-          bounds: map.getBounds(),
-          center: map.getCenter(),
-          zoom: map.getZoom(),
-          legend: this.legend,
-          style: this.style
-        })
+        //  console.log('idle save', { filters: this.filters, 
+        //   img, 
+        //   bounds: map.getBounds(),
+        //   center: map.getCenter(),
+        //   zoom: map.getZoom(),
+        //   legend: this.legend,
+        //   style: this.style
+        // })
 
         img = newCanvas.toDataURL();
         this.props.change({
@@ -122,6 +73,7 @@ class SimpleMapLayer extends LayerContainer {
   }
 
   handleMapFocus(map, props) {
+    //console.log('handle mapFocus', props.mapFocus)
     if (props.mapFocus) {
       try {
           map.fitBounds(props.mapFocus,{duration: 10})
@@ -141,6 +93,7 @@ class SimpleMapLayer extends LayerContainer {
     this.legend.title = title;
 
     console.time('changing sources and layers')
+    console.log('paint map', sources, layers)
     sources.forEach(s => {
       if(!map.getSource(s.id)) {
         map.addSource(s.id,s.source)
@@ -165,5 +118,6 @@ class SimpleMapLayer extends LayerContainer {
   // render(map, falcor) {
   // }
 }
+
 
 export const SimpleMapLayerFactory = (options = {}) => new SimpleMapLayer(options);

@@ -4,7 +4,6 @@ import React from "react";
 import {hazardsMeta} from "~/utils/colors.jsx";
 import {fnumIndex} from "~/utils/macros.jsx";
 import {scaleQuantize} from "d3-scale";
-import {components} from "react-select";
 
 const palattes = [
     ["#f5b899", "#f8b46f", "#fdd0a2", "#fdae6b",

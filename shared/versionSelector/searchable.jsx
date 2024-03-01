@@ -3,7 +3,7 @@ import {Link, useNavigate} from "react-router-dom";
 import get from "lodash/get";
 import {useEffect, useMemo, useState} from "react";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 import {getAttributes, SourceAttributes, ViewAttributes} from "~/utils/attributes.jsx";
 import {setVersion} from "falcor/lib/support/currentCacheVersion.js";
 import {DisplayToggle} from "./components/displayToggle.jsx";

@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import get from "lodash/get";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 import {isJson} from "~/utils/macros.jsx";
 import {OpenFemaDataTable} from "./components/OpenFemaDataTable.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";

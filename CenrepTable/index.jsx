@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import get from "lodash/get";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 import {isJson} from "~/utils/macros.jsx";
 import {RenderBuildingsTable} from "./components/RenderBuildingsTable.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
@@ -73,7 +73,13 @@ async function getMeta({
                 ...acc,
                 [cleanColName(currentColName)]:
                     [
-                        ...new Set(fetchedData.map(fd => fd[currentColName])) // split on comma?
+                        ...new Set(
+                            fetchedData.map(fd => fd[currentColName])
+                                .filter(fd => !(fd['$type'] === 'atom' && !fd.value)) // filtering nulls
+                                .reduce((acc, fd) => {
+                                    return fd?.includes(',') ? [...acc, ...fd.split(',').map(f => f.trim())] : [...acc, fd]
+                                } , [])
+                        ) // split on comma?
                     ]
             }
 
@@ -184,7 +190,13 @@ const assignMeta = ({
                             row[currentColName] = assign(currentKeys, currentViewIdLookup[currentKeys]?.[valueAttribute] || currentKeys, keepId);
                         }
                     }else{
-                        row[currentColName] = assign(row[currentColName], currentMetaLookup[row[currentColName]] || row[currentColName], keepId);
+                        const currentKeys = row[currentColName];
+                        if(typeof currentKeys === 'string' && currentKeys?.includes(',')){
+                            row[currentColName] = currentKeys.split(',').map(ck => assign(ck.trim(), currentMetaLookup[ck.trim()] || ck.trim(), keepId)).join(', ')
+                        }else{
+                            row[currentColName] = assign(row[currentColName], currentMetaLookup[row[currentColName]] || row[currentColName], keepId);
+                        }
+
                     }
                 })
                 return row;

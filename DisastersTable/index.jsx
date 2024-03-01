@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import get from "lodash/get";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 import {isJson} from "~/utils/macros.jsx";
 import {RenderDisastersTable} from "./components/RenderDisastersTable.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
@@ -338,14 +338,6 @@ const Edit = ({value, onChange}) => {
             setLoading(true);
             setStatus(undefined);
 
-            setFilters({
-                    ...filters,
-                    ...Object.keys(fusionAttributes(type))
-                        .filter(c => fusionAttributes(type)[c].filter)
-                        .reduce((acc, curr) => ({...acc, [curr]: fusionAttributes(type)[curr].filter}), {})
-                }
-            );
-
             const data = await getData(
                 {geoid, type, hazard, ealViewId, visibleCols, filters, filterValue, pageSize, sortBy},
                 falcor);
@@ -357,6 +349,15 @@ const Edit = ({value, onChange}) => {
         load()
     }, [geoid, type, hazard, ealViewId, visibleCols, filters, filterValue, pageSize, sortBy]);
 
+    useEffect(() => {
+        setFilters({
+                ...filters,
+                ...Object.keys(fusionAttributes(type))
+                    .filter(c => fusionAttributes(type)[c].filter)
+                    .reduce((acc, curr) => ({...acc, [curr]: fusionAttributes(type)[curr].filter}), {})
+            }
+        );
+    }, [type]);
     return (
         <div className='w-full'>
             <div className='relative'>

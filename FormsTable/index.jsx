@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 import {isJson} from "~/utils/macros.jsx";
 import {FormsTable} from "./components/FormsTable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";

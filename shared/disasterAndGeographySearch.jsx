@@ -4,7 +4,7 @@ import get from "lodash/get";
 import {useEffect, useMemo, useState} from "react";
 import {useFalcor} from '~/modules/avl-falcor';
 import {range} from "~/utils/macros.jsx";
-import {pgEnv} from "~/utils/";
+import {pgEnv} from "~/utils";
 
 const stateViewId = 285;
 const countyViewId = 286;

@@ -33,6 +33,7 @@ import CountyStatusMap from "./CountyStatusMap/index.jsx";
 import CountyHighlightMap from "./CountyHighlightMap/index.jsx";
 import SearchBar from "./SearchBar/index.jsx";
 import DefaultHeader from "./Headers/default.jsx"
+import CountyHeader from "./Headers/county.jsx"
 
 const ComponentRegistry = {
     // "ColorBox": ColorBox,
@@ -66,6 +67,7 @@ const ComponentRegistry = {
     "Map: County Status": CountyStatusMap,
     "Map: County Highlight": CountyHighlightMap,
     "Header: Default Header": DefaultHeader,
+    "Header: County Header": CountyHeader,
     "lexical": {
         ...CalloutBox,
         name: 'Rich Text',
