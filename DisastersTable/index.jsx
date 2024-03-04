@@ -99,6 +99,9 @@ const fusionAttributes = type => ({
         visible: false
     },
 })
+
+const formatData = (data, fallback) => data && data !== '0' ? data : fallback;
+
 async function getData({geoid, type, hazard, ealViewId, visibleCols, filters, filterValue, pageSize, sortBy}, falcor) {
     const fusionGeoCol = 'geoid',
         fusionLenOptions =
@@ -257,8 +260,10 @@ async function getData({geoid, type, hazard, ealViewId, visibleCols, filters, fi
                     const eventDescRecord = eventDesc.find(e => e.event_id === newRow.event_id);
                     if(visibleCols.includes('Event Narrative') || visibleCols.includes('Episode Narrative')){
                         newRow.expand = [];
-                        visibleCols.includes('Event Narrative') && newRow.expand.push({key: 'Event Narrative', value: eventDescRecord?.event_narrative});
-                        visibleCols.includes('Episode Narrative') && newRow.expand.push({key: 'Episode Narrative', value: eventDescRecord?.episode_narrative});
+                        visibleCols.includes('Event Narrative') &&
+                        newRow.expand.push({key: 'Event Narrative', value: formatData(eventDescRecord?.event_narrative, 'No Event Narrative')});
+                        visibleCols.includes('Episode Narrative') &&
+                        newRow.expand.push({key: 'Episode Narrative', value: formatData(eventDescRecord?.episode_narrative, 'No Episode Narrative')});
                     }
                 }
                 return newRow;
