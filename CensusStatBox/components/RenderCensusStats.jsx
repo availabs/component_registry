@@ -18,7 +18,7 @@ export const RenderCensusStats = ({
                { value && valueSuffix }
                {/*{fnum(value)}*/}
            </label>
-           <span className={`text-sm font-bold ${change > 0 && invertColors ? 'text-red-500' : 'text-green-500'}`}>{Math.abs(change)}% {change > 0 ? 'Growth' : 'Decline'}</span>
+           <span className={`text-sm font-bold ${change > 0 && invertColors ? 'text-blue-500' : 'text-blue-500'}`}>{Math.abs(change)}% {change > 0 ? 'Growth' : 'Decline'}</span>
            <span className={`text-xs  justify-left`}>{year} vs {compareYear}</span>
        </div>
    )
