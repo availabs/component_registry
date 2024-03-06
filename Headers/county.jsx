@@ -95,8 +95,9 @@ function getMapLayer(geoid) {
       }
 }
 
-const getData = ({geoid, title='MitigateNY', subTitle='New York State Hazard Mitigation Plan', note='2023 Update'}) =>{
- 
+const getData = ({geoid, title, subTitle, note='2023 Update'}) =>{
+  
+  console.log('county header getData', title)
   return new Promise((resolve, reject) => {
     resolve({
       title,
@@ -122,7 +123,7 @@ const Edit = ({value, onChange, size}) => {
     const [status, setStatus] = useState('');
     const [compData, setCompData] = useState({
         geoid: cachedData.geoid || '36001',
-        title: cachedData.title || 'Albany County', 
+        title: cachedData.title || '', 
         subTitle: cachedData.subTitle || 'County Profile', 
         note: cachedData.note || '2023 Update',
         mapLayer: cachedData.mapLayer || getMapLayer(cachedData.geoid || '36001')
