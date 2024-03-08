@@ -5,7 +5,7 @@ import GeographySearch from "../shared/geographySearch.jsx";
 import {EditMap,ViewMap} from "../shared/TemplateMap";
 
 
-export function Header ({  title = '', bgClass='', subTitle='County Profile', note='2023 Update', mapLayer={}}) {
+export function Header ({  title = '', bgClass='', subTitle='County Profile', link='#', mapLayer={},}) {
   
   return (
     <div className={`h-[300px] bg-cover bg-center w-full flex border-2 border-blue-500 bg-gradient-to-tl rounded-lg from-blue-400 to-blue-700`}>
@@ -23,8 +23,8 @@ export function Header ({  title = '', bgClass='', subTitle='County Profile', no
         <div className='text-lg tracking-wider pt-2 sm:text-3xl font-bold text-slate-200 text-right w-full uppercase'>
           {subTitle && <div>{subTitle}</div>}
         </div>
-        <div className='text-lg tracking-wider sm:text-xl font-bold text-slate-200 text-right w-full uppercase'>
-          {note && <div>{note}</div>}
+        <div className='text-sm tracking-wider sm:text-sm font-bold text-slate-200 text-right w-full uppercase'>
+          <a href={link} target="_blank">Local Hazard Mitigation Plan <i  className='fa fa-book' /></a>
         </div>
         <div className='flex-1'/>
       </div>
@@ -95,13 +95,14 @@ function getMapLayer(geoid) {
       }
 }
 
-const getData = ({geoid, title='MitigateNY', subTitle='New York State Hazard Mitigation Plan', note='2023 Update'}) =>{
- 
+const getData = ({geoid, title, subTitle, link='2023 Update'}) =>{
+  
+  console.log('county header getData', title)
   return new Promise((resolve, reject) => {
     resolve({
       title,
       subTitle,
-      note,
+      link,
       mapLayer: getMapLayer(geoid)
     })
   })
@@ -122,9 +123,9 @@ const Edit = ({value, onChange, size}) => {
     const [status, setStatus] = useState('');
     const [compData, setCompData] = useState({
         geoid: cachedData.geoid || '36001',
-        title: cachedData.title || 'Albany County', 
+        title: cachedData.title || '', 
         subTitle: cachedData.subTitle || 'County Profile', 
-        note: cachedData.note || '2023 Update',
+        link: cachedData.link || '2023 Update',
         mapLayer: cachedData.mapLayer || getMapLayer(cachedData.geoid || '36001')
     })
 
@@ -210,7 +211,7 @@ export default {
           default: 'New York State Hazard Mitigation Plan',
         },
         { 
-          name:'note',
+          name:'link',
           default: '2023 Update',
         }
     ],

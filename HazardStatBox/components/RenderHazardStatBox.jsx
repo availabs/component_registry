@@ -62,7 +62,7 @@ export const RenderHazardStatBox = ({
         large: `flex flex-col justify-between shrink-0 ml-5 pt-2`,
         small: `flex flex-col divide-y  ${isGrid ? `text-center` : `text-center`}`
     };
-    const valueClass = `font-medium text-gray-800 ${isGrid ? `text-sm` : `text-xl`} overflow-wrap`
+    const valueClass = `font-medium ${eal ? `text-gray-800` : `text-gray-400`} ${isGrid ? `text-sm` : `text-xl`} overflow-wrap`
     const svgBarHeight = {large: 30, small: 12};
     const svgBarRadius = {large: 20, small: 10};
     const fontSizeInner = {large: "14.5px", small: "12.5px"};
@@ -70,7 +70,7 @@ export const RenderHazardStatBox = ({
 
 
     return (
-        <div className={`border border-gray-200 text-gray-900 rounded-lg p-5 ${eal ? `bg-slate-50` : `bg-slate-200`}`}>
+        <div className={`border border-gray-200 rounded-lg p-5 ${eal ? `bg-slate-50 text-gray-900` : `bg-slate-200 text-gray-400`}`}>
             <div className={`w-full border-b-4 rounded flex flex-wrap items-center font-medium tracking-wide uppercase ${isGrid ? `text-base` : `text-lg`}`}
                  style={{borderColor: get(hazardsMeta, [hazard, "color"], "")}}>
                 {!isTotal &&
