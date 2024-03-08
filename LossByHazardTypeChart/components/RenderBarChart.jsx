@@ -25,7 +25,7 @@ export const RenderBarChart = ({ chartDataActiveView = [], base='year', attribut
     const minYear = 1996; //Math.min(...chartDataActiveView.map(d => d.year));
     const maxYear = Math.max(...chartDataActiveView.map(d => d.year));
     const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-    const xScaleDomain = base === 'year' ? range(minYear, maxYear) : months;
+    const xScaleDomain = base === 'year' ? range(minYear, maxYear).map(d => d.toString()) : months;
 
     const keys =
         Object.keys(hazardsMeta)
