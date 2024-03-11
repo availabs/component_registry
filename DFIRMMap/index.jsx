@@ -32,7 +32,7 @@ async function getData({geoid='36',ealViewId, size="1", height=500}, falcor) {
       id: "counties",
       source: {
         "type": "vector",
-        "url": "https://dama-dev.availabs.org/tiles/data/hazmit_dama_s365_v778_1694455888142.json"
+        "url": "https://tiles.availabs.org/data/hazmit_dama_s365_v778_1694455888142.json"
       }
     }]
 
