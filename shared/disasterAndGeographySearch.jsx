@@ -19,6 +19,7 @@ const onChangeFilter = (selected, setSelected, value, geoData, disastersData, na
     const disasterNumber = get(selected, [0, 'disasterNumber']);
     if (geoid || geoid === '') {
         const url = {
+            0: '',
             2: '/state',
             5: '/county'
         }
