@@ -15,7 +15,7 @@ const onChangeFilter = (selected, setSelected, value, geoData, navigate, onChang
   const geoid = get(selected, [0, 'geoid']);
   if(geoid || geoid === ''){
     setSelected(selected);
-    onChange ? onChange(geoid) : navigate(`/geoid//${geoid}`)
+    onChange ? onChange(geoid) : navigate(`/geoid/${geoid}`)
   }else{
     setSelected([])
   }
