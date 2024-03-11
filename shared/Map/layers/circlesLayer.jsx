@@ -17,7 +17,7 @@ class CirclesOptions extends LayerContainer {
       id: "counties",
       source: {
         "type": "vector",
-        "url": "https://tiles.availabs.org/data/hazmit_dama_s365_v778_1694455888142.json"
+        "url": "https://tiles.availabs.org/data/tiger_carto.json"
       },
     },
     {
