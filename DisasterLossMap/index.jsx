@@ -138,7 +138,7 @@ async function getData({geoid,disasterNumber,ealViewId, type='total_losses', num
     // const columns = Array.isArray(metaData[type]?.columns) ? metaData[type]?.columns : Object.values(metaData[type]?.columns || {})
     //console.log('getGeoCOlors', geoid, data,columns, metaData[type].paintFn, colors)
     const {geoColors, domain} = getGeoColors({geoid, data, columns, paintFn: metaData[type].paintFn, colors});
-    const attributionData = {} //get(falcorCache, ['dama', pgEnv, 'views', 'byId', typeId, 'attributes'], {});
+    const attributionData = get(falcor.getCache(), ['dama', pgEnv, 'views', 'byId', typeId.view_id, 'attributes'], {});
     //console.log('test', geoColors)
     const geoids = [...new Set(Object.keys(geoColors || {}).map(geoId => geoId.substring(0, 5)))]
 
