@@ -132,6 +132,7 @@ async function getData({geoid,disasterNumber,ealViewId, type='total_losses', num
         ];
     geomRes = await falcor.get([...geoPath(stateView), geoIndices, geomColTransform]);
     const geom = get(geomRes, ["json", ...geoPath(stateView), 0, geomColTransform]);
+    console.log('do I get geom', geom, geomRes)
     //const colors =  metaData[type].colors || defaultColors
 
     // const columns = Array.isArray(metaData[type]?.columns) ? metaData[type]?.columns : Object.values(metaData[type]?.columns || {})
