@@ -7,7 +7,7 @@ import { Loading } from "~/utils/loading.jsx";
 import {getCensusKeyLabel, processBaseConfig} from "../utils/graphConfig/utils.js";
 import BASE_GRAPH_CONFIG from '../utils/graphConfig/'
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
-import {get} from "lodash/get";
+import get from "lodash/get";
 import {range} from "~/utils/macros"
 function processConfig(geoid, category) {
     //get you census variables/keys you pass to the comp

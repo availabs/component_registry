@@ -18,8 +18,13 @@ const onChangeFilter = (selected, setSelected, value, geoData, disastersData, na
     const geoid = get(selected, [0, 'geoid']);
     const disasterNumber = get(selected, [0, 'disasterNumber']);
     if (geoid || geoid === '') {
+        const url = {
+            0: '',
+            2: '/state',
+            5: '/county'
+        }
         setSelected(selected);
-        onChange ? onChange(geoid) : navigate(`/geoid//${geoid}`)
+        onChange ? onChange(geoid) : navigate(`${url[geoid?.length]}/${geoid}`)
     } else if (disasterNumber) {
         setSelected(selected);
         onChange ? onChange(disasterNumber) : navigate(`/disaster/${disasterNumber}`)

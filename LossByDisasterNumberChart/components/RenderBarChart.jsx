@@ -52,7 +52,7 @@ export const RenderBarChart = ({ chartDataActiveView = [], disaster_numbers = []
                 data={chartDataActiveView}
                 keys={keys}
                 indexBy={"year"}
-                xScale={{domain: range(1996, maxYear)}}
+                xScale={{domain: range(1996, maxYear).map(d => d.toString())}}
                 axisBottom={{tickDensity: 3, axisColor: '#000', axisOpacity: 0}}
                 yScale={{domain: [0, upperLimit]}}
                 axisLeft={{

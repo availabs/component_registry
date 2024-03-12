@@ -69,7 +69,7 @@ const CountyStatusLegend = () => (
         {[
             {name: 'Approved Plan', color: '#1a9850'},
             {name: 'Plan Update in Progress', color: '#fee08b'},
-            {name: 'No Approved Plan', color: '#a50026'}
+            {name: 'Plan Expired. No Update in Progress.', color: '#a50026'}
         ].map(d => (
             <div className='flex items-center py-1'>
                 <div className='h-6 w-6 rounded' style={{backgroundColor:d.color}} />
@@ -147,7 +147,7 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
             value = -23
             record.plan_status = 'Update in Progress'
         } else if (value < 0) {
-          record.plan_status = "No Plan"
+          record.plan_status = "Plan Expired, No Update in Progress"
         } else {
            record.plan_status = "Plan Approved"
         }
@@ -164,7 +164,7 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
       id: "counties",
       source: {
         "type": "vector",
-        "url": "https://dama-dev.availabs.org/tiles/data/hazmit_dama_s365_v778_1694455888142.json"
+        "url": "https://tiles.availabs.org/data/tiger_carto.json"
       },
     }]
 

@@ -123,7 +123,7 @@ async function getData({geoid,disasterNumber,ealViewId, type='total_losses', num
         }), {});
     });
 
-    const geomColTransform = [`st_asgeojson(st_envelope(ST_Simplify(geom, ${false && geoid?.toString()?.length === 5 ? `0.1` : `0.5`})), 9, 1) as geom`],
+    const geomColTransform = [`st_asgeojson(st_orientedenvelope(st_union(geom)), 9, 1)  as geom`],
         geoIndices = {from: 0, to: 0},
         stateFips = get(data, [0, 'geoid']) || geoid?.substring(0, 2),
         geoPath = ({view_id}) => ['dama', pgEnv, 'viewsbyId', view_id,
@@ -132,12 +132,13 @@ async function getData({geoid,disasterNumber,ealViewId, type='total_losses', num
         ];
     geomRes = await falcor.get([...geoPath(stateView), geoIndices, geomColTransform]);
     const geom = get(geomRes, ["json", ...geoPath(stateView), 0, geomColTransform]);
+    console.log('do I get geom', geom, geomRes)
     //const colors =  metaData[type].colors || defaultColors
 
     // const columns = Array.isArray(metaData[type]?.columns) ? metaData[type]?.columns : Object.values(metaData[type]?.columns || {})
     //console.log('getGeoCOlors', geoid, data,columns, metaData[type].paintFn, colors)
     const {geoColors, domain} = getGeoColors({geoid, data, columns, paintFn: metaData[type].paintFn, colors});
-    const attributionData = {} //get(falcorCache, ['dama', pgEnv, 'views', 'byId', typeId, 'attributes'], {});
+    const attributionData = get(falcor.getCache(), ['dama', pgEnv, 'views', 'byId', typeId.view_id, 'attributes'], {});
     //console.log('test', geoColors)
     const geoids = [...new Set(Object.keys(geoColors || {}).map(geoId => geoId.substring(0, 5)))]
 
@@ -147,7 +148,7 @@ async function getData({geoid,disasterNumber,ealViewId, type='total_losses', num
       id: "counties",
       source: {
         "type": "vector",
-        "url": "https://dama-dev.availabs.org/tiles/data/hazmit_dama_s365_v778_1694455888142.json"
+        "url": "https://tiles.availabs.org/data/tiger_carto.json"
       },
     }]
 
