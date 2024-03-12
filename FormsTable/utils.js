@@ -170,13 +170,17 @@ export async function setMeta({
 
 
                     if (currentMetaLookup?.view_id) {
+                        const {valueAttribute = 'name'} = currentMetaLookup;
                         const currentViewIdLookup = metaLookupByViewId?.[mdC.name] || [];
                         const currentRawValue = row[modifiedName];
                         if (currentRawValue?.includes(',')) {
-                            row[modifiedName] = currentRawValue.split(',').reduce((acc, curr) => [...acc, currentViewIdLookup?.[curr?.trim()]?.name || curr], [])//.join(', ')
+                            row[modifiedName] = currentRawValue.split(',')
+                                                                .reduce((acc, curr) =>
+                                                                    [...acc,
+                                                                        currentViewIdLookup?.[curr?.trim()]?.[valueAttribute] || curr]
+                                                                    , [])//.join(', ')
                         } else {
-
-                            row[modifiedName] = currentViewIdLookup?.[row[modifiedName]]?.name || row[modifiedName];
+                            row[modifiedName] = currentViewIdLookup?.[row[modifiedName]]?.[valueAttribute] || row[modifiedName];
                         }
                     } else {
                         row[modifiedName] = currentMetaLookup?.[row[modifiedName]] || row[modifiedName];
