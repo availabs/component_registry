@@ -68,7 +68,11 @@ async function getMeta({
 
         const cachedUniqueValues = metaViewIdLookupCols.reduce((acc, curr) => {
             const currentColName = fn[curr.name] || curr.name;
-
+            const {formatValuesToMap = 'none'} = parseJson(curr.meta_lookup);
+            const mapFn = {
+                parseInt: e => parseInt(e),
+                none: e => e
+            }
             return {
                 ...acc,
                 [cleanColName(currentColName)]:
@@ -77,10 +81,10 @@ async function getMeta({
                             fetchedData.map(fd => fd[currentColName])
                                 .filter(fd => !(fd['$type'] === 'atom' && !fd.value)) // filtering nulls
                                 .reduce((acc, fd) => {
-                                    return fd?.includes(',') ? [...acc, ...fd.split(',').map(f => f.trim())] : [...acc, fd]
+                                    return fd?.includes(',') ? [...acc, ...fd.split(',').map(f => mapFn[formatValuesToMap](f.trim()))] : [...acc, mapFn[formatValuesToMap](fd)]
                                 } , [])
                         ) // split on comma?
-                    ]
+                    ].filter(d => d)
             }
 
         }, {})
@@ -100,6 +104,7 @@ async function getMeta({
                         attributes, // to fetch from meta table
                         geoAttribute, // if passed, apply geoid filter on data
                         filterAttribute,  // if passed, use this column name instead of md.name to filtered using cached uniq data
+                        formatValuesToMap, // format values before pulling meta for them. Mainly used for SBA Disaster numbers. 1335DR doesn't match to integer 1335
                         keyAttribute, // used to assign key for meta object to return
                         valueAttribute, // not used here, but if passed, use this column name to get labels of meta ids
                         view_id, // view id of the meta table
