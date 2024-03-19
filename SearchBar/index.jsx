@@ -5,7 +5,7 @@ import DisasterAndGeographySearch from "../shared/disasterAndGeographySearch.jsx
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {isJson} from "~/utils/macros.jsx";
 
-const className = 'flex-row-reverse border p-5 text-lg rounded-md';
+const className = 'flex-row-reverse p-5 text-lg rounded-md';
 
 const Edit = ({value, onChange}) => {
     let cachedData = value && isJson(value) ? JSON.parse(value) : {};

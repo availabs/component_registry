@@ -155,7 +155,7 @@ export default ({
 
     const Search = () => (
         <>
-            <i className={`fa fa-search font-light text-xl bg-white pr-2 pt-1 rounded-r-md`}/>
+            <i className={`fa fa-search font-light text-xl shadow bg-white p-4 rounded-r-md`}/>
             <AsyncTypeahead
                 className={'w-full'}
                 isLoading={false}
@@ -169,7 +169,7 @@ export default ({
                 defaultSelected={selected}
                 onChange={(selected) => onChangeFilter(selected, setSelected, value, geoData, disastersData, navigate, onChange)}
                 selected={selected}
-                inputProps={{className: 'bg-white  w-full p-1 pl-3 rounded-l-md'}}
+                inputProps={{className: 'bg-white shadow  w-full  p-4 text-xl rounded-l-md'}}
                 renderMenu={renderMenu}
             />
         </>
@@ -182,7 +182,7 @@ export default ({
                     <Search/>
                 </div>
             </div> :
-            <div className={`flex w-full ${className}`}>
+            <div className={`flex w-full items-center ${className}`}>
                 <Search />
             </div>
     )
