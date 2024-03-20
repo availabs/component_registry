@@ -12,6 +12,8 @@ import {addTotalRow} from "../utils/addTotalRow.js";
 import {Switch} from "@headlessui/react";
 import {defaultOpenOutAttributes, getNestedValue} from "../FormsTable/utils.js";
 import DisasterSearch from "../shared/disasterSearch.jsx";
+import {RenderSwitch} from "./components/RenderSwitch.jsx";
+import {RenderFilters} from "./components/RenderFilters.jsx";
 
 const isValid = ({groupBy, fn, columnsToFetch}) => {
     const fns = columnsToFetch.map(ctf => ctf.includes(' AS') ? ctf.split(' AS')[0] : ctf.split(' as')[0]);
@@ -279,22 +281,36 @@ async function getData({
                            pageSize, sortBy,  notNull,  colSizes,
                            filters, filterValue, hiddenCols, showTotal,
                            extFilterCols, extFilterValues, openOutCols, colJustify, striped,
-                           extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
+                           extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables
                        }, falcor) {
     // console.log('getData called. fetchData:', fetchData, dataSource, version)
     //console.log('getData called. fetchData:', fetchData)
     
     //console.time(`getData ${version}`)
+    console.log('additional variables', additionalVariables)
+    const additionalFilters = additionalVariables.filter(f => f.action === 'include').reduce((acc, curr) => ({
+        ...acc,
+        [cleanColName(curr.name)]: acc[curr.name] ?
+            [...acc[curr.name], curr.defaultValue] :
+            [curr.defaultValue]}), {});
+
+    const additionalExcludes = additionalVariables.filter(f => f.action === 'exclude').reduce((acc, curr) => ({
+        ...acc,
+        [cleanColName(curr.name)]: acc[curr.name] ?
+            [...acc[curr.name], curr.defaultValue] :
+            [curr.defaultValue]}), {});
 
     const options = ({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
             filter: {
                 ...geoAttribute && geoid?.toString()?.length && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
-                ...disasterNumber && disasterNumberCol && {[cleanColName(disasterNumberCol)]: [disasterNumber]} // assumes disasterNumber to be single value
+                ...disasterNumber && disasterNumberCol && {[cleanColName(disasterNumberCol)]: [disasterNumber]}, // assumes disasterNumber to be single value
+                ...additionalFilters
             },
             exclude: {
-                ...notNull?.length && notNull.reduce((acc, col) => ({...acc, [col]: ['null']}), {}) // , '', ' ' error out for numeric columns.
+                ...notNull?.length && notNull.reduce((acc, col) => ({...acc, [col]: ['null']}), {}), // , '', ' ' error out for numeric columns.
+                ...additionalExcludes
             },
             groupBy: groupBy,
         })
@@ -434,11 +450,130 @@ async function getData({
         filters, filterValue, visibleCols, hiddenCols,
         dataSource, dataSources, version,
         extFilterCols, extFilterValues, colJustify, striped, extFiltersDefaultOpen,
-        customColName, linkCols, openOutCols, showCsvDownload
+        customColName, linkCols, openOutCols, showCsvDownload, additionalVariables
     }
 }
 
-
+const variables = [
+    {
+        name: 'dataSources',
+        hidden: true
+    },
+    {
+        name: 'dataSource',
+        hidden: true
+    },
+    {
+        name: 'version',
+        hidden: true
+    },
+    {
+        name: 'geoAttribute',
+        hidden: true
+    },
+    {
+        name: 'geoid',
+        default: '36',
+    },
+    {
+        name: 'disasterNumber',
+        default: null,
+    },
+    {
+        name: 'pageSize',
+        hidden: true
+    },
+    {
+        name: 'sortBy',
+        hidden: true
+    },
+    {
+        name: 'groupBy',
+        hidden: true
+    },
+    {
+        name: 'fn',
+        hidden: true
+    },
+    {
+        name: 'notNull',
+        hidden: true
+    },
+    {
+        name: 'showTotal',
+        hidden: true
+    },
+    {
+        name: 'colSizes',
+        hidden: true
+    },
+    {
+        name: 'filters',
+        hidden: true
+    },
+    {
+        name: 'filterValue',
+        hidden: true
+    },
+    {
+        name: 'visibleCols',
+        hidden: true
+    },
+    {
+        name: 'hiddenCols',
+        hidden: true
+    },
+    {
+        name: 'extFilterCols',
+        hidden: true,
+        default: []
+    },
+    {
+        name: 'colJustify',
+        hidden: true,
+        default: {}
+    },
+    {
+        name: 'striped',
+        hidden: true,
+        default: false
+    },
+    {
+        name: 'extFiltersDefaultOpen',
+        hidden: true,
+        default: false
+    },
+    {
+        name: 'customColName',
+        hidden: true,
+        default: {}
+    },
+    {
+        name: 'linkCols',
+        hidden: true,
+        default: {}
+    },
+    {
+        name: 'openOutCols',
+        hidden: true,
+        default: []
+    },
+    {
+        name: 'extFilterValues',
+        hidden: true,
+        default: {}
+    },
+    {
+        name: 'showCsvDownload',
+        hidden: true,
+        default: false
+    },
+    {
+        name: 'additionalVariables',
+        hidden: true,
+        default: []
+    },
+];
 const Edit = ({value, onChange}) => {
     const {falcor, falcorCache} = useFalcor();
 
@@ -474,10 +609,47 @@ const Edit = ({value, onChange}) => {
     const [extFiltersDefaultOpen, setExtFiltersDefaultOpen] = useState(cachedData?.extFiltersDefaultOpen || false);
     const [customColName, setCustomColName] = useState(cachedData?.customColName || {});
     const [linkCols, setLinkCols] = useState(cachedData?.linkCols || {});
-    const [showCsvDownload, setShowCsvDownload] = useState(cachedData?.showCsvDownload || false)
+    const [showCsvDownload, setShowCsvDownload] = useState(cachedData?.showCsvDownload || false);
+    const [additionalVariables, setAdditionalVariables] = useState(cachedData?.additionalVariables || []); // on all state updates, update variables that this comp exports
     const category = 'Cenrep';
 
     const dataSourceByCategoryPath = ['dama', pgEnv, 'sources', 'byCategory', category];
+
+    async function load(){
+        if(dataSources && (!visibleCols?.length || !version || !dataSource)) {
+            !dataSource && setStatus('Please select a Datasource.');
+            !version && setStatus('Please select a version.');
+            !visibleCols?.length && setStatus('Please select columns.');
+
+            setLoading(false);
+            return;
+        }
+
+        if(!isValid({groupBy, fn, columnsToFetch: visibleCols.map(vc => fn[vc] ? fn[vc] : vc)})){
+            setStatus('Please make appropriate grouping selections.');
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        setStatus(undefined);
+        // console.log('calling getData', dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version)
+        const data = await getData({
+            dataSources, dataSource, geoAttribute, geoid, disasterNumber,
+            pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
+            filters, filterValue, visibleCols, hiddenCols,
+            version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
+            customColName, linkCols, additionalVariables, fetchData: true
+        }, falcor);
+
+        onChange(JSON.stringify({
+            // only save data and columns
+            ...data,
+        }));
+
+        setLoading(false);
+
+    }
 
     useEffect(() => {
         async function getDataSources() {
@@ -507,49 +679,6 @@ const Edit = ({value, onChange}) => {
         geoAttributeMapped && setGeoAttribute(geoAttributeMapped);
     }, [dataSource]);
 
-
-
-    useEffect(() => {
-        async function load(){
-            if(dataSources && (!visibleCols?.length || !version || !dataSource)) {
-                !dataSource && setStatus('Please select a Datasource.');
-                !version && setStatus('Please select a version.');
-                !visibleCols?.length && setStatus('Please select columns.');
-
-                setLoading(false);
-                return;
-            }
-
-            if(!isValid({groupBy, fn, columnsToFetch: visibleCols.map(vc => fn[vc] ? fn[vc] : vc)})){
-                setStatus('Please make appropriate grouping selections.');
-                setLoading(false);
-                return;
-            }
-
-            setLoading(true);
-            setStatus(undefined);
-            // console.log('calling getData', dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version)
-            const data = await getData({
-                dataSources, dataSource, geoAttribute, geoid, disasterNumber,
-                pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
-                filters, filterValue, visibleCols, hiddenCols,
-                version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
-                customColName, linkCols, fetchData: true
-            }, falcor);
-
-            onChange(JSON.stringify({
-                // only save data and columns
-                ...data,
-            }));
-
-            setLoading(false);
-
-        }
-
-        load()
-    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, showTotal, filterValue, visibleCols, version]);
-
-
     useEffect(() => {
         async function load(){
             setLoading(true);
@@ -562,7 +691,7 @@ const Edit = ({value, onChange}) => {
                 filters, filterValue, visibleCols, hiddenCols,
                 version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
                 customColName, linkCols,
-                data, columns, showCsvDownload,
+                data, columns, showCsvDownload, additionalVariables,
                 fetchData: false
             }, falcor);
 
@@ -580,7 +709,7 @@ const Edit = ({value, onChange}) => {
         pageSize, sortBy,  notNull,  colSizes,
         filters, filterValue, hiddenCols, showTotal,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped,
-        extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
+        extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables
     ]);
 
     const data = cachedData.data;
@@ -608,11 +737,14 @@ const Edit = ({value, onChange}) => {
                                 setExtFilterCols([])
                                 setGeoAttribute(undefined)
                                 setDataSource(+e.target.value);
-                            } }
+                            }}
                         >
-                            <option key={'undefined'} value={undefined} selected={true} disabled>Please select a data source</option>
+                            <option key={'undefined'} value={undefined} selected={true} disabled>Please select a data
+                                source
+                            </option>
                             {
-                                dataSources.map(ds => <option key={ds.source_id} value={ds.source_id}> {ds.name} </option>)
+                                dataSources.map(ds => <option key={ds.source_id}
+                                                              value={ds.source_id}> {ds.name} </option>)
                             }
                         </select>
                     </div>
@@ -622,123 +754,30 @@ const Edit = ({value, onChange}) => {
                         onChange={setVersion}
                         className={'flex-row-reverse'}
                     />
-                    <GeographySearch value={geoid} onChange={setGeoid} className={'flex-row-reverse'}/>
 
-                    {
-                        (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
-                        .find(c => c.name.includes('disaster_number') && !c.name.toLowerCase().includes('case')) // change this to type like fips-variable
-                        ? <DisasterSearch
-                                view_id={837}
-                                value={disasterNumber}
-                                geoid={geoid}
-                                onChange={setDisasterNumber}
-                                className={'flex-row-reverse'}
-                            /> : null
-                    }
-                    <div className={'block w-full flex mt-1'}>
-                        <label className={'align-bottom shrink-0pr-2 py-2 my-1 w-1/4'}> Striped: </label>
-                        <div className={'align-bottom p-2 pl-0 my-1 rounded-md shrink self-center'}>
-                            <Switch
-                                key={`striped-table`}
-                                checked={striped}
-                                onChange={e => setStriped(!striped)}
-                                className={
-                                    `
-                                    ${striped ? 'bg-indigo-600' : 'bg-gray-200'}
-                                    relative inline-flex 
-                                     h-4 w-10 shrink
-                                     cursor-pointer rounded-full border-2 border-transparent 
-                                     transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0.5
-                                     focus:ring-indigo-600 focus:ring-offset-2`
-                                }
-                            >
-                                <span className="sr-only">toggle striped table by</span>
-                                <span
-                                    aria-hidden="true"
-                                    className={
-                                        `
-                                        ${striped ? 'translate-x-5' : 'translate-x-0'}
-                                        pointer-events-none inline-block 
-                                        h-3 w-4
-                                        transform rounded-full bg-white shadow ring-0 t
-                                        transition duration-200 ease-in-out`
-                                    }
-                                />
-                            </Switch>
-                        </div>
-                    </div>
+                    <RenderFilters
+                        falcor={falcor}
+                        pgEnv={pgEnv}
+                        version={version}
+                        filters={additionalVariables}
+                        setFilters={setAdditionalVariables}
+                        columns={
+                            (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
+                                .filter(c => ['data-variable', 'meta-variable', 'geoid-variable'].includes(c.display))}
+                        metadata={dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || []}
+                    />
 
-                    <div className={'block w-full flex mt-1'}>
-                        <label className={'align-bottom shrink-0pr-2 py-2 my-1 w-1/4'}> External filters default open: </label>
-                        <div className={'align-bottom p-2 pl-0 my-1 rounded-md shrink self-center'}>
-                            <Switch
-                                key={`striped-table`}
-                                checked={extFiltersDefaultOpen}
-                                onChange={e => setExtFiltersDefaultOpen(!extFiltersDefaultOpen)}
-                                className={
-                                    `
-                                ${extFiltersDefaultOpen ? 'bg-indigo-600' : 'bg-gray-200'}
-                                relative inline-flex 
-                                 h-4 w-10 shrink
-                                 cursor-pointer rounded-full border-2 border-transparent 
-                                 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0.5
-                                 focus:ring-indigo-600 focus:ring-offset-2`
-                                }
-                            >
-                                <span className="sr-only">toggle External filters default open by</span>
-                                <span
-                                    aria-hidden="true"
-                                    className={
-                                        `
-                                    ${extFiltersDefaultOpen ? 'translate-x-5' : 'translate-x-0'}
-                                    pointer-events-none inline-block 
-                                    h-3 w-4
-                                    transform rounded-full bg-white shadow ring-0 t
-                                    transition duration-200 ease-in-out`
-                                    }
-                                />
-                            </Switch>
-                        </div>
-                    </div>
-
-                    <div className={'block w-full flex mt-1'}>
-                        <label className={'align-bottom shrink-0pr-2 py-2 my-1 w-1/4'}> Show CSV Download: </label>
-                        <div className={'align-bottom p-2 pl-0 my-1 rounded-md shrink self-center'}>
-                            <Switch
-                                key={`striped-table`}
-                                checked={showCsvDownload}
-                                onChange={e => setShowCsvDownload(!showCsvDownload)}
-                                className={
-                                    `
-                                ${showCsvDownload ? 'bg-indigo-600' : 'bg-gray-200'}
-                                relative inline-flex 
-                                 h-4 w-10 shrink
-                                 cursor-pointer rounded-full border-2 border-transparent 
-                                 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0.5
-                                 focus:ring-indigo-600 focus:ring-offset-2`
-                                }
-                            >
-                                <span className="sr-only">toggle External filters default open by</span>
-                                <span
-                                    aria-hidden="true"
-                                    className={
-                                        `
-                                    ${showCsvDownload ? 'translate-x-5' : 'translate-x-0'}
-                                    pointer-events-none inline-block 
-                                    h-3 w-4
-                                    transform rounded-full bg-white shadow ring-0 t
-                                    transition duration-200 ease-in-out`
-                                    }
-                                />
-                            </Switch>
-                        </div>
-                    </div>
+                    <RenderSwitch label={'Striped'} value={striped} setValue={setStriped}/>
+                    <RenderSwitch label={'External filters default open'} value={extFiltersDefaultOpen}
+                                  setValue={setExtFiltersDefaultOpen}/>
+                    <RenderSwitch label={'Show CSV Download'} value={showCsvDownload}
+                                  setValue={setShowCsvDownload}/>
 
                     <RenderColumnControls
                         cols={
-                           (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
-                               .filter(c => ['data-variable', 'meta-variable', 'geoid-variable'].includes(c.display))
-                               .map(c => c.name)
+                            (dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || [])
+                                .filter(c => ['data-variable', 'meta-variable', 'geoid-variable'].includes(c.display))
+                                .map(c => c.name)
                         }
                         metadata={dataSources.find(ds => ds.source_id === dataSource)?.metadata?.columns || []}
                         // anchorCols={anchorCols}
@@ -775,6 +814,14 @@ const Edit = ({value, onChange}) => {
                         linkCols={linkCols}
                         setLinkCols={setLinkCols}
                     />
+
+                    <div className={'flex justify-end'}>
+                        <button
+                            className={'bg-blue-600 hover:bg-blue-500 text-white w-full sm:w-fit sm:flex-end rounded-md p-1.5 transition ease-in-out'}
+                            onClick={() => load()}
+                        >Generate
+                        </button>
+                    </div>
                 </div>
                 {
                     loading ? <Loading/> :
@@ -829,121 +876,7 @@ const View = ({value}) => {
 export default {
     "name": 'Table: Cenrep',
     "type": 'Table',
-    "variables": [
-        {
-            name: 'dataSources',
-            hidden: true
-        },
-        {
-            name: 'dataSource',
-            hidden: true
-        },
-        {
-            name: 'version',
-            hidden: true
-        },
-        {
-            name: 'geoAttribute',
-            hidden: true
-        },
-        {
-            name: 'geoid',
-            default: '36',
-        },
-        {
-            name: 'disasterNumber',
-            default: null,
-        },
-        {
-            name: 'pageSize',
-            hidden: true
-        },
-        {
-            name: 'sortBy',
-            hidden: true
-        },
-        {
-            name: 'groupBy',
-            hidden: true
-        },
-        {
-            name: 'fn',
-            hidden: true
-        },
-        {
-            name: 'notNull',
-            hidden: true
-        },
-        {
-            name: 'showTotal',
-            hidden: true
-        },
-        {
-            name: 'colSizes',
-            hidden: true
-        },
-        {
-            name: 'filters',
-            hidden: true
-        },
-        {
-            name: 'filterValue',
-            hidden: true
-        },
-        {
-            name: 'visibleCols',
-            hidden: true
-        },
-        {
-            name: 'hiddenCols',
-            hidden: true
-        },
-        {
-            name: 'extFilterCols',
-            hidden: true,
-            default: []
-        },
-        {
-            name: 'colJustify',
-            hidden: true,
-            default: {}
-        },
-        {
-            name: 'striped',
-            hidden: true,
-            default: false
-        },
-        {
-            name: 'extFiltersDefaultOpen',
-            hidden: true,
-            default: false
-        },
-        {
-            name: 'customColName',
-            hidden: true,
-            default: {}
-        },
-        {
-            name: 'linkCols',
-            hidden: true,
-            default: {}
-        },
-        {
-            name: 'openOutCols',
-            hidden: true,
-            default: []
-        },
-        {
-            name: 'extFilterValues',
-            hidden: true,
-            default: {}
-        },
-        {
-            name: 'showCsvDownload',
-            hidden: true,
-            default: false
-        },
-    ],
+    "variables": variables,
     getData,
     "EditComp": Edit,
     "ViewComp": View
