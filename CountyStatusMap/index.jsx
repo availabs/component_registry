@@ -160,13 +160,13 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
 
 
    
-    const sources = [{
-      id: "counties",
-      source: {
-        "type": "vector",
-        "url": "https://tiles.availabs.org/data/tiger_carto.json"
-      },
-    }]
+    const sources =  [{
+          id: "counties",
+          source: {
+            "type": "vector",
+            "url": "https://tiles.availabs.org/data/tiger_carto.json"
+          },
+        }]
 
     // console.log('geoids', geoids)
 
@@ -175,7 +175,7 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
       "source": "counties",
       "source-layer": "s365_v778",
       "type": "fill",
-      "filter" :  ["in", ['get', "geoid"], ['literal', geoids]],
+      "filter" :   ['==', '36', ['slice',['string', ['get', 'geoid']],0,2]],
       
       "paint": {
         "fill-color": ["get", ["get", "geoid"], ["literal", geoColors]],
