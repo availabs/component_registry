@@ -75,19 +75,17 @@ async function getMeta({
                 parseInt: e => parseInt(e),
                 none: e => e
             }
-            return {
-                ...acc,
-                [cleanColName(currentColName)]:
-                    [
-                        ...new Set(
-                            fetchedData.map(fd => fd[currentColName])
-                                .filter(fd => !(fd['$type'] === 'atom' && !fd.value)) // filtering nulls
-                                .reduce((acc, fd) => {
-                                    return fd?.includes(',') ? [...acc, ...fd.split(',').map(f => mapFn[formatValuesToMap](f.trim()))] : [...acc, mapFn[formatValuesToMap](fd)]
-                                } , [])
-                        ) // split on comma?
-                    ].filter(d => d)
-            }
+
+            acc[cleanColName(currentColName)] = [
+                ...new Set(
+                    fetchedData.map(fd => fd[currentColName])
+                        .filter(fd => !(fd['$type'] === 'atom' && !fd.value)) // filtering nulls
+                        .reduce((acc, fd) => {
+                            return fd?.includes(',') ? [...acc, ...fd.split(',').map(f => mapFn[formatValuesToMap](f.trim()))] : [...acc, mapFn[formatValuesToMap](fd)]
+                        } , [])
+                ) // split on comma?
+            ].filter(d => d);
+            return acc
 
         }, {})
         // console.log('cd?', Object.keys(cachedUniqueValues), cachedUniqueValues)
@@ -134,14 +132,16 @@ async function getMeta({
                     await falcor.chunk([...dataPath, {from: 0, to: len - 1}, attributes]);
                     // console.log('got data', Object.values(get(dataRes, ['json', ...dataPath], {})), keyAttribute)
                     const data = Object.values(get(falcor.getCache(), dataPath, {}))
-                        .reduce((acc, d) => (
-                            {
-                                ...acc,
-                                ...{[d[keyAttribute]]: {...attributes.reduce((acc, attr) => ({...acc, ...{[attr]: d[attr]}}), {})}}
-                            }
-                        ), {})
+                        .reduce((acc, d) => {
+                            acc[d[keyAttribute]] = {...attributes.reduce((acc, attr) => ({...acc, ...{[attr]: d[attr]}}), {})}
+                            return acc;
+                        }, {})
                     // console.log('returning data', data)
-                    return {...prev, ...{[currentColName]: data}}; // use fn name to assign data properly in next step
+
+
+                    prev[currentColName] = data;
+                    return prev
+                    // return {...prev, ...{[currentColName]: data}}; // use fn name to assign data properly in next step
                 }, {});
         // setMetaLookupByViewId(data)
         // console.log('got meta', data)
