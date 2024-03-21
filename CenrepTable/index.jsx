@@ -471,14 +471,14 @@ const variables = [
         name: 'geoAttribute',
         hidden: true
     },
-    {
-        name: 'geoid',
-        default: '36',
-    },
-    {
-        name: 'disasterNumber',
-        default: null,
-    },
+    // {
+    //     name: 'geoid',
+    //     default: '36',
+    // },
+    // {
+    //     name: 'disasterNumber',
+    //     default: null,
+    // },
     {
         name: 'pageSize',
         hidden: true

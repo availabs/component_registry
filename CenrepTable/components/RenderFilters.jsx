@@ -34,12 +34,13 @@ const getFilterMeta = async ({column, meta, values, pgEnv, falcor}) => {
         formatValuesToMap, // format values before pulling meta for them. Mainly used for SBA Disaster numbers. 1335DR doesn't match to integer 1335
         keyAttribute, // used to assign key for meta object to return
         valueAttribute = 'name', // not used here, but if passed, use this column name to get labels of meta ids,
-        keepId, // keeps id
+        keepId= true, // keeps id.
         view_id, // view id of the meta table
         filter, // filter
         aggregatedLen // if grouping by, true
     } = metaLookup;
 
+    if(!view_id) return {};
     const options = JSON.stringify({
         aggregatedLen,
         filter: {
@@ -52,20 +53,28 @@ const getFilterMeta = async ({column, meta, values, pgEnv, falcor}) => {
 
     const lenRes = await falcor.get(lenPath);
     const len = get(lenRes, ['json', ...lenPath], 0);
-    // console.log('got len', lenPath)
-    if(!len) return Promise.resolve();
+
+    if(!len) return {};
 
     const dataPath = ['dama', pgEnv, 'viewsbyId', view_id, 'options', options, 'databyIndex'];
+
+    // console.time('meta api request')
     await falcor.chunk([...dataPath, {from: 0, to: len - 1}, attributes]);
-    // console.log('got data', Object.values(get(dataRes, ['json', ...dataPath], {})), keyAttribute)
-    const data = Object.values(get(falcor.getCache(), dataPath, {}))
-        .reduce((acc, d) => (
-            {
-                ...acc,
-                // ...{[d[keyAttribute]]: {...attributes.reduce((acc, attr) => ({...acc, ...{[attr]: d[attr]}}), {})}}
-                ...{[d[keyAttribute]]: d[valueAttribute]}
-            }
-        ), {});
+    // console.timeEnd('meta api request')
+
+    // console.time('getting cache')
+    const dataRes = Object.values(get(falcor.getCache(), dataPath, {}));
+    // console.timeEnd('getting cache')
+
+    // console.time('processing meta')
+    const data = dataRes
+        .reduce((acc, d) => {
+            acc[d[keyAttribute]] = keepId ? `${d[valueAttribute]} (${d[keyAttribute]})` : d[valueAttribute];
+            return acc;
+            }, {});
+    // console.timeEnd('processing meta')
+
+    console.log('returning meta', dataRes, data)
     return data;
 }
 const getFilterData = async ({falcor, filter, pgEnv, version, setFilterData, metadata, setIsLoadingData}) => {
@@ -90,14 +99,13 @@ const getFilterData = async ({falcor, filter, pgEnv, version, setFilterData, met
     await falcor.chunk([...dataPath, {from: 0, to: len - 1}, attributes]);
     const data = Object.values(get(falcor.getCache(), dataPath, {}))
                             .map(r => r[filter.name])
-        .sort((a,b) => a.localeCompare(b));
+                            .sort((a,b) => typeof a === 'string' ? a.localeCompare(b) : a - b);
     const meta_lookup = metadata.find(m => m.name === filter.name)?.meta_lookup;
 
     // if data has meta, fetch meta.
-
     const meta = await getFilterMeta({column: filter, meta: meta_lookup, values: data, pgEnv, falcor});
-
-    const dataWithMeta = data.map(d => ({value: d, label: meta[d] || d}))
+    // console.log('meta', meta)
+    const dataWithMeta = data.map(d => ({value: d, label: meta?.[d] || d}))
     setFilterData(dataWithMeta);
     setIsLoadingData(false)
 }
@@ -160,10 +168,13 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                             onChange={e => setTmpFilter({...tmpFilter, defaultValue: e.target.value})}
                         >
                             <option key={0}
-                                    defaultValue={undefined}>{isLoadingData ? 'Loading...' : 'Please select' }</option>
+                                    defaultValue={undefined}>{isLoadingData ? 'Loading...' : 'Please select'}</option>
                             {
                                 filterData.map((row, i) => <option key={i}
-                                                                   value={row.value || row}>{row.label || row}</option>)
+                                                                   value={row.value || row}>{
+                                    typeof (row.label || row) === 'string' ? row.label || row :
+                                        JSON.stringify(row.label || row)
+                                }</option>)
                             }
                         </select>
 
@@ -178,6 +189,17 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                 </div>
 
             </div>
+
+
+            <div
+                className={'w-full flex flex-col sm:flex-row items-center border-y hover:bg-blue-100 rounded-md'}>
+                <div className={'shrink-0 p-2 my-1 w-full sm:w-1/4'}>Column</div>
+                <div className={'flex w-full justify-between pr-2'}>
+                    <div className={'shrink-0 p-2 my-1'}>Action</div>
+                    <div className={'shrink-0 p-2 my-1'}>Value</div>
+                    <div></div>
+                </div>
+            </div>
             {
                 filters.map(filter => (
                     <div
@@ -185,7 +207,9 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                         <div className={'shrink-0 p-2 my-1 w-full sm:w-1/4'}>{filter.name}</div>
                         <div className={'flex w-full justify-between pr-2'}>
                             <div className={'shrink-0 p-2 my-1'}>{filter.action}</div>
-                            <div className={'shrink-0 p-2 my-1'}>{filter.defaultValue}</div>
+                            <div className={'shrink-0 p-2 my-1'}>{
+                                filterData.find(fd => fd.value === filter.defaultValue)?.label || filter.defaultValue
+                            }</div>
                             <button
                                 className={'h-fit rounded-md p-1 my-1'}
                                 onClick={() => {
