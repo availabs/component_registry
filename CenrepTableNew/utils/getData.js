@@ -15,7 +15,7 @@ export async function getData({
 
                                   // settings that change appearance
                                   pageSize, sortBy,  notNull,  colSizes,
-                                  filters, filterValue, hiddenCols, showTotal,
+                                  filters, filterValue, formatFn, hiddenCols, showTotal,
                                   extFilterCols, extFilterValues, openOutCols, colJustify, striped,
                                   extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables = []
                               }, falcor) {
@@ -75,6 +75,7 @@ export async function getData({
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
                     filter: col?.filter || filters?.[col?.name],
+                    formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
                     openOut: (openOutCols || [])?.includes(col?.name),
@@ -151,6 +152,7 @@ export async function getData({
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
                     filter: col?.filter || filters?.[col?.name],
+                    formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
                     openOut: (openOutCols || [])?.includes(col?.name),
@@ -169,7 +171,7 @@ export async function getData({
         attributionData,
         geoAttribute,
         pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
-        filters, filterValue, visibleCols, hiddenCols,
+        filters, filterValue, formatFn, visibleCols, hiddenCols,
         dataSource, dataSources, version,
         extFilterCols, extFilterValues, colJustify, striped, extFiltersDefaultOpen,
         customColName, linkCols, openOutCols, showCsvDownload, additionalVariables

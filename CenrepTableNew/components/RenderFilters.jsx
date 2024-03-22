@@ -208,7 +208,7 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
             </div>
             {
                 filters.map(filter => (
-                    <div
+                    <div key={filter.name}
                         className={'w-full flex flex-col sm:flex-row items-center border-y hover:bg-blue-100 rounded-md'}>
                         <div className={'shrink-0 p-2 my-1 w-full sm:w-1/4'}>{filter.displayName || filter.name}</div>
                         <div className={'flex w-full justify-between pr-2'}>

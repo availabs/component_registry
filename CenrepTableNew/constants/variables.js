@@ -60,6 +60,10 @@ export const variables = [
         hidden: true
     },
     {
+        name: 'formatFn',
+        hidden: true
+    },
+    {
         name: 'visibleCols',
         hidden: true
     },

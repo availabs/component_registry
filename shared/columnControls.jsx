@@ -396,9 +396,32 @@ const RenderFilterValueControls = ({column, filterValue, setFilterValue, fn}) =>
     )
 }
 
+const RenderFormatFnControls = ({column, formatFn, setFormatFn, fn}) => {
+    if (!setFormatFn) return null;
+
+    // const colNameWithFn = fn[column] || column;
+
+    return (
+        <div className={'w-full pt-2 mt-1 flex flex-row text-sm'}>
+            <label className={'align-bottom shrink-0 pr-2 py-2 my-1 w-1/4'}> Format: </label>
+
+            <select
+                key={`format-fn-${column}`}
+                className={'align-bottom p-2 ml-0 my-1 bg-white rounded-md w-full shrink'}
+                value={formatFn[column]}
+                onChange={e => setFormatFn({...formatFn, ...{[column]: e.target.value}})}
+            >
+                <option key={`filter-none-${column}`} value={' '}>None</option>
+                <option key={`filter-text-${column}`} value={'abbreviate'}>Abbreviate</option>
+                <option key={`filter-text-${column}`} value={'comma'}>Comma Seperated</option>
+            </select>
+        </div>
+    )
+}
+
 const RenderSortControls = ({column, sortBy, setSortBy, fn, stateNamePreferences}) => {
     if (!setSortBy) return null;
-    const fnColumn = stateNamePreferences === 'original' ? column : (fn[column] || column );
+    const fnColumn = stateNamePreferences === 'original' ? column : (fn[column] || column);
 
     return (
         <>
@@ -680,6 +703,7 @@ const RenderColumnBoxes = ({
                                extFilterCols, setExtFilterCols,
                                filters, setFilters,
                                filterValue, setFilterValue,
+                               formatFn, setFormatFn,
                                groupBy, setGroupBy,
                                notNull, setNotNull,
                                showTotal, setShowTotal,
@@ -816,6 +840,9 @@ const RenderColumnBoxes = ({
                                                             <RenderFilterValueControls column={col}
                                                                                        filterValue={filterValue} setFilterValue={setFilterValue} fn={fn}/>
 
+                                                            <RenderFormatFnControls column={col}
+                                                                                    formatFn={formatFn} setFormatFn={setFormatFn} fn={fn}/>
+
                                                             <RenderGroupControls column={col}
                                                                                  groupBy={groupBy} setGroupBy={setGroupBy} fn={fn}
                                                                                  metadata={currentMetaData}/>
@@ -885,6 +912,7 @@ export const RenderColumnControls = (
         visibleCols = [], setVisibleCols,
         hiddenCols=[], setHiddenCols,
         filters = {}, setFilters,
+        formatFn = {}, setFormatFn,
         filterValue = {}, setFilterValue,
         extFilterCols={},
         setExtFilterCols,
@@ -931,6 +959,7 @@ export const RenderColumnControls = (
                                extFilterCols={extFilterCols} setExtFilterCols={setExtFilterCols}
                                filters={filters} setFilters={setFilters}
                                filterValue={filterValue} setFilterValue={setFilterValue}
+                               formatFn={formatFn} setFormatFn={setFormatFn}
                                sortBy={sortBy} setSortBy={setSortBy}
                                groupBy={groupBy} setGroupBy={setGroupBy}
                                notNull={notNull} setNotNull={setNotNull}

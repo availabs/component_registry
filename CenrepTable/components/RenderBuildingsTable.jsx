@@ -4,6 +4,7 @@ import {fnum} from "~/utils/macros.jsx";
 import {Attribution} from "../../shared/attribution.jsx";
 import {RenderExternalTableFilter} from "../../shared/externalTableFilter.jsx";
 import {Link} from "react-router-dom";
+import {formatFunctions} from "../../shared/formatFunctions.js";
 
 const colAccessNameMapping = {
     'disaster_number': 'distinct disaster_number as disaster_number',
@@ -38,6 +39,8 @@ export const RenderBuildingsTable = ({
             Cell: cell => {
                 const originalValue = getNestedValue(cell.value);
                 let value =
+                    cell.column.formatFn && formatFunctions[cell.column.formatFn] ?
+                        formatFunctions[cell.column.formatFn](originalValue, c.isDollar) :
                     ['integer', 'number'].includes(cell.column.type) ?
                         fnum(originalValue || 0, c.isDollar) :
                         Array.isArray(originalValue) ? originalValue.join(', ') : originalValue;

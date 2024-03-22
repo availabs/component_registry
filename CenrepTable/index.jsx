@@ -277,7 +277,7 @@ async function getData({
 
     // settings that change appearance
                            pageSize, sortBy,  notNull,  colSizes,
-                           filters, filterValue, hiddenCols, showTotal,
+                           filters, filterValue, formatFn, hiddenCols, showTotal,
                            extFilterCols, extFilterValues, openOutCols, colJustify, striped,
                            extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
                        }, falcor) {
@@ -325,6 +325,7 @@ async function getData({
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
                     filter: col?.filter || filters?.[col?.name],
+                    formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
                     openOut: (openOutCols || [])?.includes(col?.name),
@@ -413,6 +414,7 @@ async function getData({
                     minWidth: colSizes?.[col.name] || '15%',
                     maxWidth: colSizes?.[col.name] || '15%',
                     filter: col?.filter || filters?.[col?.name],
+                    formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
                     openOut: (openOutCols || [])?.includes(col?.name),
@@ -431,7 +433,7 @@ async function getData({
         attributionData,
         geoid, disasterNumber, geoAttribute,
         pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
-        filters, filterValue, visibleCols, hiddenCols,
+        filters, filterValue, formatFn, visibleCols, hiddenCols,
         dataSource, dataSources, version,
         extFilterCols, extFilterValues, colJustify, striped, extFiltersDefaultOpen,
         customColName, linkCols, openOutCols, showCsvDownload
@@ -457,6 +459,7 @@ const Edit = ({value, onChange}) => {
     const [disasterNumber, setDisasterNumber] = useState(cachedData?.disasterNumber);
     const [filters, setFilters] = useState(cachedData?.filters || {});
     const [filterValue, setFilterValue] = useState(cachedData?.filterValue || {});
+    const [formatFn, setFormatFn] = useState(cachedData?.formatFn || {});
     const [visibleCols, setVisibleCols] = useState(cachedData?.visibleCols || []);
     const [pageSize, setPageSize] = useState(cachedData?.pageSize || 5);
     const [sortBy, setSortBy] = useState(cachedData?.sortBy || {});
@@ -532,7 +535,7 @@ const Edit = ({value, onChange}) => {
             const data = await getData({
                 dataSources, dataSource, geoAttribute, geoid, disasterNumber,
                 pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
-                filters, filterValue, visibleCols, hiddenCols,
+                filters, filterValue, formatFn, visibleCols, hiddenCols,
                 version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
                 customColName, linkCols, fetchData: true
             }, falcor);
@@ -547,7 +550,7 @@ const Edit = ({value, onChange}) => {
         }
 
         load()
-    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, showTotal, filterValue, visibleCols, version]);
+    }, [dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, notNull, showTotal, filterValue, formatFn, visibleCols, version]);
 
 
     useEffect(() => {
@@ -559,7 +562,7 @@ const Edit = ({value, onChange}) => {
             const tmpData = await getData({
                 dataSources, dataSource, geoAttribute, geoid, disasterNumber,
                 pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
-                filters, filterValue, visibleCols, hiddenCols,
+                filters, filterValue, formatFn, visibleCols, hiddenCols,
                 version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
                 customColName, linkCols,
                 data, columns, showCsvDownload,
@@ -578,7 +581,7 @@ const Edit = ({value, onChange}) => {
 
     }, [
         pageSize, sortBy,  notNull,  colSizes,
-        filters, filterValue, hiddenCols, showTotal,
+        filters, filterValue, hiddenCols, showTotal, formatFn,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped,
         extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
     ]);
@@ -750,6 +753,8 @@ const Edit = ({value, onChange}) => {
                         setFilters={setFilters}
                         filterValue={filterValue}
                         setFilterValue={setFilterValue}
+                        formatFn={formatFn}
+                        setFormatFn={setFormatFn}
                         pageSize={pageSize}
                         setPageSize={setPageSize}
                         groupBy={groupBy}
@@ -888,6 +893,10 @@ export default {
         },
         {
             name: 'filterValue',
+            hidden: true
+        },
+        {
+            name: 'formatFn',
             hidden: true
         },
         {

@@ -27,6 +27,7 @@ export const EditComp = ({value, onChange}) => {
     const [status, setStatus] = useState(cachedData?.status);
     const [filters, setFilters] = useState(cachedData?.filters || {});
     const [filterValue, setFilterValue] = useState(cachedData?.filterValue || {});
+    const [formatFn, setFormatFn] = useState(cachedData?.formatFn || {});
     const [visibleCols, setVisibleCols] = useState(cachedData?.visibleCols || []);
     const [pageSize, setPageSize] = useState(cachedData?.pageSize || 5);
     const [sortBy, setSortBy] = useState(cachedData?.sortBy || {});
@@ -46,8 +47,8 @@ export const EditComp = ({value, onChange}) => {
     const [linkCols, setLinkCols] = useState(cachedData?.linkCols || {});
     const [showCsvDownload, setShowCsvDownload] = useState(cachedData?.showCsvDownload || false);
     const [additionalVariables, setAdditionalVariables] = useState(cachedData?.additionalVariables || []); // on all state updates, update variables that this comp exports
-    const category = 'Cenrep';
 
+    const category = 'Cenrep';
     const dataSourceByCategoryPath = ['dama', pgEnv, 'sources', 'byCategory', category];
 
     async function load(){
@@ -72,7 +73,7 @@ export const EditComp = ({value, onChange}) => {
         const tmpData = await getData({
             dataSources, dataSource, geoAttribute,
             pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
-            filters, filterValue, visibleCols, hiddenCols,
+            filters, filterValue, formatFn, visibleCols, hiddenCols,
             version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
             customColName, linkCols,
             data, columns, showCsvDownload, additionalVariables, fetchData: true
@@ -124,7 +125,7 @@ export const EditComp = ({value, onChange}) => {
             const tmpData = await getData({
                 dataSources, dataSource, geoAttribute,
                 pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
-                filters, filterValue, visibleCols, hiddenCols,
+                filters, filterValue, formatFn, visibleCols, hiddenCols,
                 version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
                 customColName, linkCols,
                 data, columns, showCsvDownload, additionalVariables,
@@ -143,7 +144,7 @@ export const EditComp = ({value, onChange}) => {
 
     }, [
         pageSize, sortBy, colSizes,
-        filters, filterValue, hiddenCols,
+        filters, filterValue, hiddenCols, formatFn,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped,
         extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
     ]);
@@ -225,6 +226,8 @@ export const EditComp = ({value, onChange}) => {
                         setFilters={setFilters}
                         filterValue={filterValue}
                         setFilterValue={setFilterValue}
+                        formatFn={formatFn}
+                        setFormatFn={setFormatFn}
                         pageSize={pageSize}
                         setPageSize={setPageSize}
                         groupBy={groupBy}
