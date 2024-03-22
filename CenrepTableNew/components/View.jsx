@@ -1,7 +1,7 @@
 import {RenderBuildingsTable} from "./RenderBuildingsTable.jsx";
 import React from "react";
 
-export const View = ({value}) => {
+export const ViewComp = ({value}) => {
     if (!value) return ''
 
     let data = typeof value === 'object' ?

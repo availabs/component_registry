@@ -12,11 +12,10 @@ import {isValid} from "../utils/isValid.js";
 import {pgEnv} from "~/utils";
 import {Loading} from "~/utils/loading.jsx";
 
-export const Edit = ({value, onChange}) => {
+export const EditComp = ({value, onChange}) => {
     const {falcor, falcorCache} = useFalcor();
 
     let cachedData = value && isJson(value) ? JSON.parse(value) : {};
-    //console.log('geoid', cachedData?.geoid)
     const baseUrl = '/';
 
     const [dataSources, setDataSources] = useState(cachedData?.dataSources || []);
@@ -26,8 +25,6 @@ export const Edit = ({value, onChange}) => {
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState(cachedData?.status);
-    const [geoid, setGeoid] = useState(cachedData?.geoid === '' ? cachedData?.geoid : (cachedData?.geoid || '36'));
-    const [disasterNumber, setDisasterNumber] = useState(cachedData?.disasterNumber);
     const [filters, setFilters] = useState(cachedData?.filters || {});
     const [filterValue, setFilterValue] = useState(cachedData?.filterValue || {});
     const [visibleCols, setVisibleCols] = useState(cachedData?.visibleCols || []);
@@ -71,9 +68,9 @@ export const Edit = ({value, onChange}) => {
 
         setLoading(true);
         setStatus(undefined);
-        // console.log('calling getData', dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version)
+
         const tmpData = await getData({
-            dataSources, dataSource, geoAttribute, geoid, disasterNumber,
+            dataSources, dataSource, geoAttribute,
             pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
             filters, filterValue, visibleCols, hiddenCols,
             version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
@@ -125,7 +122,7 @@ export const Edit = ({value, onChange}) => {
 
             // getData that only sets settings, but doesn't fetch data.
             const tmpData = await getData({
-                dataSources, dataSource, geoAttribute, geoid, disasterNumber,
+                dataSources, dataSource, geoAttribute,
                 pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
                 filters, filterValue, visibleCols, hiddenCols,
                 version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
@@ -266,7 +263,6 @@ export const Edit = ({value, onChange}) => {
                     loading ? <Loading/> :
                         status ? <div className={'p-5 text-center'}>{status}</div> :
                             <RenderBuildingsTable
-                                geoid={geoid}
                                 data={data}
                                 columns={columns}
                                 hiddenCols={hiddenCols}
@@ -289,7 +285,7 @@ export const Edit = ({value, onChange}) => {
     )
 }
 
-Edit.settings = {
+EditComp.settings = {
     hasControls: true,
     name: 'ElementEdit'
 }

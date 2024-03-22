@@ -12,8 +12,6 @@ export const assignMeta = ({
                         groupBy,
                         fn,
                         notNull,
-                        geoAttribute,
-                        geoid, disasterNumber, disasterNumberCol,
                         metaLookupByViewId,
                         columns
                     }, falcor) => {
@@ -28,7 +26,7 @@ export const assignMeta = ({
     if(metaLookupCols?.length){
         //console.log('in if <assignMeta>',)
         return handleExpandableRows(
-            Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {}))
+            Object.values(get(falcorCache, dataPath(options({groupBy, notNull})), {}))
                 .map(row => {
                     metaLookupCols.forEach(mdC => {
 
@@ -59,37 +57,26 @@ export const assignMeta = ({
                     return row;
                 }),
             columns,
-            fn,
-            disasterNumber,
-            disasterNumberCol
+            fn
         )
     }
 
     return handleExpandableRows(
-        Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {})),
+        Object.values(get(falcorCache, dataPath(options({groupBy, notNull})), {})),
         columns,
-        fn,
-        disasterNumber,
-        disasterNumberCol
+        fn
     )
 
 }
 
-const handleExpandableRows = (data, columns, fn, disasterNumber, disasterNumberCol) => {
+const handleExpandableRows = (data, columns, fn) => {
     const expandableColumns = columns.filter(c => c.openOut);
-    // if disaster number is being used to filter data, it should be in visible columns. Hide it if not needed.
-    // console.log('handling exp rows')
     if (expandableColumns?.length) {
         const newData = data.map(row => {
             const newRow = {...row}
             newRow.expand = []
             newRow.expand.push(
                 ...expandableColumns
-                    .filter(col => col.name !== disasterNumberCol ||
-                        (
-                            !disasterNumber ||
-                            (disasterNumber && getNestedValue(row[col.accessor]) && getNestedValue(row[col.accessor])?.includes(disasterNumber))
-                        ))
                     .map(col => {
                         const value = getNestedValue(row[col.accessor]);
 
@@ -104,18 +91,8 @@ const handleExpandableRows = (data, columns, fn, disasterNumber, disasterNumberC
             expandableColumns.forEach(col => delete newRow[col.accessor])
             return newRow;
         })
-            .filter(row =>
-                !disasterNumber ||
-                (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' &&
-                    row[disasterNumberCol]?.toString()?.includes(disasterNumber))
-            );
         return newData;
     } else {
-        return data.filter(row => {
-                return !disasterNumber || !row[disasterNumberCol] ||
-                    (disasterNumber && row[disasterNumberCol] && typeof row[disasterNumberCol] !== 'object' &&
-                        row[disasterNumberCol]?.toString()?.includes(disasterNumber))
-            }
-        )
+        return data
     }
 }

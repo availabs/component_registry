@@ -8,7 +8,7 @@ import {assignMeta} from "./assignMeta.js";
 import {getMeta} from "./getMeta.js";
 export async function getData({
                                   // settings that require data fetching
-                                  dataSources, dataSource, version, geoid, geoAttribute, disasterNumber,
+                                  dataSources, dataSource, version, geoAttribute,
                                   groupBy, fn, visibleCols,
                                   fetchData = true, // when setting that don't require data fetching change, call getData with fetchData = false
                                   data, columns, // if fetchData is false, provide these
@@ -36,12 +36,10 @@ export async function getData({
             [...acc[curr.name], curr.defaultValue] :
             [curr.defaultValue]}), {});
 
-    const options = ({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol}) => {
+    const options = ({groupBy, notNull}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
             filter: {
-                ...geoAttribute && geoid?.toString()?.length && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
-                ...disasterNumber && disasterNumberCol && {[cleanColName(disasterNumberCol)]: [disasterNumber]}, // assumes disasterNumber to be single value
                 ...additionalFilters
             },
             exclude: {
@@ -86,20 +84,14 @@ export async function getData({
                 }
             });
 
-        const disasterNumberOriginalCol = tmpColumns.find(c => c.name?.includes('disaster_number') && !c.name?.toLowerCase().includes('case'))?.name || 'disaster_number'
-        const disasterNumberCol = (fn?.[disasterNumberOriginalCol] || disasterNumberOriginalCol);
-
-        // console.log('columns created')
-
-
         console.time(`getData falcor calls ${version}`)
-        await falcor.get(lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})));
+        await falcor.get(lenPath(options({groupBy, notNull, geoAttribute})));
         const len = Math.min(
-            get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), 0),
+            get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute})), 0),
             100);
 
         await falcor.get(
-            [...dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})),
+            [...dataPath(options({groupBy, notNull, geoAttribute})),
                 {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
 
         await falcor.get([...attributionPath, attributionAttributes]);
@@ -107,15 +99,12 @@ export async function getData({
             dataSources,
             dataSource,
             visibleCols,
-            geoid,
             dataPath,
             options,
             groupBy,
             fn,
             notNull,
             geoAttribute,
-            disasterNumber,
-            disasterNumberCol,
             columns: tmpColumns
         }, falcor);
 
@@ -129,9 +118,6 @@ export async function getData({
             fn,
             notNull,
             geoAttribute,
-            geoid,
-            disasterNumber,
-            disasterNumberCol,
             metaLookupByViewId,
             columns: tmpColumns
         }, falcor);
@@ -181,7 +167,7 @@ export async function getData({
         data: fetchData ? tmpData : data, // new data is only available if fetchData is true
         columns: tmpColumns || columns, // always prioritize tmpColumns
         attributionData,
-        geoid, disasterNumber, geoAttribute,
+        geoAttribute,
         pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
         filters, filterValue, visibleCols, hiddenCols,
         dataSource, dataSources, version,

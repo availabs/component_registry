@@ -23,6 +23,7 @@ import CalloutBox from "./CalloutBox/";
 import FusionEventsMap from "./FusionEventsMap/index.jsx";
 import OpenFemaDataTable from "./OpenFemaDataTable/index.jsx";
 import CenrepTable from "./CenrepTable/index.jsx";
+import CenrepTableNew from "./CenrepTableNew/index.jsx";
 import DataTextBox from "./DataTextBox/index.jsx";
 import FormsTable from "./FormsTable/index.jsx";
 import CensusStatBox from "./CensusStatBox/index.jsx"
@@ -52,6 +53,7 @@ const ComponentRegistry = {
     "Table: Open Fema Data": OpenFemaDataTable, // deprecated
     "Table: Forms": FormsTable,
     "Table: Cenrep": CenrepTable,
+    "Table: Cenrep II": CenrepTableNew,
     "Graph: Historic Loss by Disaster Number": LossByDisasterNumberChart,
     "Graph: Historic Loss by Hazard Type": LossByHazardTypeChart,
     "Graph: Declared vs Non-Declared Loss": LossDistributionPieChart,

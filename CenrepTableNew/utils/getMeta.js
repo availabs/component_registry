@@ -7,15 +7,11 @@ export async function getMeta({
                            dataSources,
                            dataSource,
                            visibleCols,
-                           geoid,
                            dataPath,
                            options,
                            groupBy,
                            fn,
                            notNull,
-                           geoAttribute,
-                           disasterNumber,
-                           disasterNumberCol,
                            columns
                        }, falcor){
     const metadata = (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata?.columns;
@@ -24,7 +20,7 @@ export async function getMeta({
 
     if(metaViewIdLookupCols?.length){
         const falcorCache = falcor.getCache();
-        const fetchedData = Object.values(get(falcorCache, dataPath(options({groupBy, notNull, geoAttribute, geoid, disasterNumber, disasterNumberCol})), {}));
+        const fetchedData = Object.values(get(falcorCache, dataPath(options({groupBy, notNull})), {}));
         if(!fetchedData?.length) return {};
 
         const cachedUniqueValues = metaViewIdLookupCols.reduce((acc, curr) => {
@@ -61,7 +57,6 @@ export async function getMeta({
                     // console.log('metaLookup', metaLookup)
                     const {
                         attributes, // to fetch from meta table
-                        geoAttribute, // if passed, apply geoid filter on data
                         filterAttribute,  // if passed, use this column name instead of md.name to filtered using cached uniq data
                         formatValuesToMap, // format values before pulling meta for them. Mainly used for SBA Disaster numbers. 1335DR doesn't match to integer 1335
                         keyAttribute, // used to assign key for meta object to return
@@ -75,7 +70,6 @@ export async function getMeta({
                         aggregatedLen,
                         filter: {
                             ...cachedUniqueValues?.[cleanColName(md.name)]?.length && {[filterAttribute || cleanColName(md.name)]: cachedUniqueValues?.[cleanColName(md.name)]}, // use md.name to fetch correct meta
-                            ...geoAttribute && geoid?.toString()?.length && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]},
                             ...(filter || {})
                         }
                     });
