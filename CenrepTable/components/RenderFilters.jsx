@@ -34,13 +34,13 @@ const getFilterMeta = async ({column, meta, values, pgEnv, falcor}) => {
         formatValuesToMap, // format values before pulling meta for them. Mainly used for SBA Disaster numbers. 1335DR doesn't match to integer 1335
         keyAttribute, // used to assign key for meta object to return
         valueAttribute = 'name', // not used here, but if passed, use this column name to get labels of meta ids,
-        keepId= true, // keeps id.
+        keepId = true, // keeps id.
         view_id, // view id of the meta table
         filter, // filter
         aggregatedLen // if grouping by, true
     } = metaLookup;
 
-    if(!view_id) return {};
+    if (!view_id) return {};
     const options = JSON.stringify({
         aggregatedLen,
         filter: {
@@ -54,7 +54,7 @@ const getFilterMeta = async ({column, meta, values, pgEnv, falcor}) => {
     const lenRes = await falcor.get(lenPath);
     const len = get(lenRes, ['json', ...lenPath], 0);
 
-    if(!len) return {};
+    if (!len) return {};
 
     const dataPath = ['dama', pgEnv, 'viewsbyId', view_id, 'options', options, 'databyIndex'];
 
@@ -71,14 +71,14 @@ const getFilterMeta = async ({column, meta, values, pgEnv, falcor}) => {
         .reduce((acc, d) => {
             acc[d[keyAttribute]] = keepId ? `${d[valueAttribute]} (${d[keyAttribute]})` : d[valueAttribute];
             return acc;
-            }, {});
+        }, {});
     // console.timeEnd('processing meta')
 
     console.log('returning meta', dataRes, data)
     return data;
 }
 const getFilterData = async ({falcor, filter, pgEnv, version, setFilterData, metadata, setIsLoadingData}) => {
-    if(!filter.name) return;
+    if (!filter.name) return;
     setIsLoadingData(true);
 
     const options =
@@ -94,12 +94,12 @@ const getFilterData = async ({falcor, filter, pgEnv, version, setFilterData, met
     await falcor.get(lenPath);
     const len = get(falcor.getCache(), lenPath, 0);
 
-    if(!len) return Promise.resolve();
+    if (!len) return Promise.resolve();
 
     await falcor.chunk([...dataPath, {from: 0, to: len - 1}, attributes]);
     const data = Object.values(get(falcor.getCache(), dataPath, {}))
-                            .map(r => r[filter.name])
-                            .sort((a,b) => typeof a === 'string' ? a.localeCompare(b) : a - b);
+        .map(r => r[filter.name])
+        .sort((a, b) => typeof a === 'string' ? a.localeCompare(b) : a - b);
     const meta_lookup = metadata.find(m => m.name === filter.name)?.meta_lookup;
 
     // if data has meta, fetch meta.
@@ -139,7 +139,13 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                         className={'appearance-auto align-bottom shrink-0 px-1 my-1 w-1/4 bg-white rounded-md'}
                         value={tmpFilter.name}
                         onChange={e =>
-                            setTmpFilter({name: e.target.value, type: 'simple', action: 'include', defaultValue: ''})
+                            setTmpFilter({
+                                name: e.target.value,
+                                type: 'simple',
+                                action: 'include',
+                                defaultValue: '',
+                                displayName: columns.find(c => c.name === e.target.value)?.display_name || e.target.value
+                            })
                         }
                     >
                         <option key={0} defaultValue={undefined}>Please select column</option>
@@ -204,7 +210,7 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                 filters.map(filter => (
                     <div
                         className={'w-full flex flex-col sm:flex-row items-center border-y hover:bg-blue-100 rounded-md'}>
-                        <div className={'shrink-0 p-2 my-1 w-full sm:w-1/4'}>{filter.name}</div>
+                        <div className={'shrink-0 p-2 my-1 w-full sm:w-1/4'}>{filter.displayName || filter.name}</div>
                         <div className={'flex w-full justify-between pr-2'}>
                             <div className={'shrink-0 p-2 my-1'}>{filter.action}</div>
                             <div className={'shrink-0 p-2 my-1'}>{

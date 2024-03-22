@@ -281,7 +281,7 @@ async function getData({
                            pageSize, sortBy,  notNull,  colSizes,
                            filters, filterValue, hiddenCols, showTotal,
                            extFilterCols, extFilterValues, openOutCols, colJustify, striped,
-                           extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables
+                           extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables = []
                        }, falcor) {
     // console.log('getData called. fetchData:', fetchData, dataSource, version)
     //console.log('getData called. fetchData:', fetchData)
@@ -634,17 +634,18 @@ const Edit = ({value, onChange}) => {
         setLoading(true);
         setStatus(undefined);
         // console.log('calling getData', dataSource, geoid, disasterNumber, geoAttribute, groupBy, fn, visibleCols, version)
-        const data = await getData({
+        const tmpData = await getData({
             dataSources, dataSource, geoAttribute, geoid, disasterNumber,
             pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
             filters, filterValue, visibleCols, hiddenCols,
             version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
-            customColName, linkCols, additionalVariables, fetchData: true
+            customColName, linkCols,
+            data, columns, showCsvDownload, additionalVariables, fetchData: true
         }, falcor);
 
         onChange(JSON.stringify({
             // only save data and columns
-            ...data,
+            ...tmpData,
         }));
 
         setLoading(false);
@@ -706,10 +707,10 @@ const Edit = ({value, onChange}) => {
         load()
 
     }, [
-        pageSize, sortBy,  notNull,  colSizes,
-        filters, filterValue, hiddenCols, showTotal,
+        pageSize, sortBy, colSizes,
+        filters, filterValue, hiddenCols,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped,
-        extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables
+        extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
     ]);
 
     const data = cachedData.data;

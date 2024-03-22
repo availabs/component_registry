@@ -80,7 +80,7 @@ const getCountyData = async ({falcor, pgEnv, statesData, setGeoData}) => {
                 return {geoid: county.geoid, name: `${county[geoAttributesMapping.name]}, ${state}`};
             })
 
-        geoData.push(...statesData.map(sd => ({geoid: sd.geoid, name: `${sd.name} State`})))
+        geoData.push(...statesData.map(sd => ({geoid: sd.geoid, name: `State of ${sd.name}`})))
         geoData.push({geoid: '', name: `United States`})
         setGeoData(geoData)
     }
