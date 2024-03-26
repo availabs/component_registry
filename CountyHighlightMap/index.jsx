@@ -42,7 +42,9 @@ async function getData({
             ];
     const geomRes = await falcor.get([...geoPath(false && geoid?.toString()?.length === 5 ? countyView : stateView), geoIndices, geomColTransform]);
     const geom = get(geomRes, ["json", ...geoPath(false && geoid?.toString()?.length === 5 ? countyView : stateView), 0, geomColTransform]);
-    const mapFocus = get(JSON.parse(geom), 'bbox');
+    const mapFocus = get(JSON.parse(geom), 'bbox') || [-79.761313,40.477399,-71.777491,45.01084];
+
+    console.log('mapFocus', mapFocus)
 
     const {geoColors} = getGeoColors({geoid});
 
