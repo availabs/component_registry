@@ -29,7 +29,7 @@ async function getData({
     const countyView = 286;
 
     // mapFocus
-    const geomColTransform = [`st_asgeojson(st_envelope(ST_Simplify(geom, ${false && geoid?.toString()?.length === 5 ? `0.1` : `0.5`})), 9, 1) as geom`],
+    const geomColTransform = [`st_asgeojson(st_orientedenvelope(st_union(geom)), 9, 1)  as geom`],
         geoIndices = {from: 0, to: 0},
         stateFips = geoid?.toString()?.substring(0, 2),
         geoPath = (view_id) =>
