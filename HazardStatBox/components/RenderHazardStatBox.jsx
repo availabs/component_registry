@@ -72,13 +72,13 @@ export const RenderHazardStatBox = ({
     return (
         <div className={`border border-gray-200 rounded-lg p-5 ${eal ? `bg-slate-50 text-gray-900` : `bg-slate-200 text-gray-400`}`}>
             <div className={`w-full border-b-4 rounded flex flex-wrap items-center font-medium tracking-wide uppercase ${isGrid ? `text-base` : `text-lg`}`}
-                 style={{borderColor: get(hazardsMeta, [hazard, "color"], "")}}>
+                 style={{borderColor: eal ? get(hazardsMeta, [hazard, "color"], "") : '#ccc'}}>
                 {!isTotal &&
                     <div className={`rounded-full mr-2 mb-0 font-bold ${hazardsMeta[hazard]?.icon}`}
                          style={{
                              height: "15px",
                              width: "15px",
-                             color: get(hazardsMeta, [hazard, "color"], "")
+                             color: eal ? get(hazardsMeta, [hazard, "color"], "") : '#ccc'
                          }}
                     />}
                 {isTotal ? "Total" : hazardsMeta[hazard]?.name}

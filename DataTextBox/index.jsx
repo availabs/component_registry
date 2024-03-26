@@ -35,7 +35,7 @@ async function getData({pgEnv, geoid, dataSource, version, geoAttribute, visible
             {from: 0, to: len - 1}, visibleCols]);
     await falcor.get([...attributionPath, attributionAttributes]);
 
-    const textToSave = visibleCols.map(vc =>{
+    const textToSave = visibleCols?.map(vc =>{
         let val = Object.values(
             get(falcor.getCache(), dataPath(options({geoAttribute, geoid})), {})
         )[0]?.[vc] || ''
@@ -44,9 +44,9 @@ async function getData({pgEnv, geoid, dataSource, version, geoAttribute, visible
             header: columnHeader?.[vc],
             color: columnColors?.[vc]
         }
-    }).filter(val => {
+    })?.filter(val => {
         console.log('???????????/', val?.text)
-        return val.text && typeof val.text !== 'object' && val?.text?.trim()?.toLowerCase() !== 'null'
+        return val.text && typeof val.text !== 'object' && val?.text?.toString()?.trim()?.toLowerCase() !== 'null'
     });
 
     return {
@@ -66,7 +66,7 @@ async function getData({pgEnv, geoid, dataSource, version, geoAttribute, visible
 }
 const convertToEditorText = text => ({
     root: {
-        "children": text.map(t => ({
+        "children": text?.map(t => ({
             "children": [
                 {
                     "detail": 0,
