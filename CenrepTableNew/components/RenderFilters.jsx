@@ -111,6 +111,7 @@ const getFilterData = async ({falcor, filter, pgEnv, version, setFilterData, met
 }
 export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, pgEnv, version}) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isHidden, setIsHidden] = useState(true);
     const [tmpFilter, setTmpFilter] = useState({name: '', type: 'simple', action: 'include', 'defaultValue': ''});
     const [filterData, setFilterData] = useState([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
@@ -126,17 +127,23 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                     <button
                         className={`rounded-md shrink-0
                     ${isOpen ? `bg-green-600 hover:bg-green-500` : `bg-blue-600 hover:bg-blue-500`} 
-                    text-white p-1.5 h-fit text-xs transition ease-in-out`}
-                        onClick={() => setIsOpen(!isOpen)}
+                    text-white text-xs p-1.5 h-fit transition ease-in-out`}
+                        onClick={() => {
+                            setIsHidden(!isHidden)
+                            setTimeout(() => setIsOpen(!isOpen), 10)
+                        }}
                     >
                         {isOpen ? <><i className={'fa fa-check'}/> Done</> : `+ Add filters`}
                     </button>
                 </div>
 
                 <div
-                    className={`flex ${isOpen ? "opacity-100" : "opacity-0"} transition-opacity ease-in-out delay-150 duration-300 w-full mt-2`}>
+                    className={`flex 
+                    ${isHidden ? "hidden" : "block"} 
+                    ${isOpen ? "opacity-100" : "opacity-0"} 
+                    transition-opacity ease-in-out delay-150 duration-300 w-full mt-2`}>
                     <select
-                        className={'appearance-auto align-bottom shrink-0 px-1 my-1 w-1/4 bg-white rounded-md'}
+                        className={'appearance-auto align-bottom shrink-0 p-2 my-1 w-1/4 bg-white rounded-md'}
                         value={tmpFilter.name}
                         onChange={e =>
                             setTmpFilter({
@@ -155,9 +162,9 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                         }
                     </select>
 
-                    <div className={'w-full flex justify-between pr-2'}>
+                    <div className={'w-full flex justify-between'}>
                         <select
-                            className={'appearance-auto align-bottom shrink-0 px-1 my-1 bg-white rounded-md mx-1'}
+                            className={'appearance-auto align-bottom shrink-0 p-1 my-1 bg-white rounded-md mx-1'}
                             value={tmpFilter.action}
                             onChange={e => setTmpFilter({...tmpFilter, action: e.target.value})}
                         >
@@ -169,7 +176,7 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                         </select>
 
                         <select
-                            className={'appearance-auto w-1/2 align-bottom shrink-0 px-1 my-1 bg-white rounded-md mx-1'}
+                            className={'appearance-auto w-1/2 align-bottom shrink-0 p-2 my-1 bg-white rounded-md mx-1'}
                             value={tmpFilter.defaultValue}
                             onChange={e => setTmpFilter({...tmpFilter, defaultValue: e.target.value})}
                         >
@@ -185,7 +192,7 @@ export const RenderFilters = ({filters, setFilters, columns, metadata, falcor, p
                         </select>
 
                         <button
-                            className={'bg-blue-600 hover:bg-blue-500 text-white rounded-md p-1.5 my-1 transition ease-in-out'}
+                            className={'bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-md p-1.5 my-1 transition ease-in-out'}
                             onClick={() => {
                                 setFilters([...filters, tmpFilter])
                             }}>

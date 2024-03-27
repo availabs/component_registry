@@ -36,7 +36,18 @@ export async function getData({
             [...acc[curr.name], curr.defaultValue] :
             [curr.defaultValue]}), {});
 
-    const options = ({groupBy, notNull}) => {
+
+    const metadata = (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata?.columns ||
+        (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata ||
+        [];
+    const metaLookupCols =
+        metadata?.filter(md => visibleCols.includes(md.name) && ['meta-variable', 'geoid-variable'].includes(md.display) && md.meta_lookup)
+            .reduce((acc, {name, meta_lookup}) => {
+                acc[name] = meta_lookup;
+                return acc;
+            }, {});
+
+    const options = ({groupBy, notNull, sortBy}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
             filter: {
@@ -47,6 +58,8 @@ export async function getData({
                 ...additionalExcludes
             },
             groupBy: groupBy,
+            orderBy: sortBy,
+            meta: metaLookupCols
         })
     };
 
@@ -55,9 +68,6 @@ export async function getData({
     const attributionPath = ['dama', pgEnv, 'views', 'byId', version, 'attributes'],
         attributionAttributes = ['source_id', 'view_id', 'version', '_modified_timestamp'];
 
-    const metadata = (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata?.columns ||
-        (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata ||
-        [];
     let tmpData, tmpColumns;
 
     if(fetchData){
@@ -86,44 +96,19 @@ export async function getData({
             });
 
         console.time(`getData falcor calls ${version}`)
-        await falcor.get(lenPath(options({groupBy, notNull, geoAttribute})));
+        await falcor.get(lenPath(options({groupBy, notNull, sortBy})));
         const len = Math.min(
-            get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute})), 0),
-            100);
+            get(falcor.getCache(), lenPath(options({groupBy, notNull, sortBy})), 0),
+            10_000);
 
         await falcor.get(
-            [...dataPath(options({groupBy, notNull, geoAttribute})),
+            [...dataPath(options({groupBy, notNull, sortBy})),
                 {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
 
         await falcor.get([...attributionPath, attributionAttributes]);
-        const metaLookupByViewId = await getMeta({
-            dataSources,
-            dataSource,
-            visibleCols,
-            dataPath,
-            options,
-            groupBy,
-            fn,
-            notNull,
-            geoAttribute,
-            columns: tmpColumns
-        }, falcor);
+        const fetchedData = Object.values(get(falcor.getCache(), dataPath(options({groupBy, notNull, sortBy})), {}));
 
-        //console.log('got meta:', metaLookupByViewId)
-        tmpData = assignMeta({
-            metadata,
-            visibleCols,
-            dataPath,
-            options,
-            groupBy,
-            fn,
-            notNull,
-            geoAttribute,
-            metaLookupByViewId,
-            columns: tmpColumns
-        }, falcor);
-
-        tmpData = (tmpData || data).filter(row =>
+        tmpData = (tmpData || fetchedData || data || []).filter(row =>
             row.totalRow ||
             !Object.keys(filterValue || {}).length ||
             Object.keys(filterValue)

@@ -904,13 +904,28 @@ const RenderColumnBoxes = ({
     )
 };
 
+const RenderClearColumnsButton = ({visibleCols, setVisibleCols}) => {
+    if(!visibleCols?.length) return null
+
+    return (
+        <div className={'w-full py-1'}>
+            <button
+                className={'p-1 text-xs bg-red-600 hover:bg-red-500 text-white rounded-md height-fit float-right'}
+                onClick={() => setVisibleCols([])}
+            >
+                Clear
+            </button>
+        </div>
+    )
+}
+
 export const RenderColumnControls = (
     {
         cols = [],
         metadata = [],
         anchorCols = [],
         visibleCols = [], setVisibleCols,
-        hiddenCols=[], setHiddenCols,
+        hiddenCols = [], setHiddenCols,
         filters = {}, setFilters,
         formatFn = {}, setFormatFn,
         filterValue = {}, setFilterValue,
@@ -951,6 +966,8 @@ export const RenderColumnControls = (
                                   visibleCols={visibleCols} setVisibleCols={setVisibleCols}
                                   metadata={metadata}
             />
+
+            <RenderClearColumnsButton visibleCols={visibleCols} setVisibleCols={setVisibleCols} />
 
             <RenderColumnBoxes cols={cols}
                                anchorCols={anchorCols}
