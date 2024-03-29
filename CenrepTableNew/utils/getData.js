@@ -14,7 +14,7 @@ export async function getData({
                                   data, columns, // if fetchData is false, provide these
 
                                   // settings that change appearance
-                                  pageSize, sortBy,  notNull,  colSizes,
+                                  pageSize, dataSize, sortBy,  notNull,  colSizes,
                                   filters, filterValue, formatFn, hiddenCols, showTotal,
                                   extFilterCols, extFilterValues, openOutCols, colJustify, striped,
                                   extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables = []
@@ -99,7 +99,7 @@ export async function getData({
         await falcor.get(lenPath(options({groupBy, notNull, sortBy})));
         const len = Math.min(
             get(falcor.getCache(), lenPath(options({groupBy, notNull, sortBy})), 0),
-            10_000);
+            dataSize);
 
         await falcor.get(
             [...dataPath(options({groupBy, notNull, sortBy})),
@@ -155,7 +155,7 @@ export async function getData({
         columns: tmpColumns || columns, // always prioritize tmpColumns
         attributionData,
         geoAttribute,
-        pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
+        pageSize, dataSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
         filters, filterValue, formatFn, visibleCols, hiddenCols,
         dataSource, dataSources, version,
         extFilterCols, extFilterValues, colJustify, striped, extFiltersDefaultOpen,

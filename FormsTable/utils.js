@@ -111,12 +111,13 @@ export async function getMeta({
                     const dataPath = ['dama', pgEnv, 'viewsbyId', metaLookup.view_id, 'options', options, 'databyIndex'];
                     const dataRes = await falcor.get([...dataPath, {from: 0, to: len - 1}, attributes]);
                     const data = Object.values(get(dataRes, ['json', ...dataPath], {}))
-                        .reduce((acc, d) => (
-                            {
-                                ...acc,
-                                ...{[d[keyAttribute]]: {...attributes.reduce((acc, attr) => ({...acc, ...{[attr]: d[attr]}}), {})}}
-                            }
-                        ), {})
+                        .reduce((acc, d) => {
+                            acc[d[keyAttribute]] = attributes.reduce((acc, attr) => {
+                                acc[attr] = d[attr]
+                                return acc
+                            }, {})
+                            return acc;
+                        }, {})
 
 
 

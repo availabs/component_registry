@@ -42,7 +42,6 @@ export const RenderBuildingsTable = ({
         return {
             ...c,
             Cell: cell => {
-                console.log('cell', cell)
                 const originalValue = getNestedValue(cell.value);
                 const urlSuffix = cell.column.name === 'geoid' ? formatNameForURL(originalValue) : originalValue;
                 // const rawValue = getNestedRawValue(cell.value);

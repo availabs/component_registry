@@ -30,6 +30,7 @@ export const EditComp = ({value, onChange}) => {
     const [formatFn, setFormatFn] = useState(cachedData?.formatFn || {});
     const [visibleCols, setVisibleCols] = useState(cachedData?.visibleCols || []);
     const [pageSize, setPageSize] = useState(cachedData?.pageSize || 5);
+    const [dataSize, setDataSize] = useState(cachedData?.dataSize || 100);
     const [sortBy, setSortBy] = useState(cachedData?.sortBy || {});
     const [groupBy, setGroupBy] = useState(cachedData?.groupBy || []);
     const [notNull, setNotNull] = useState(cachedData?.notNull || []);
@@ -72,7 +73,7 @@ export const EditComp = ({value, onChange}) => {
 
         const tmpData = await getData({
             dataSources, dataSource, geoAttribute,
-            pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
+            pageSize, dataSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
             filters, filterValue, formatFn, visibleCols, hiddenCols,
             version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
             customColName, linkCols,
@@ -124,7 +125,7 @@ export const EditComp = ({value, onChange}) => {
             // getData that only sets settings, but doesn't fetch data.
             const tmpData = await getData({
                 dataSources, dataSource, geoAttribute,
-                pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
+                pageSize, dataSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
                 filters, filterValue, formatFn, visibleCols, hiddenCols,
                 version, extFilterCols, extFilterValues, openOutCols, colJustify, striped, extFiltersDefaultOpen,
                 customColName, linkCols,
@@ -143,7 +144,7 @@ export const EditComp = ({value, onChange}) => {
         load()
 
     }, [
-        pageSize, sortBy, colSizes,
+        pageSize, dataSize, sortBy, colSizes,
         filters, filterValue, hiddenCols, formatFn,
         extFilterCols, extFilterValues, openOutCols, colJustify, striped,
         extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
@@ -230,6 +231,8 @@ export const EditComp = ({value, onChange}) => {
                         setFormatFn={setFormatFn}
                         pageSize={pageSize}
                         setPageSize={setPageSize}
+                        dataSize={dataSize}
+                        setDataSize={setDataSize}
                         groupBy={groupBy}
                         setGroupBy={setGroupBy}
                         fn={fn}
