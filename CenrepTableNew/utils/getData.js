@@ -1,11 +1,9 @@
 import {getDefaultJustify} from "../../shared/columnControls.jsx";
 import get from "lodash/get.js";
 import {pgEnv} from "~/utils";
-import {getNestedValue} from "../../FormsTable/utils.js";
+import {getNestedValue} from "../../utils/getNestedValue.js";
 import {addTotalRow} from "../../utils/addTotalRow.js";
 import {cleanColName} from "./cleanColName.js";
-import {assignMeta} from "./assignMeta.js";
-import {getMeta} from "./getMeta.js";
 export async function getData({
                                   // settings that require data fetching
                                   dataSources, dataSource, version, geoAttribute,

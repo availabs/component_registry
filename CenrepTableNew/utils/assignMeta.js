@@ -1,5 +1,5 @@
 import get from "lodash/get.js";
-import {getNestedValue} from "../../FormsTable/utils.js";
+import {getNestedValue} from "../../utils/getNestedValue.js";
 import {parseJson} from "./parseJson.js";
 
 const assign = (originalValue, newValue, keepId) => keepId ? `${newValue} (${originalValue})` : newValue;
