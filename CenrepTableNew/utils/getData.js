@@ -4,6 +4,7 @@ import {pgEnv} from "~/utils";
 import {getNestedValue} from "../../utils/getNestedValue.js";
 import {addTotalRow} from "../../utils/addTotalRow.js";
 import {cleanColName} from "./cleanColName.js";
+import {handleExpandableRows} from "./handleExpandableRows.js";
 export async function getData({
                                   // settings that require data fetching
                                   dataSources, dataSource, version, geoAttribute,
@@ -86,7 +87,7 @@ export async function getData({
                     formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
-                    openOut: (openOutCols || [])?.includes(col?.name),
+                    openOut: (openOutCols || [])?.includes(fn?.[col?.name] || col?.name),
                     link: linkCols?.[col?.name],
                     ...col,
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
@@ -104,8 +105,13 @@ export async function getData({
                 {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
 
         await falcor.get([...attributionPath, attributionAttributes]);
-        const fetchedData = Object.values(get(falcor.getCache(), dataPath(options({groupBy, notNull, sortBy})), {}));
+        const fetchedData = handleExpandableRows(
+            Object.values(get(falcor.getCache(), dataPath(options({groupBy, notNull, sortBy})), {})),
+            columns,
+            fn
+        );
 
+        // filter data to add/update a "total" row
         tmpData = (tmpData || fetchedData || data || []).filter(row =>
             row.totalRow ||
             !Object.keys(filterValue || {}).length ||
@@ -138,7 +144,7 @@ export async function getData({
                     formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
-                    openOut: (openOutCols || [])?.includes(col?.name),
+                    openOut: (openOutCols || [])?.includes(fn?.[col?.name] || col?.name),
                     link: linkCols?.[col?.name],
                     ...col,
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
