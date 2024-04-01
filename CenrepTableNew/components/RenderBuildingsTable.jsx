@@ -95,8 +95,8 @@ export const RenderBuildingsTable = ({
                     initialPageSize={pageSize}
                     pageSize={pageSize}
                     striped={striped}
-                    // sortBy={sortColRaw}
-                    sortOrder={Object.values(sortBy)?.[0] || 'asc'}
+                    // sortBy={undefined}
+                    // sortOrder={Object.values(sortBy)?.[0] || 'asc'}
                     csvDownload={showCsvDownload}
                     fetchData={fetchData}
                 />
