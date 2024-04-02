@@ -10,7 +10,7 @@ import {Loading} from "~/utils/loading.jsx";
 import {getDefaultJustify, RenderColumnControls} from "../shared/columnControls.jsx";
 import {addTotalRow} from "../utils/addTotalRow.js";
 import {Switch} from "@headlessui/react";
-import {defaultOpenOutAttributes, getNestedValue} from "../FormsTable/utils.js";
+import {getNestedValue} from "../utils/getNestedValue.js";
 import DisasterSearch from "../shared/disasterSearch.jsx";
 
 const isValid = ({groupBy, fn, columnsToFetch}) => {

@@ -33,6 +33,30 @@ const RenderPageSizeControl = ({pageSize, setPageSize}) => {
     )
 };
 
+const RenderDataSizeControl = ({dataSize, setDataSize}) => {
+    const [tmpDataSize, setTmpDataSize] = useState(dataSize);
+
+    if (!setDataSize) return null;
+
+    return (
+        <div className={'w-full pl-1 pt-2 mt-1 flex flex-row text-sm'}>
+            <label className={'shrink-0 pr-2 py-2 my-1 w-1/4'}>Table Data Size</label>
+            <input
+                key={'dataSizeInput'}
+                className={'p-2 ml-0 my-1 bg-white rounded-md w-full shrink'}
+                type={"number"}
+                placeholder={'Table Page Size'}
+                value={tmpDataSize}
+                onChange={e => {
+                    setTmpDataSize(e.target.value);
+                    if (e.target.value > 0) setDataSize(+e.target.value);
+                }}
+                onWheel={e => e.target.blur()}
+            />
+        </div>
+    )
+};
+
 const RenderColumnSelector = ({cols, anchorCols, visibleCols, setVisibleCols, metadata}) => (
     <div className={'w-full pt-2 mt-1 flex flex-row text-sm'}>
         <label className={'shrink-0 pr-2 py-2 my-1 w-1/4'}> Display Columns: </label>
@@ -904,13 +928,28 @@ const RenderColumnBoxes = ({
     )
 };
 
+const RenderClearColumnsButton = ({visibleCols, setVisibleCols}) => {
+    if(!visibleCols?.length) return null
+
+    return (
+        <div className={'w-full py-1'}>
+            <button
+                className={'p-1 text-xs bg-red-600 hover:bg-red-500 text-white rounded-md height-fit float-right'}
+                onClick={() => setVisibleCols([])}
+            >
+                Clear
+            </button>
+        </div>
+    )
+}
+
 export const RenderColumnControls = (
     {
         cols = [],
         metadata = [],
         anchorCols = [],
         visibleCols = [], setVisibleCols,
-        hiddenCols=[], setHiddenCols,
+        hiddenCols = [], setHiddenCols,
         filters = {}, setFilters,
         formatFn = {}, setFormatFn,
         filterValue = {}, setFilterValue,
@@ -922,6 +961,7 @@ export const RenderColumnControls = (
         fn = {}, setFn,
         sortBy = {}, setSortBy,
         pageSize, setPageSize,
+        dataSize, setDataSize,
         stateNamePreferences,
         // stateNamePreferences defaults to fn[column]. to change,
         // pass {
@@ -942,15 +982,23 @@ export const RenderColumnControls = (
         <div>
             <div key={'shadow'} className={'shadow-md shadow-blue-100 p-1.5'}></div>
 
-            <RenderPageSizeControl pageSize={pageSize}
-                                   setPageSize={setPageSize}
-            />
+            <div className={'w-full flex flex-cols sm:flex-rows justify-between'}>
+                <RenderPageSizeControl pageSize={pageSize}
+                                       setPageSize={setPageSize}
+                />
+
+                <RenderDataSizeControl dataSize={dataSize}
+                                       setDataSize={setDataSize}
+                />
+            </div>
 
             <RenderColumnSelector cols={cols}
                                   anchorCols={anchorCols}
                                   visibleCols={visibleCols} setVisibleCols={setVisibleCols}
                                   metadata={metadata}
             />
+
+            <RenderClearColumnsButton visibleCols={visibleCols} setVisibleCols={setVisibleCols} />
 
             <RenderColumnBoxes cols={cols}
                                anchorCols={anchorCols}

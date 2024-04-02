@@ -1,11 +1,10 @@
 import {getDefaultJustify} from "../../shared/columnControls.jsx";
 import get from "lodash/get.js";
 import {pgEnv} from "~/utils";
-import {getNestedValue} from "../../FormsTable/utils.js";
+import {getNestedValue} from "../../utils/getNestedValue.js";
 import {addTotalRow} from "../../utils/addTotalRow.js";
 import {cleanColName} from "./cleanColName.js";
-import {assignMeta} from "./assignMeta.js";
-import {getMeta} from "./getMeta.js";
+import {handleExpandableRows} from "./handleExpandableRows.js";
 export async function getData({
                                   // settings that require data fetching
                                   dataSources, dataSource, version, geoAttribute,
@@ -14,7 +13,7 @@ export async function getData({
                                   data, columns, // if fetchData is false, provide these
 
                                   // settings that change appearance
-                                  pageSize, sortBy,  notNull,  colSizes,
+                                  pageSize, dataSize, sortBy,  notNull,  colSizes,
                                   filters, filterValue, formatFn, hiddenCols, showTotal,
                                   extFilterCols, extFilterValues, openOutCols, colJustify, striped,
                                   extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables = []
@@ -36,7 +35,18 @@ export async function getData({
             [...acc[curr.name], curr.defaultValue] :
             [curr.defaultValue]}), {});
 
-    const options = ({groupBy, notNull}) => {
+
+    const metadata = (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata?.columns ||
+        (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata ||
+        [];
+    const metaLookupCols =
+        metadata?.filter(md => visibleCols.includes(md.name) && ['meta-variable', 'geoid-variable'].includes(md.display) && md.meta_lookup)
+            .reduce((acc, {name, meta_lookup}) => {
+                acc[name] = meta_lookup;
+                return acc;
+            }, {});
+
+    const options = ({groupBy, notNull, sortBy}) => {
         return JSON.stringify({
             aggregatedLen: Boolean(groupBy?.length),
             filter: {
@@ -47,6 +57,8 @@ export async function getData({
                 ...additionalExcludes
             },
             groupBy: groupBy,
+            orderBy: sortBy,
+            meta: metaLookupCols
         })
     };
 
@@ -55,9 +67,6 @@ export async function getData({
     const attributionPath = ['dama', pgEnv, 'views', 'byId', version, 'attributes'],
         attributionAttributes = ['source_id', 'view_id', 'version', '_modified_timestamp'];
 
-    const metadata = (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata?.columns ||
-        (dataSources || []).find(ds => ds.source_id === dataSource)?.metadata ||
-        [];
     let tmpData, tmpColumns;
 
     if(fetchData){
@@ -78,7 +87,7 @@ export async function getData({
                     formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
-                    openOut: (openOutCols || [])?.includes(col?.name),
+                    openOut: (openOutCols || [])?.includes(fn?.[col?.name] || col?.name),
                     link: linkCols?.[col?.name],
                     ...col,
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
@@ -86,44 +95,24 @@ export async function getData({
             });
 
         console.time(`getData falcor calls ${version}`)
-        await falcor.get(lenPath(options({groupBy, notNull, geoAttribute})));
+        await falcor.get(lenPath(options({groupBy, notNull, sortBy})));
         const len = Math.min(
-            get(falcor.getCache(), lenPath(options({groupBy, notNull, geoAttribute})), 0),
-            100);
+            get(falcor.getCache(), lenPath(options({groupBy, notNull, sortBy})), 0),
+            dataSize);
 
         await falcor.get(
-            [...dataPath(options({groupBy, notNull, geoAttribute})),
+            [...dataPath(options({groupBy, notNull, sortBy})),
                 {from: 0, to: len - 1}, (visibleCols || []).map(vc => fn[vc] ? fn[vc] : vc)]);
 
         await falcor.get([...attributionPath, attributionAttributes]);
-        const metaLookupByViewId = await getMeta({
-            dataSources,
-            dataSource,
-            visibleCols,
-            dataPath,
-            options,
-            groupBy,
-            fn,
-            notNull,
-            geoAttribute,
-            columns: tmpColumns
-        }, falcor);
+        const fetchedData = handleExpandableRows(
+            Object.values(get(falcor.getCache(), dataPath(options({groupBy, notNull, sortBy})), {})),
+            columns,
+            fn
+        );
 
-        //console.log('got meta:', metaLookupByViewId)
-        tmpData = assignMeta({
-            metadata,
-            visibleCols,
-            dataPath,
-            options,
-            groupBy,
-            fn,
-            notNull,
-            geoAttribute,
-            metaLookupByViewId,
-            columns: tmpColumns
-        }, falcor);
-
-        tmpData = (tmpData || data).filter(row =>
+        // filter data to add/update a "total" row
+        tmpData = (tmpData || fetchedData || data || []).filter(row =>
             row.totalRow ||
             !Object.keys(filterValue || {}).length ||
             Object.keys(filterValue)
@@ -155,7 +144,7 @@ export async function getData({
                     formatFn: formatFn?.[col?.name],
                     extFilter: extFilterCols?.includes(fn?.[col?.name] || col?.name),
                     info: col.desc,
-                    openOut: (openOutCols || [])?.includes(col?.name),
+                    openOut: (openOutCols || [])?.includes(fn?.[col?.name] || col?.name),
                     link: linkCols?.[col?.name],
                     ...col,
                     type: fn?.[col?.name]?.includes('array_to_string') ? 'string' : col?.type
@@ -170,7 +159,7 @@ export async function getData({
         columns: tmpColumns || columns, // always prioritize tmpColumns
         attributionData,
         geoAttribute,
-        pageSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
+        pageSize, dataSize, sortBy, groupBy, fn, notNull, showTotal, colSizes,
         filters, filterValue, formatFn, visibleCols, hiddenCols,
         dataSource, dataSources, version,
         extFilterCols, extFilterValues, colJustify, striped, extFiltersDefaultOpen,

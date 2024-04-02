@@ -11,7 +11,12 @@ const colAccessNameMapping = {
 }
 
 const getNestedValue = (obj) => typeof obj?.value === 'object' ? getNestedValue(obj.value) : obj?.value || obj;
+const getNestedRawValue = (obj) =>
+        obj.originalValue ? obj.originalValue :
+            obj.value ? getNestedRawValue(obj.value) : obj;
 
+const formatNameForURL = name =>
+    name?.toString()?.toLowerCase()?.replace(' (county)', '')?.replace('.', '')?.replace(/ /g, '_');
 
 export const RenderBuildingsTable = ({
                                          data = [],
@@ -38,15 +43,16 @@ export const RenderBuildingsTable = ({
             ...c,
             Cell: cell => {
                 const originalValue = getNestedValue(cell.value);
+                const urlSuffix = cell.column.name === 'geoid' ? formatNameForURL(originalValue) : originalValue;
+                // const rawValue = getNestedRawValue(cell.value);
+
                 let value =
                     cell.column.formatFn && formatFunctions[cell.column.formatFn] ?
                         formatFunctions[cell.column.formatFn](originalValue, c.isDollar) :
-                        ['integer', 'number'].includes(cell.column.type) ?
-                            fnum(originalValue || 0, c.isDollar) :
                             Array.isArray(originalValue) ? originalValue.join(', ') : originalValue;
 
                 if (typeof value === 'object') return <div></div>
-                return (c.link?.isLink ? <Link to={`${c.link?.location || ''}${originalValue}`}>{c.link?.linkText || value}</Link> : <div>{value}</div>);
+                return (c.link?.isLink ? <Link to={`${c.link?.location || ''}${urlSuffix}`}>{c.link?.linkText || value}</Link> : <div>{value}</div>);
             }
         }
     })
@@ -89,8 +95,8 @@ export const RenderBuildingsTable = ({
                     initialPageSize={pageSize}
                     pageSize={pageSize}
                     striped={striped}
-                    sortBy={sortColRaw}
-                    sortOrder={Object.values(sortBy)?.[0] || 'asc'}
+                    // sortBy={undefined}
+                    // sortOrder={Object.values(sortBy)?.[0] || 'asc'}
                     csvDownload={showCsvDownload}
                     fetchData={fetchData}
                 />
