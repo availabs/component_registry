@@ -107,7 +107,7 @@ export async function getData({
         await falcor.get([...attributionPath, attributionAttributes]);
         const fetchedData = handleExpandableRows(
             Object.values(get(falcor.getCache(), dataPath(options({groupBy, notNull, sortBy})), {})),
-            columns,
+            tmpColumns || columns,
             fn
         );
 

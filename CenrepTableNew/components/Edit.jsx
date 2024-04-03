@@ -146,7 +146,7 @@ export const EditComp = ({value, onChange}) => {
     }, [
         pageSize, dataSize, sortBy, colSizes,
         filters, filterValue, hiddenCols, formatFn,
-        extFilterCols, extFilterValues, openOutCols, colJustify, striped,
+        extFilterCols, extFilterValues, colJustify, striped,
         extFiltersDefaultOpen, customColName, linkCols, showCsvDownload
     ]);
 
