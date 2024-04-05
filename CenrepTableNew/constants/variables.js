@@ -28,6 +28,11 @@ export const variables = [
         hidden: true
     },
     {
+        name: 'dataSize',
+        hidden: true,
+        default: 100
+    },
+    {
         name: 'sortBy',
         hidden: true
     },
