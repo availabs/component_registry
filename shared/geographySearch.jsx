@@ -11,6 +11,8 @@ const handleSearch = (text, selected, setSelected) => {
   if(selected) setSelected([])
 }
 
+const formatNameForURL = name => name.toLowerCase().replace(' county', '').replace('.', '').replace(/ /g, '_');
+
 const onChangeFilter = (selected, setSelected, value, geoData, navigate, onChange) => {
   const geoid = get(selected, [0, 'geoid']);
   if(geoid || geoid === ''){
@@ -19,8 +21,17 @@ const onChangeFilter = (selected, setSelected, value, geoData, navigate, onChang
           2: '/state',
           5: '/county'
       }
+
+      const formatFn = {
+          0: d => d,
+          2: d => d.replace('State of ', ''),
+          5: d => d.split(',')[0],
+      }
+      const name = get(selected, [0, 'name']);
+      const formattedName = formatNameForURL(formatFn[geoid.length](name))
+
       setSelected(selected);
-      onChange ? onChange(geoid) : navigate(`${url[geoid?.length]}/${geoid}`)
+      onChange ? onChange(geoid) : navigate(`${url[geoid?.length]}/${formattedName || geoid}`)
   }else{
     setSelected([])
   }

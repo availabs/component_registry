@@ -12,7 +12,7 @@ export const handleExpandableRows = (data, columns, fn) => {
                         const value = getNestedValue(row[col.accessor]);
 
                         return {
-                            key: col.display_name || col.name,
+                            key: col.Header || col.display_name || col.name,
                             accessor: col.accessor,
                             value: Array.isArray(value) ? value.join(', ') : typeof value === 'object' ? '' : value, // to display arrays
                             originalValue: Array.isArray(value) ? value : typeof value === 'object' ? '' : value // to filter arrays
