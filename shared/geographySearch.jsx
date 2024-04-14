@@ -22,16 +22,16 @@ const onChangeFilter = (selected, setSelected, value, geoData, navigate, onChang
           5: '/county'
       }
 
-      const formatFn = {
-          0: d => d,
-          2: d => d.replace('State of ', ''),
-          5: d => d.split(',')[0],
-      }
-      const name = get(selected, [0, 'name']);
-      const formattedName = formatNameForURL(formatFn[geoid.length](name))
+      // const formatFn = {
+      //     0: d => d,
+      //     2: d => d.replace('State of ', ''),
+      //     5: d => d.split(',')[0],
+      // }
+      // const name = get(selected, [0, 'name']);
+      // const formattedName = formatNameForURL(formatFn[geoid.length](name))
 
       setSelected(selected);
-      onChange ? onChange(geoid) : navigate(`${url[geoid?.length]}/${formattedName || geoid}`)
+      onChange ? onChange(geoid) : navigate(`${url[geoid?.length]}/${geoid}`)
   }else{
     setSelected([])
   }
