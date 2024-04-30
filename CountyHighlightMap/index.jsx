@@ -23,8 +23,8 @@ const getGeoColors = ({geoid, colors = [], ...rest}) => {
 }
 
 async function getData({
-                           geoid, size, height, numColors, shade
-                       }, falcor) {
+    geoid, size, height, numColors, shade
+}, falcor) {
     const stateView = 285; // need to pull this based on categories
     const countyView = 286;
 
@@ -44,7 +44,7 @@ async function getData({
     const geom = get(geomRes, ["json", ...geoPath(false && geoid?.toString()?.length === 5 ? countyView : stateView), 0, geomColTransform]);
     const mapFocus = get(JSON.parse(geom), 'bbox') || [-79.761313,40.477399,-71.777491,45.01084];
 
-    console.log('mapFocus', mapFocus)
+    // console.log('mapFocus', mapFocus)
 
     const {geoColors} = getGeoColors({geoid});
 

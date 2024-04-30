@@ -24,7 +24,7 @@ export function Header ({  title = '', bgClass='', subTitle='County Profile', li
           {subTitle && <div>{subTitle}</div>}
         </div>
         <div className='text-sm tracking-wider sm:text-sm font-bold text-slate-200 text-right w-full uppercase'>
-          <a href={link} target="_blank" className='border-b'>Local Hazard Mitigation Plan <i  className='fa fa-book' /></a>
+          <i  className='fa fa-arrow-up-right-from-square text-xl' /> <a href={link} target="_blank" className='border-b'>  Local Hazard Mitigation Plan <i  className='fa fa-book' /></a>
         </div>
         <div className='flex-1'/>
       </div>
