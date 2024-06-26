@@ -28,6 +28,16 @@ class CirclesOptions extends LayerContainer {
       },
     },
     {
+      id: "cosubs",
+      source: {
+         "type": "vector",
+         "tiles": [
+            "https://graph.availabs.org/dama-admin/hazmit_dama/tiles/1003/{z}/{x}/{y}/t.pbf?cols=substring(geoid, 1, 5) as geoid"
+         ],
+         "format": "pbf"
+      }
+    },
+    {
       id: "circles",
       source: {
         "type": "geojson",
@@ -36,7 +46,8 @@ class CirclesOptions extends LayerContainer {
           features: [],
         }
       },
-    }
+    },
+
   ];
 
   layers = [
@@ -59,11 +70,29 @@ class CirclesOptions extends LayerContainer {
           "interpolate",
           ["linear"],
           ["zoom"],
-          5, 0.5,
-          22, 2
+          5, 2,
+          22, 4
         ],
-        "line-color": "#ffffff",
+        "line-color": "#000",
         "line-opacity": 0.5
+      }
+    },
+    {
+      "id": "cosubs-line",
+      "source": "cosubs",
+      "source-layer": "view_1003",
+      "type": "line",
+      "paint": {
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          5, 0.5,
+          22, 1.5
+        ],
+         "line-dasharray": [2, 2],
+        "line-color": "#999",
+        "line-opacity": 0.7
       }
     },
     {
@@ -219,6 +248,13 @@ class CirclesOptions extends LayerContainer {
     map.setLayoutProperty(hideLayer, 'visibility', 'none');
     map.setLayoutProperty(`${hideLayer}-line`, 'visibility', 'none');
     map.getSource('circles').setData(geoJson);
+
+
+    const geoids = [...new Set(Object.keys(geoColors).map(geoId => geoId.substring(0, 5)))]
+    map.setLayoutProperty(`counties-line`, 'visibility', 'visible');
+    map.setFilter(`counties-line`, ["in", ['get', "geoid"], ['literal', geoids]]);
+    map.setLayoutProperty(`cosubs-line`, 'visibility', 'visible');
+    map.setFilter(`cosubs-line`, ["in", ['get', "geoid"], ['literal', geoids]]);
   }
 
   receiveProps(props, prev, map, falcor) {

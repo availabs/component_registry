@@ -28,6 +28,16 @@ class EALChoroplethOptions extends LayerContainer {
       },
     },
     {
+      id: "cosubs",
+      source: {
+         "type": "vector",
+         "tiles": [
+            "https://graph.availabs.org/dama-admin/hazmit_dama/tiles/1003/{z}/{x}/{y}/t.pbf?cols=substring(geoid, 1, 5) as geoid"
+         ],
+         "format": "pbf"
+      }
+    },
+    {
       id: "tracts",
       source: {
         "type": "vector",
@@ -60,16 +70,34 @@ class EALChoroplethOptions extends LayerContainer {
       "source": "counties",
       "source-layer": "s365_v778",
       "type": "line",
+      paint: {
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          5, 2,
+          22, 4
+        ],
+        "line-color": "#000",
+        "line-opacity": 0.5
+      }
+    },
+    {
+      "id": "cosubs-line",
+      "source": "cosubs",
+      "source-layer": "view_1003",
+      "type": "line",
       "paint": {
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
           5, 0.5,
-          22, 2
+          22, 1.5
         ],
-        "line-color": "#efefef",
-        "line-opacity": 0.5
+         "line-dasharray": [2, 2],
+        "line-color": "#999",
+        "line-opacity": 0.7
       }
     },
     // {
@@ -200,14 +228,19 @@ class EALChoroplethOptions extends LayerContainer {
 
     const hideLayer = geoLayer === 'counties' ? 'tracts' : 'counties';
 
+    
     map.setLayoutProperty(geoLayer, 'visibility', 'visible');
     map.setFilter(geoLayer, ["in", ['get', "geoid"], ['literal', Object.keys(geoColors)]]);
     map.setPaintProperty(geoLayer, "fill-color", ["get", ["get", "geoid"], ["literal", geoColors]]);
 
     const geoids = [...new Set(Object.keys(geoColors).map(geoId => geoId.substring(0, 5)))]
+    console.log('here', geoids)
+
 
     map.setLayoutProperty(`counties-line`, 'visibility', 'visible');
     map.setFilter(`counties-line`, ["in", ['get', "geoid"], ['literal', geoids]]);
+    map.setLayoutProperty(`cosubs-line`, 'visibility', 'visible');
+    map.setFilter(`cosubs-line`, ["in", ['get', "geoid"], ['literal', geoids]]);
 
     map.setLayoutProperty(hideLayer, 'visibility', 'none');
     // map.setLayoutProperty(`${hideLayer}-line`, 'visibility', 'none');
