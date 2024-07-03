@@ -35,6 +35,8 @@ import SearchBar from "./SearchBar/index.jsx";
 import DefaultHeader from "./Headers/default.jsx"
 import CountyHeader from "./Headers/county.jsx"
 
+import DMSGraphComponent from "./DMSGraphComponent"
+
 const ComponentRegistry = {
     // "ColorBox": ColorBox,
     "Card: Callout": CalloutBox,
@@ -58,6 +60,9 @@ const ComponentRegistry = {
     "Graph: Census Bar": CensusBarChart,
     "Graph: Census Stacked Bar": CensusStackedBarChart,
     "Graph: Census Line": CensusLineChart,
+
+    "Graph: DMS Graph Component": DMSGraphComponent,
+
     "Map: Fusion Events Map": FusionEventsMap,
     "Map: FEMA Disaster Loss": DisasterLossMap,
     "Map: NRI": NRIMap,
