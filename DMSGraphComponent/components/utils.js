@@ -4,10 +4,11 @@ import get from "lodash/get"
 import { range as d3range } from "d3-array"
 
 import { useFalcor } from "@availabs/avl-falcor"
+import colorbrewer from "colorbrewer"
 
 const ColorRanges = {}
 
-for (const type in colorbrewer.schemeGroups) {
+for (const type in colorbrewer?.schemeGroups || {}) {
   colorbrewer.schemeGroups[type].forEach(name => {
     const group = colorbrewer[name];
     for (const length in group) {
