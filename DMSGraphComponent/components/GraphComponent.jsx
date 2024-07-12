@@ -1,0 +1,141 @@
+import React from "react"
+
+import * as Plot from "@observablehq/plot";
+import get from "lodash/get"
+import uniq from "lodash/uniq"
+
+import { getColorRange } from "./utils"
+
+import { GraphTypes, getGraphComponent } from "./GraphComponents"
+
+export const DefaultPalette = getColorRange(12, "Set3");
+export const DefaultScaleRange = getColorRange(7, "RdYlGn");
+
+export const getNewGraphFormat = () => ({
+  title: {
+    title: "",
+    position: "start",
+    fontSize: 32,
+    fontWeight: "bold"
+  },
+  description: "",
+  bgColor: "#ffffff",
+  textColor: "#000000",
+  colors: {
+    type: "palette",
+    value: [...DefaultPalette]
+  },
+  height: 300,
+  width: undefined,
+  margins: {
+    marginTop: 20,
+    marginRight: 20,
+    marginBottom: 50,
+    marginLeft: 100
+  },
+  xAxis: {
+    label: "",
+    rotateLabels: false,
+    showGridLines: false,
+    tickSpacing: 1
+  },
+  yAxis: {
+    label: "",
+    showGridLines: true,
+    tickFormat: "Integer"
+  },
+  legend: {
+    show: true,
+    label: "",
+    width: 300,
+    height: 50
+  },
+  tooltip: {
+    show: true,
+    fontSize: 12
+  }
+})
+
+const GraphTitle = ({ title, position, fontSize, fontWeight }) => {
+
+  const justify = React.useMemo(() => {
+    return `justify-${ position }`;
+  }, [position]);
+
+  return ! title ? null : (
+    <div className={ `w-full flex ${ justify } mb-4` }>
+      <div style={ {
+          fontSize: `${ fontSize }px`,
+          fontWeight
+        } }
+      >
+        { title }
+      </div>
+    </div>
+  )
+}
+
+export const GraphComponent = props => {
+
+  const {
+    graphFormat,
+    activeGraphType,
+    viewData
+  } = props;
+
+  const GraphComponent = React.useMemo(() => {
+    return getGraphComponent(activeGraphType.GraphComp);
+  }, [activeGraphType]);
+
+  const [ref, setRef] = React.useState(null);
+  const [width, setWidth] = React.useState(640);
+  React.useEffect(() => {
+    if (!ref) return;
+    const { width } = ref.getBoundingClientRect();
+    setWidth(width);
+  }, [ref]);
+
+  return (
+    <div ref={ setRef } className="w-full h-fit"
+      style={ {
+        backgroundColor: get(graphFormat, "bgColor", "#ffffff"),
+        color: get(graphFormat, "textColor", "#000000"),
+        padding: `${ get(graphFormat, "padding", 1) }rem`
+      } }
+    >
+      <GraphTitle { ...graphFormat.title }/>
+
+      <div className="h-fit">
+        { !activeGraphType ? null :
+          <GraphComponent
+            data={ viewData }
+            title={ get(graphFormat, "title", "") }
+            height={ get(graphFormat, "height", 300) }
+            width={ get(graphFormat, "width", width) }
+            bgColor={ get(graphFormat, "bgColor", "#ffffff") }
+            textColor={ get(graphFormat, "textColor", "#ffffff") }
+            colors={ get(graphFormat, "colors") }
+
+            orientation={ get(graphFormat, "orientation", "vertical") }
+            groupMode={ get(graphFormat, "groupMode", "stacked") }
+
+            xAxis={ {
+              label: get(graphFormat, ["xAxis", "label"]),
+              rotateLabels: get(graphFormat, ["xAxis", "rotateLabels"], false),
+              tickSpacing: get(graphFormat, ["xAxis", "tickSpacing"], true),
+              showGridLines: get(graphFormat, ["xAxis", "showGridLines"], true)
+            } }
+            yAxis={ {
+              label: get(graphFormat, ["yAxis", "label"]),
+              rotateLabels: get(graphFormat, ["yAxis", "rotateLabels"], false),
+              showGridLines: get(graphFormat, ["yAxis", "showGridLines"], true),
+              tickFormat: get(graphFormat, ["yAxis", "tickFormat"], undefined)
+            } }
+            margins={ get(graphFormat, "margins", {}) }
+            legend={ get(graphFormat, "legend", {}) }
+            tooltip={ get(graphFormat, "tooltip", {}) }/>
+        }
+      </div>
+    </div>
+  )
+}
