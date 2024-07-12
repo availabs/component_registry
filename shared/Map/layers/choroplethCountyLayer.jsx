@@ -135,50 +135,7 @@ class EALChoroplethOptions extends LayerContainer {
     }
   }
 
-  // onHover = {
-  //   layers: ["counties", "tracts"],
-  //   HoverComp: ({ data, layer }) => {
-  //     return (
-  //       <div style={{ maxHeight: "300px" }} className={`rounded relative px-1 overflow-auto scrollbarXsm bg-white`}>
-  //         {
-  //           data?.length && data.map((row, i) =>
-  //             <div key={i} className="flex">
-  //               {
-  //                 row?.length && row.map((d, ii) =>
-  //                   <div key={ii}
-  //                     // style={{maxWidth: '200px'}}
-  //                        className={`
-  //                   ${ii === 0 ? "flex-1 font-bold" : "overflow-auto scrollbarXsm"}
-  //                   ${row.length > 1 && ii === 0 ? "mr-4" : ""}
-  //                   ${row.length === 1 && ii === 0 ? `border-b-2 text-lg ${i > 0 ? "mt-1" : ""}` : ""}
-  //                   `}>
-  //                     {d}
-  //                   </div>
-  //                 )
-  //               }
-  //             </div>
-  //           )
-  //         }
-  //       </div>
-  //     );
-  //   },
-  //   callback: (layerId, features, lngLat) => {
-  //     return features.reduce((a, feature) => {
-  //       let { view: currentView, data } = this.props;
-  //       const fmt = d3Formatter('0.2s');
-  //       const keyMapping = key => Array.isArray(currentView?.columns) ? key : Object.keys(currentView?.columns || {}).find(k => currentView.columns[k] === key);
-  //       let record = data.find(d => d.geoid === feature.properties.geoid),
-  //         response = [
-  //           [feature.properties.geoid, ''],
-  //           ...Object.keys(record || {})
-  //             .filter(key => key !== 'geoid')
-  //             .map(key => keyMapping(key) ? [keyMapping(key), fmt(get(record, key))] : [fmt(get(record, key))]),
-  //           currentView?.paintFn ? ['Total', fmt(currentView.paintFn(record || {}) || 0)] : null,
-  //         ];
-  //       return response;
-  //     }, []);
-  //   }
-  // };
+  
 
   init(map, falcor, props) {
     map.fitBounds([-125.0011, 24.9493, -66.9326, 49.5904], {duration: 0});
@@ -234,7 +191,7 @@ class EALChoroplethOptions extends LayerContainer {
     map.setPaintProperty(geoLayer, "fill-color", ["get", ["get", "geoid"], ["literal", geoColors]]);
 
     const geoids = [...new Set(Object.keys(geoColors).map(geoId => geoId.substring(0, 5)))]
-    console.log('here', geoids)
+    // console.log('here', geoids)
 
 
     map.setLayoutProperty(`counties-line`, 'visibility', 'visible');

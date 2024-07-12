@@ -210,8 +210,12 @@ export const RenderMap = ({falcor, layerProps, legend, interactive=true, layers=
                                     "id": "background",
                                     "type": "background",
                                     "layout": {"visibility": "visible"},
-                                    "paint": {"background-color": 'rgba(208, 208, 206, 0)'}
-                                }]
+                                    "paint": {"background-color": 'rgba(208, 208, 206, 0)'},
+                                    
+                                }],
+                                glyphs:"https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=mU28JQ6HchrQdneiq6k9",
+                                sprite:"https://api.maptiler.com/maps/satellite/sprite"
+      
                             }
                         },
                         {

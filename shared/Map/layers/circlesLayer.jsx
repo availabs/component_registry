@@ -3,6 +3,10 @@ import { LayerContainer } from "~/modules/avl-maplibre/src";
 import { getColorRange } from "~/modules/avl-components/src";
 import {d3Formatter} from "~/utils/macros.jsx";
 import {drawLegend} from "./drawLegendCircles.jsx";
+import polylabel from 'polylabel'
+import union from '@turf/union'
+import centroid from '@turf/centroid'
+
 
 class CirclesOptions extends LayerContainer {
   constructor(props) {
@@ -21,6 +25,16 @@ class CirclesOptions extends LayerContainer {
       },
     },
     {
+      id: "cousub-label-points",
+      source: {
+        "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": []
+        }
+      }
+    },
+    {
       id: "tracts",
       source: {
         "type": "vector",
@@ -32,7 +46,7 @@ class CirclesOptions extends LayerContainer {
       source: {
          "type": "vector",
          "tiles": [
-            "https://graph.availabs.org/dama-admin/hazmit_dama/tiles/1003/{z}/{x}/{y}/t.pbf?cols=substring(geoid, 1, 5) as geoid"
+            "https://graph.availabs.org/dama-admin/hazmit_dama/tiles/1003/{z}/{x}/{y}/t.pbf?cols=substring(geoid, 1, 5) as geoid,namelsad"
          ],
          "format": "pbf"
       }
@@ -131,6 +145,33 @@ class CirclesOptions extends LayerContainer {
         'circle-stroke-width': 1,
         'circle-opacity': 0.5,
         'circle-radius': ['get', 'radius'],
+      }
+    },
+    // {
+    //   "id": "label-points",
+    //   "source": "cousub-label-points",
+    //   "type": "circle",
+    //   "paint": {
+    //     'circle-color': '#000',
+    //     'circle-stroke-width': 1,
+    //     'circle-opacity': 0.5,
+    //     'circle-radius': 3,
+    //   }
+    // },
+    {
+      "id": "cousub-labels",
+      "source": "cousub-label-points",
+      'type': 'symbol',
+      'layout': {
+          'text-field': ['get', 'namelsad'],
+          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          'text-radial-offset': 0.5,
+          'text-justify': 'auto',
+          'text-size': 10,
+      },
+      'paint': {
+        'text-color': '#343434'
       }
     },
   ];
@@ -255,6 +296,59 @@ class CirclesOptions extends LayerContainer {
     map.setFilter(`counties-line`, ["in", ['get', "geoid"], ['literal', geoids]]);
     map.setLayoutProperty(`cosubs-line`, 'visibility', 'visible');
     map.setFilter(`cosubs-line`, ["in", ['get', "geoid"], ['literal', geoids]]);
+
+    let resultFeatures = []
+    let sourceFearures = []
+    setTimeout(function() {
+      //'cosubs'
+      resultFeatures = map.queryRenderedFeatures({layers: ['cosubs-line']});
+      //sourceFearures = map.querySourceFeatures('cosubs', {'sourceLayer': 'view_1003'});
+      let sourceUnion = resultFeatures.reduce((out,curr) => {
+        if(!out[curr.properties.namelsad]) {
+          out[curr.properties.namelsad] = curr
+        } else {
+          let unioned = union({type: "FeatureCollection", features: [out[curr.properties.namelsad], curr]})
+          out[curr.properties.namelsad] = unioned
+          out[curr.properties.namelsad].properties = curr.properties
+        }
+        return out
+      },[])
+      console.log('rendered features', resultFeatures, sourceUnion)
+      //console.log('feature label points', ;
+      map.getSource('cousub-label-points').setData({
+        "type": "FeatureCollection",
+        features: Object.values(sourceUnion)
+          //.filter(d => sourceNames.includes(d.properties.namelsad))
+          .map((feat,i) => { 
+            return {
+              type: "Feature",
+              id: i,
+              properties: feat.properties,
+              geometry: {
+                "type": "Point",
+                "coordinates": centroid(feat.geometry).geometry.coordinates//polylabel(feat.geometry.coordinates)
+              } 
+            }
+          })
+      });
+      console.log('label features', {
+        "type": "FeatureCollection",
+        features: Object.values(sourceUnion)
+          //.filter(d => sourceNames.includes(d.properties.namelsad))
+          .map((feat,i) => { 
+            return {
+              type: "Feature",
+              id: i,
+              properties: feat.properties,
+              geometry: {
+                "type": "Point",
+                "coordinates": centroid(feat.geometry).geometry.coordinates//polylabel(feat.geometry.coordinates)
+              } 
+            }
+          })
+      });
+    }, 500);  
+  
   }
 
   receiveProps(props, prev, map, falcor) {
