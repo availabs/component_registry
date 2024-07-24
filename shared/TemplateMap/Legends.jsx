@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import * as d3scale from "d3-scale";
-import * as d3 from 'd3'
-import {d3Formatter} from "~/utils/macros.jsx";
+//import * as d3 from 'd3'
+import {d3Formatter} from "../../utils/macros.jsx";
 // import {CirclesFactory} from "./layers/circlesLayer.jsx";
 import {scaleLinear /*,scaleSqrt*/} from "d3-scale";
 
@@ -59,54 +59,54 @@ const RenderCirclesLegend = ({size, domain, range, fmt, title,}) => {
         var height = 110
         var width = 150
 
-        var svg = d3.select("#legend > svg")
-            .attr("width", width)
-            .attr("height", height)
+        // var svg = d3.select("#legend > svg")
+        //     .attr("width", width)
+        //     .attr("height", height)
 
-        var size = scaleLinear()
-            .domain([minValue, maxValue])
-            .range(range)
+        // var size = scaleLinear()
+        //     .domain([minValue, maxValue])
+        //     .range(range)
 
-        // Add legend: circles
-        var valuesToShow = [minValue, maxValue]
-        var xCircle = 60
-        var xLabel = 120
-        var yCircle = 105
-        svg
-            .selectAll("legend")
-            .data(valuesToShow)
-            .enter()
-            .append("circle")
-            .attr("cx", xCircle)
-            .attr("cy", function(d){ return yCircle - +size(d) } )
-            .attr("r", function(d){ return +size(d) })
-            .style("fill", "none")
-            .attr("stroke", "#3f3f3f")
+        // // Add legend: circles
+        // var valuesToShow = [minValue, maxValue]
+        // var xCircle = 60
+        // var xLabel = 120
+        // var yCircle = 105
+        // svg
+        //     .selectAll("legend")
+        //     .data(valuesToShow)
+        //     .enter()
+        //     .append("circle")
+        //     .attr("cx", xCircle)
+        //     .attr("cy", function(d){ return yCircle - +size(d) } )
+        //     .attr("r", function(d){ return +size(d) })
+        //     .style("fill", "none")
+        //     .attr("stroke", "#3f3f3f")
 
-        // Add legend: segments
-        svg
-            .selectAll("legend")
-            .data(valuesToShow)
-            .enter()
-            .append("line")
-            .attr('x1', function(d){ return xCircle + size(d) } )
-            .attr('x2', xLabel)
-            .attr('y1', function(d){ return yCircle - size(d) } )
-            .attr('y2', function(d){ return yCircle - size(d) } )
-            .attr('stroke', 'black')
-            .style('stroke-dasharray', ('2,2'))
+        // // Add legend: segments
+        // svg
+        //     .selectAll("legend")
+        //     .data(valuesToShow)
+        //     .enter()
+        //     .append("line")
+        //     .attr('x1', function(d){ return xCircle + size(d) } )
+        //     .attr('x2', xLabel)
+        //     .attr('y1', function(d){ return yCircle - size(d) } )
+        //     .attr('y2', function(d){ return yCircle - size(d) } )
+        //     .attr('stroke', 'black')
+        //     .style('stroke-dasharray', ('2,2'))
 
-        // Add legend: labels
-        svg
-            .selectAll("legend")
-            .data(valuesToShow)
-            .enter()
-            .append("text")
-            .attr('x', xLabel)
-            .attr('y', function(d){ return yCircle - size(d) } )
-            .text( function(d){ return fmt(d) } )
-            .style("font-size", 12)
-            .attr('alignment-baseline', 'middle')
+        // // Add legend: labels
+        // svg
+        //     .selectAll("legend")
+        //     .data(valuesToShow)
+        //     .enter()
+        //     .append("text")
+        //     .attr('x', xLabel)
+        //     .attr('y', function(d){ return yCircle - size(d) } )
+        //     .text( function(d){ return fmt(d) } )
+        //     .style("font-size", 12)
+        //     .attr('alignment-baseline', 'middle')
     }
 
     return (

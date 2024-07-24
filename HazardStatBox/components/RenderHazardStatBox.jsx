@@ -1,8 +1,8 @@
 import get from "lodash/get.js";
 import {RenderSvgBar} from "../svgBar.jsx";
 import React from "react";
-import {hazardsMeta} from "~/utils/colors.jsx";
-import {fnumIndex} from "~/utils/macros.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
+import {fnumIndex} from "../../utils/macros.jsx";
 import {scaleQuantize} from "d3-scale";
 
 const palattes = [

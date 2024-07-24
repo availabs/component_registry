@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react";
 import {useFalcor} from "~/modules/avl-falcor";
-import {hazardsMeta} from '~/utils/colors';
+import {hazardsMeta} from '../utils/colors';
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
-import {isJson} from "~/utils/macros.jsx";
+import {isJson} from "../utils/macros.jsx";
 import get from "lodash/get.js";
-import {pgEnv} from "~/utils";
+import {pgEnv} from "../utils";
 import {RenderGridOrBox} from "./components/RenderGridOrBox.jsx";
-import {Loading} from "~/utils/loading.jsx";
+import {Loading} from "../utils/loading.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {RenderColumnControls} from "../shared/columnControls.jsx";
 import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimple.jsx";

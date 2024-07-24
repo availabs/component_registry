@@ -1,13 +1,13 @@
 import React, {useEffect, useMemo, useState} from "react";
 import get from "lodash/get";
 import { useFalcor } from '~/modules/avl-falcor';
-import { pgEnv } from "~/utils";
-import { isJson } from "~/utils/macros.jsx";
+import { pgEnv } from "../utils";
+import { isJson } from "../utils/macros.jsx";
 import { RenderDisasterInfoStats } from "./components/RenderDisasterInfoStats.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import DisasterSearch from "../shared/disasterSearch.jsx";
-import { Loading } from "~/utils/loading.jsx";
+import { Loading } from "../utils/loading.jsx";
 
 const colAccessNameMapping = {
     'disaster_number': 'distinct disaster_number as disaster_number',

@@ -2,7 +2,7 @@ import get from "lodash/get";
 import { LayerContainer } from "~/modules/avl-maplibre/src";
 import { getColorRange } from "~/modules/avl-components/src";
 import {drawLegend} from "./drawLegend.jsx";
-import {d3Formatter} from "~/utils/macros.jsx";
+import {d3Formatter} from "../../../utils/macros.jsx";
 
 class EALChoroplethOptions extends LayerContainer {
   constructor(props) {

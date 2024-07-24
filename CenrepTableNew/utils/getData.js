@@ -1,6 +1,6 @@
 import {getDefaultJustify} from "../../shared/columnControls.jsx";
 import get from "lodash/get.js";
-import {pgEnv} from "~/utils";
+import {pgEnv} from "../../utils";
 import {getNestedValue} from "../../utils/getNestedValue.js";
 import {addTotalRow} from "../../utils/addTotalRow.js";
 import {cleanColName} from "./cleanColName.js";

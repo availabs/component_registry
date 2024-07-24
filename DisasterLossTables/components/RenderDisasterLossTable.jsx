@@ -1,8 +1,8 @@
 import React, {useMemo} from "react";
-import {fnumIndex} from "~/utils/macros.jsx";
+import {fnumIndex} from "../../utils/macros.jsx";
 import {Table} from "~/modules/avl-components/src/index.js";
 import {Link} from "react-router-dom";
-import {formatDate} from "~/utils/macros.jsx";
+import {formatDate} from "../../utils/macros.jsx";
 import {cellFormat} from '../utils.jsx'
 import {Attribution} from "../../shared/attribution.jsx";
 import {metaData} from "../config.js";

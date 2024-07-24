@@ -1,5 +1,5 @@
 import React, {useMemo} from "react";
-import {fnum, fnumIndex, fnumToNumber, HoverComp, range} from "~/utils/macros.jsx";
+import {fnum, fnumIndex, fnumToNumber, HoverComp, range} from "../../utils/macros.jsx";
 import {BarGraph} from "~/modules/avl-graph/src/index.js";
 
 const LegendFactory = ({colors, labels}) =>
