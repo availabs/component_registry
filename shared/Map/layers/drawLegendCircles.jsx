@@ -1,7 +1,7 @@
 import React from 'react'
 import * as d3scale from "d3-scale";
 import {format as d3format} from "d3-format";
-import {d3Formatter} from "~/utils/macros.jsx";
+import {d3Formatter} from "../../../utils/macros.jsx";
 import {scaleLinear} from "d3-scale";
 const widths = {
     '1/3': 236,

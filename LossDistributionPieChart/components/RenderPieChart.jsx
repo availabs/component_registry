@@ -1,4 +1,4 @@
-import { fnumIndex, HoverComp } from "~/utils/macros.jsx";
+import { fnumIndex, HoverComp } from "../../utils/macros.jsx";
 import React from "react";
 import {PieGraph} from "~/modules/avl-graph/src/index.js";
 import {Link} from "react-router-dom";

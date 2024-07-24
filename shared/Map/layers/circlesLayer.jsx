@@ -1,7 +1,7 @@
 import get from "lodash/get";
 import { LayerContainer } from "~/modules/avl-maplibre/src";
 import { getColorRange } from "~/modules/avl-components/src";
-import {d3Formatter} from "~/utils/macros.jsx";
+import {d3Formatter} from "../../../utils/macros.jsx";
 import {drawLegend} from "./drawLegendCircles.jsx";
 import union from '@turf/union'
 import centroid from '@turf/centroid'

@@ -5,7 +5,7 @@ import {SimpleMapLayerFactory} from "./layers/simpleLayer"
 
 import { DrawLegend } from './Legends'
 
-import {PMTilesProtocol} from '~/pages/DataManager/utils/pmtiles/index.ts'
+import {PMTilesProtocol} from '../../utils/pmtiles/index.ts'
 
 export const EditMap = ({falcor, layerProps, legend, layerType}) => {
 

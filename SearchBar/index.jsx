@@ -3,7 +3,7 @@ import GeographySearch from "../shared/geographySearch.jsx";
 import DisasterSearch from "../shared/disasterSearch.jsx";
 import DisasterAndGeographySearch from "../shared/disasterAndGeographySearch.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
-import {isJson} from "~/utils/macros.jsx";
+import {isJson} from "../utils/macros.jsx";
 
 const className = 'flex-row-reverse p-5 text-lg rounded-md';
 

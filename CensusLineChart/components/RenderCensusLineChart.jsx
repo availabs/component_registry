@@ -1,5 +1,5 @@
 import React, {useMemo} from "react";
-import {fnum, fnumIndex, fnumToNumber, HoverComp, range} from "~/utils/macros.jsx";
+import {fnum, fnumIndex, fnumToNumber, HoverComp, range} from "../../utils/macros.jsx";
 import {Link} from "react-router-dom";
 import {Attribution} from "../../shared/attribution.jsx";
 import get from "lodash/get.js";

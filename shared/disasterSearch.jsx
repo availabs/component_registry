@@ -3,8 +3,8 @@ import {Link, useNavigate} from "react-router-dom";
 import get from "lodash/get";
 import {useEffect, useMemo, useState} from "react";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils";
-import {range} from "~/utils/macros.jsx";
+import {pgEnv} from "../utils";
+import {range} from "../utils/macros.jsx";
 
 
 const handleSearch = (text, selected, setSelected) => {

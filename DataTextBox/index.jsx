@@ -1,13 +1,13 @@
 import React, {useEffect, useId, useState} from "react"
-import {Select} from '~/modules/avl-components/src'
-import {isJson} from "~/utils/macros.jsx";
+//import {Select} from '~/modules/avl-components/src'
+import {isJson} from "../utils/macros.jsx";
 import {RenderCalloutBox} from "./components/RenderCalloutBox.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import { dmsDataTypes } from "~/modules/dms/src"
 import get from "lodash/get.js";
-import {pgEnv} from "~/utils";
-import {useFalcor} from "~/modules/avl-falcor/index.jsx";
-import {Loading} from "~/utils/loading.jsx";
+import {pgEnv} from "../utils";
+import {useFalcor} from "~/modules/avl-falcor";
+import {Loading} from "../utils/loading.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import {RenderColumnControls} from "../shared/columnControls.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";

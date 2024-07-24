@@ -1,9 +1,9 @@
 import React, {useEffect, useMemo, useState} from "react";
 import { useFalcor } from '~/modules/avl-falcor';
-import { isJson } from "~/utils/macros.jsx";
+import { isJson } from "../utils/macros.jsx";
 import { RenderCensusBarChart } from "./components/RenderCensusBarChart.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
-import { Loading } from "~/utils/loading.jsx";
+import { Loading } from "../utils/loading.jsx";
 import {getCensusKeyLabel, processBaseConfig} from "../utils/graphConfig/utils.js";
 import BASE_GRAPH_CONFIG from '../utils/graphConfig/'
 import {ButtonSelector} from "../shared/buttonSelector.jsx";

@@ -1,6 +1,6 @@
-import { hazardsMeta } from "~/utils/colors.jsx";
+import { hazardsMeta } from "../../utils/colors.jsx";
 import get from "lodash/get.js";
-import {fnum, fnumIndex, fnumToNumber, HoverComp, range} from "~/utils/macros.jsx";
+import {fnum, fnumIndex, fnumToNumber, HoverComp, range} from "../../utils/macros.jsx";
 import React from "react";
 import { BarGraph } from "~/modules/avl-graph/src/index.js";
 import { RenderLegend } from "./RenderLegend.jsx";

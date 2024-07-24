@@ -1,6 +1,6 @@
 import * as d3scale from "d3-scale";
 import {format as d3format} from "d3-format";
-import {d3Formatter} from "~/utils/macros.jsx";
+import {d3Formatter} from "../../../utils/macros.jsx";
 const widths = {
     '1/3': 236,
     '2/3': 420,

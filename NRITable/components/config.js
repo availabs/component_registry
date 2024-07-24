@@ -1,4 +1,4 @@
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
 
 export const metaData = {
     type: 'nri',

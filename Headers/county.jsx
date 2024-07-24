@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect }from 'react'
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
-import {isJson} from "~/utils/macros.jsx";
+import {isJson} from "../utils/macros.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import {EditMap,ViewMap} from "../shared/TemplateMap";
 
