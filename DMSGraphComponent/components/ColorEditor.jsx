@@ -14,7 +14,7 @@ import isEqual from "lodash/isEqual"
 import * as Plot from "@observablehq/plot";
 
 import { Select } from "~/modules/avl-components/src"
-import { ColorRanges } from "~/modules/avl-graph/src"
+import { ColorRanges } from "./utils"
 
 import { DefaultPalette, DefaultScaleRange } from "./GraphComponent"
 import { BooleanInput, Button } from "./GraphOptionsEditor"

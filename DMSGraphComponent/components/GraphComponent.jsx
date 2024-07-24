@@ -4,7 +4,7 @@ import * as Plot from "@observablehq/plot";
 import get from "lodash/get"
 import uniq from "lodash/uniq"
 
-import { getColorRange } from "~/modules/avl-graph/src"
+import { getColorRange } from "./utils"
 
 import { GraphTypes, getGraphComponent } from "./GraphComponents"
 
