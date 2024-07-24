@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react";
 import get from "lodash/get";
 import { useFalcor } from '~/modules/avl-falcor';
-import { pgEnv } from "~/utils";
-import { isJson } from "~/utils/macros.jsx";
+import { pgEnv } from "../utils";
+import { isJson } from "../utils/macros.jsx";
 import { RenderDisasterLossTable } from "./components/RenderDisasterLossTable.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import DisasterSearch from "../shared/disasterSearch.jsx";
-import { Loading } from "~/utils/loading.jsx";
+import { Loading } from "../utils/loading.jsx";
 import {metaData} from "./config.js";
 import {RenderColumnControls} from "../shared/columnControls.jsx/";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";

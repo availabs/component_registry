@@ -2,8 +2,8 @@ import React, {useMemo} from "react";
 import get from "lodash/get";
 import {Link} from "react-router-dom";
 import {Table} from "~/modules/avl-components/src";
-import { fnum } from "~/utils/macros.jsx";
-import {formatDate} from "~/utils/macros.jsx";
+import { fnum } from "../../utils/macros.jsx";
+import {formatDate} from "../../utils/macros.jsx";
 import {Attribution} from "../../shared/attribution.jsx";
 
 const blockLabelClass = `border-b-2`,

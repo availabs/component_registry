@@ -1,7 +1,7 @@
 import {Typeahead, Menu, MenuItem, Input, useToken} from 'react-bootstrap-typeahead';
 import get from "lodash/get";
 import React, {useEffect, useState} from "react";
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
 
 const handleSearch = (text, selected, setSelected) => {
     if (selected) setSelected([])

@@ -1,23 +1,23 @@
 import {getDefaultJustify} from "../../shared/columnControls.jsx";
 import get from "lodash/get.js";
-import {pgEnv} from "~/utils";
+import {pgEnv} from "../../utils";
 import {getNestedValue} from "../../utils/getNestedValue.js";
 import {addTotalRow} from "../../utils/addTotalRow.js";
 import {cleanColName} from "./cleanColName.js";
 import {handleExpandableRows} from "./handleExpandableRows.js";
 export async function getData({
-                                  // settings that require data fetching
-                                  dataSources, dataSource, version, geoAttribute,
-                                  groupBy, fn, visibleCols,
-                                  fetchData = true, // when setting that don't require data fetching change, call getData with fetchData = false
-                                  data, columns, // if fetchData is false, provide these
+    // settings that require data fetching
+    dataSources, dataSource, version, geoAttribute,
+    groupBy, fn, visibleCols,
+    fetchData = true, // when setting that don't require data fetching change, call getData with fetchData = false
+    data, columns, // if fetchData is false, provide these
 
-                                  // settings that change appearance
-                                  pageSize, dataSize, sortBy,  notNull,  colSizes,
-                                  filters, filterValue, formatFn, hiddenCols, showTotal,
-                                  extFilterCols, extFilterValues, openOutCols, colJustify, striped,
-                                  extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables = []
-                              }, falcor) {
+    // settings that change appearance
+    pageSize, dataSize, sortBy,  notNull,  colSizes,
+    filters, filterValue, formatFn, hiddenCols, showTotal,
+    extFilterCols, extFilterValues, openOutCols, colJustify, striped,
+    extFiltersDefaultOpen, customColName, linkCols, showCsvDownload, additionalVariables = []
+}, falcor) {
     // console.log('getData called. fetchData:', fetchData, dataSource, version)
     //console.log('getData called. fetchData:', fetchData)
 

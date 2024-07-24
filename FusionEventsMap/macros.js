@@ -1,6 +1,6 @@
 import get from "lodash/get.js";
 import {metaData} from "./config.js";
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../utils/colors.jsx";
 
 export const setChoroplethData = async ({
     falcor,

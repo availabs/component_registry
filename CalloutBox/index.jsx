@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react"
-import {isJson} from "~/utils/macros.jsx";
+import {isJson} from "../utils/macros.jsx";
 import { dmsDataTypes } from "~/modules/dms/src"
 import {RenderColorPicker} from "../shared/colorPickerSimple.jsx";
 

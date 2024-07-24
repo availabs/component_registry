@@ -119,19 +119,22 @@ export const useGetViews = ({ pgEnv, sourceId = null } = {}) => {
 const splitColumnName = cn => cn.split(/\s(?:as|AS)\s/);
 const cleanColumnName = cn => splitColumnName(cn)[0];
 
-export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, pgEnv }) => {
+export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, filters, pgEnv, category }) => {
 
   const { falcor, falcorCache } = useFalcor();
 
-  const [dataLength, setDataLength] = React.useState(0);
-
   const options = React.useMemo(() => {
     if (!xAxisColumn) return "{}";
+
     return JSON.stringify({
       aggregatedLen: true,
-      groupBy: [cleanColumnName(xAxisColumn.name)]
+      groupBy: [cleanColumnName(xAxisColumn.name), cleanColumnName(get(category, "name", ""))].filter(Boolean),
+      filter: filters.reduce((a, c) => {
+        a[cleanColumnName(c.column)] = c.values
+        return a;
+      }, {})
     });
-  }, [xAxisColumn]);
+  }, [xAxisColumn, filters, category]);
 
   const yColumnsMap = React.useMemo(() => {
     return yAxisColumns.reduce((a, c) => {
@@ -146,9 +149,7 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, pgEnv })
 
   React.useEffect(() => {
     if (!activeView) return;
-
     const vid = activeView.view_id;
-
     falcor.get(["dama", pgEnv, "viewsbyId", vid, "options", options, "length"]);
   }, [falcor, pgEnv, activeView, options]);
 
@@ -157,11 +158,13 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, pgEnv })
 
     const vid = activeView.view_id;
 
-    const length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);
+    let length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);
+    length = Math.min(length, 250);
 
     const columns = [
       get(xAxisColumn, "name", null),
-      ...Object.keys(yColumnsMap)
+      ...Object.keys(yColumnsMap),
+      get(category, "name", null)
     ].filter(Boolean);
 
     if (length && !strictNaN(length) && columns.length) {
@@ -169,7 +172,7 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, pgEnv })
         "dama", pgEnv, "viewsbyId", vid, "options", options, "databyIndex", d3range(length), columns
       ]);
     }
-  }, [falcor, falcorCache, pgEnv, activeView, xAxisColumn, options, yColumnsMap]);
+  }, [falcor, falcorCache, pgEnv, activeView, xAxisColumn, options, yColumnsMap, category]);
 
   return React.useMemo(() => {
     if (!activeView) return [[], 0];
@@ -177,17 +180,24 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, pgEnv })
 
     const vid = activeView.view_id;
 
-    const length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);
+    let length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);
+    length = Math.min(length, 250);
+
+    const catName = cleanColumnName(get(category, "name", ""));
 
     const data = d3range(length)
       .reduce((a, c) => {
         const data = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "databyIndex", c]);
         if (data) {
           for (const key in yColumnsMap) {
+            let type = catName ? data[catName] : yColumnsMap[key];
+            if (catName && (typeof type === "object")) {
+              type = "Unknown Category";
+            }
             a.push({
               index: data[xAxisColumn.name],
               value: +data[key],
-              type: yColumnsMap[key]
+              type
             })
           }
         }
@@ -208,5 +218,85 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, pgEnv })
     }
 
     return [data, length];
-  }, [falcorCache, pgEnv, activeView, options, xAxisColumn, yColumnsMap]);
+  }, [falcorCache, pgEnv, activeView, options, xAxisColumn, yColumnsMap, category]);
+}
+
+export const useGetColumnDomain = ({ activeView, column, pgEnv }) => {
+  const { falcor, falcorCache } = useFalcor();
+
+  const [dataLength, setDataLength] = React.useState(0);
+  const [data, setData] = React.useState([]);
+
+  const options = React.useMemo(() => {
+    if (!column) return "{}";
+    return JSON.stringify({
+      aggregatedLen: true,
+      groupBy: [cleanColumnName(column.name)]
+    })
+  }, [column]);
+
+  const columnMap = React.useMemo(() => {
+    if (!column) return {};
+    const [sql, cn] = splitColumnName(column.name);
+    return {
+      ["COUNT(1) AS count"]: cn || sql
+    }
+  }, [column]);
+
+  React.useEffect(() => {
+    if (!activeView) return;
+    if (!column) return;
+    const vid = activeView.view_id;
+    falcor.get(["dama", pgEnv, "viewsbyId", vid, "options", options, "length"]);
+  }, [falcor, pgEnv, activeView, options, column]);
+
+  React.useEffect(() => {
+    if (!activeView) return;
+    if (!column) return;
+
+    const vid = activeView.view_id;
+
+    let length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);
+    length = Math.min(1000, length);
+
+    const columns = [
+      get(column, "name", null),
+      ...Object.keys(columnMap)
+    ].filter(Boolean)
+    if (length && !strictNaN(length) && columns.length) {
+      falcor.get([
+        "dama", pgEnv, "viewsbyId", vid, "options", options, "databyIndex", d3range(length), columns
+      ]);
+    }
+  }, [falcor, falcorCache, pgEnv, activeView, options, column, columnMap]);
+
+  return React.useMemo(() => {
+    if (!activeView) return [];
+    if (!column) return [];
+
+    const vid = activeView.view_id;
+
+    let length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);
+    length = Math.min(1000, length);
+
+    return d3range(length)
+      .reduce((a, c) => {
+        const data = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "databyIndex", c]);
+
+console.log("DATAAAAAAAAAAAAAAAAAAAAAAA????????????????", data);
+
+        if (data) {
+          a.push({
+            value: data[column.name],
+            count: +data["COUNT(1) AS count"]
+          })
+        }
+        return a;
+      }, []).sort((a, b) => {
+        if (!(strictNaN(a.value) || strictNaN(b.value))) {
+          return +a.value - +b.value;
+        }
+        return String(a.value).localeCompare(String(b.value));
+      });
+  }, [falcorCache, pgEnv, activeView, options, column, columnMap])
 }

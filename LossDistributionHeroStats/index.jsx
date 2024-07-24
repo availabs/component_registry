@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react";
 import get from "lodash/get";
 import { useFalcor } from '~/modules/avl-falcor';
-import { pgEnv } from "~/utils";
-import { isJson } from "~/utils/macros.jsx";
+import { pgEnv } from "../utils";
+import { isJson } from "../utils/macros.jsx";
 import { RenderStatBoxes } from "./components/RenderStatBoxes.jsx";
 import { ProcessDataForMap } from "./utils";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
-import { Loading } from "~/utils/loading.jsx"
+import { Loading } from "../utils/loading.jsx"
 import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimple.jsx";
 
 async function getData({ealViewId, hazard, fusionSourceId, geoid}, falcor){

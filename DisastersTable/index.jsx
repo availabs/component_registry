@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from "react";
 import get from "lodash/get";
 import {useFalcor} from '~/modules/avl-falcor';
-import {pgEnv} from "~/utils";
-import {isJson} from "~/utils/macros.jsx";
+import {pgEnv} from "../utils";
+import {isJson} from "../utils/macros.jsx";
 import {RenderDisastersTable} from "./components/RenderDisastersTable.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
-import {Loading} from "~/utils/loading.jsx";
+import {Loading} from "../utils/loading.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {RenderColumnControls} from "../shared/columnControls.jsx";
 import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimple.jsx";
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../utils/colors.jsx";
 
 const colNameMapping = {
     swd_population_damage: 'Population Damage',
