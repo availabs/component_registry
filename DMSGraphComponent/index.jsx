@@ -18,6 +18,9 @@ import {
   GraphComponent,
   DefaultPalette,
 
+  GraphFilters,
+  CategorySelector,
+
   GraphTypes,
 
   XAxisSelector,
@@ -39,15 +42,6 @@ const parseJSON = (value) => {
   return json
 }
 
-const InitialState = {
-  activeSource: undefined,
-  activeView: undefined,
-  activeGraphType: GraphTypes[0],
-  xAxisColumn: undefined,
-  yAxisColumns: [],
-  graphFormat: getNewGraphFormat()
-}
-
 const getInitialState = value => {
   const { state } = JSON.parse(value || "{}");
   return {
@@ -56,82 +50,99 @@ const getInitialState = value => {
     activeGraphType: get(state, "activeGraphType", GraphTypes[0]),
     xAxisColumn: get(state, "xAxisColumn", undefined),
     yAxisColumns: get(state, "yAxisColumns", []),
-    graphFormat: get(state, "graphFormat", getNewGraphFormat())
+    graphFormat: get(state, "graphFormat", getNewGraphFormat()),
+    filters: get(state, "filters", []),
+    category: get(state, "category", null)
   }
 }
 
 const Reducer = (state, action) => {
   const { type, ...payload } = action;
   switch (type) {
-      case "set-active-source":
-        return {
-          ...state,
-          activeSource: payload.source,
-          xAxisColumn: undefined,
-          yAxisColumns: []
-        }
-      case "set-active-view":
-        return {
-          ...state,
-          activeView: payload.view
-        }
-      case "set-active-graph-type": {
-        const nextState = {
-          ...state,
-          activeGraphType: payload.graph
-        }
-        if ((payload.graph.type === "Line Graph") && (nextState.graphFormat.colors.type !== "palette")) {
-          nextState.graphFormat = {
-            ...nextState.graphFormat,
-            colors: {
-              type: "palette",
-              value: [...DefaultPalette]
-            }
+    case "set-active-source":
+      return {
+        ...state,
+        activeSource: payload.source,
+        xAxisColumn: undefined,
+        yAxisColumns: [],
+        filters: [],
+        category: null
+      }
+    case "set-active-view":
+      return {
+        ...state,
+        activeView: payload.view
+      }
+    case "set-active-graph-type": {
+      const nextState = {
+        ...state,
+        activeGraphType: payload.graph
+      }
+      if ((payload.graph.type === "Line Graph") && (nextState.graphFormat.colors.type !== "palette")) {
+        nextState.graphFormat = {
+          ...nextState.graphFormat,
+          colors: {
+            type: "palette",
+            value: [...DefaultPalette]
           }
         }
-        return nextState;
       }
-      case "set-x-axis-column":
-        return {
-          ...state,
-          xAxisColumn: payload.column
-        }
-      case "update-x-axis-column": {
-        const { update } = payload;
-        return {
-          ...state,
-          xAxisColumn: { ...state.xAxisColumn, ...update }
-        }
+      return nextState;
+    }
+    case "set-x-axis-column":
+      return {
+        ...state,
+        xAxisColumn: payload.column
       }
-      case "set-y-axis-columns":
-        return {
-          ...state,
-          yAxisColumns: payload.columns
-        }
-      case "update-y-axis-column": {
-        const { name, update } = payload;
-        return {
-          ...state,
-          yAxisColumns: state.yAxisColumns.map(col => {
-            if (col.name === name) {
-              return { ...col, ...update };
-            }
-            return col;
-          })
-        }
+    case "update-x-axis-column": {
+      const { update } = payload;
+      return {
+        ...state,
+        xAxisColumn: { ...state.xAxisColumn, ...update }
       }
-      case "edit-graph-format": {
-        const merged = merge({}, state.graphFormat);
-        payload.paths.forEach(([path, value]) => {
-          set(merged, path, value);
+    }
+    case "set-y-axis-columns":
+      return {
+        ...state,
+        yAxisColumns: payload.columns
+      }
+    case "update-y-axis-column": {
+      const { name, update } = payload;
+      return {
+        ...state,
+        yAxisColumns: state.yAxisColumns.map(col => {
+          if (col.name === name) {
+            return { ...col, ...update };
+          }
+          return col;
         })
-        return {
-          ...state,
-          graphFormat: merged
-        }
       }
-      case "set-state":
-        return payload.state
+    }
+    case "edit-graph-format": {
+      const merged = merge({}, state.graphFormat);
+      payload.paths.forEach(([path, value]) => {
+        set(merged, path, value);
+      })
+      return {
+        ...state,
+        graphFormat: merged
+      }
+    }
+    case "add-filter":
+      return {
+        ...state,
+        filters: [...state.filters, payload.filter]
+      }
+    case "remove-filter":
+      return {
+        ...state,
+        filters: state.filters.filter(f => f !== payload.filter)
+      }
+    case "set-category":
+      return {
+        ...state,
+        category: payload.category
+      }
     default:
       return state;
   }
@@ -192,10 +203,23 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     })
   }, []);
 
-  const setState = React.useCallback(state => {
+  const addFilter = React.useCallback(filter => {
     dispatch({
-      type: "set-state",
-      state
+      type: "add-filter",
+      filter
+    })
+  }, []);
+  const removeFilter = React.useCallback(filter => {
+    dispatch({
+      type: "remove-filter",
+      filter
+    })
+  }, []);
+
+  const setCategory = React.useCallback(category => {
+    dispatch({
+      type: "set-category",
+      category
     })
   }, []);
 
@@ -205,14 +229,16 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     activeGraphType,
     xAxisColumn,
     yAxisColumns,
-    graphFormat
+    graphFormat,
+    filters,
+    category
   } = state;
 
   const columns = React.useMemo(() => {
     return get(state, ["activeSource", "metadata", "value", "columns"]) || [];
   }, [activeSource]);
 
-  const [viewData, viewDataLength] = useGetViewData({ pgEnv, activeView, xAxisColumn, yAxisColumns });
+  const [viewData, viewDataLength] = useGetViewData({ pgEnv, activeView, xAxisColumn, yAxisColumns, filters, category });
 
   const dataDomain = React.useMemo(() => {
     return viewData.map(vd => vd.value);
@@ -234,25 +260,7 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     }
   }, [okToSave, doOnChange]);
 
-console.log("COLUMNS:", columns);
-console.log("VIEW DATA:", viewData);
-console.log("GRAPH FORMAT:", graphFormat)
-
-  // const canRevert = React.useMemo(() => {
-  //   if (!value) return false;
-  //   const parsed = JSON.parse(value);
-  //   const valueState = get(parsed, "state", null);
-  //   return !isEqual(valueState, state);
-  // }, [value, state]);
-  //
-  // const revertChanges = React.useCallback(e => {
-  //   if (!canRevert) return;
-  //   const parsed = JSON.parse(value);
-  //   const valueState = get(parsed, "state", null);
-  //   if (valueState) {
-  //     setState(valueState);
-  //   }
-  // }, [setState, value, canRevert]);
+console.log("DMSGraphComponent::index::viewData", viewData);
 
   return (
     <div className="bg-gray-200 p-4 grid grid-cols-1 gap-2">
@@ -279,17 +287,35 @@ console.log("GRAPH FORMAT:", graphFormat)
       <XAxisSelector columns={ columns }
         xAxisColumn={ xAxisColumn }
         setXAxisColumn={ setXAxisColumn }
-        updateXAxisColumn={ updateXAxisColumn }/>
+        updateXAxisColumn={ updateXAxisColumn }
+        activeSource={ activeSource }/>
 
       <YAxisSelector columns={ columns }
         yAxisColumns={ yAxisColumns }
         setYAxisColumns={ setYAxisColumns }
-        updateYAxisColumn={ updateYAxisColumn }/>
+        updateYAxisColumn={ updateYAxisColumn }
+        activeSource={ activeSource }/>
 
       <GraphComponent
         graphFormat={ graphFormat }
         activeGraphType={ activeGraphType }
         viewData={ viewData }/>
+
+      <GraphFilters
+        columns={ columns }
+        viewData={ viewData }
+        filters={ filters }
+        addFilter={ addFilter }
+        removeFilter={ removeFilter }
+        activeView={ activeView }
+        pgEnv={ pgEnv }/>
+
+      <CategorySelector
+        columns={ columns }
+        category={ category }
+        setCategory={ setCategory }
+        activeView={ activeView }
+        pgEnv={ pgEnv }/>
 
       <GraphOptionsEditor
         format={ graphFormat }
@@ -329,7 +355,8 @@ const ViewComp = ({ value }) => {
 }
 
 const GraphComp = {
-  name: "Graph Component",
+  name: "DMS Graph Component",
+  type: "Graph",
   EditComp,
   ViewComp
 }
