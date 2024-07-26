@@ -260,6 +260,8 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     }
   }, [okToSave, doOnChange]);
 
+console.log("DMSGraphComponent::index::viewData", viewData);
+
   return (
     <div className="bg-gray-200 p-4 grid grid-cols-1 gap-2">
 

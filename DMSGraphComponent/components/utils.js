@@ -130,7 +130,7 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, filters,
       aggregatedLen: true,
       groupBy: [cleanColumnName(xAxisColumn.name), cleanColumnName(get(category, "name", ""))].filter(Boolean),
       filter: filters.reduce((a, c) => {
-        a[cleanColumnName(c.column)] = c.values
+        a[cleanColumnName(c.column.name)] = c.values
         return a;
       }, {})
     });
@@ -178,6 +178,8 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, filters,
     if (!activeView) return [[], 0];
     if (!xAxisColumn) return [[], 0];
 
+console.log("???????????????", xAxisColumn, yAxisColumns)
+
     const vid = activeView.view_id;
 
     let length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);
@@ -188,21 +190,35 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, filters,
     const data = d3range(length)
       .reduce((a, c) => {
         const data = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "databyIndex", c]);
+
+console.log("?????????????????????", data);
+
         if (data) {
           for (const key in yColumnsMap) {
-            let type = catName ? data[catName] : yColumnsMap[key];
-            if (catName && (typeof type === "object")) {
-              type = "Unknown Category";
+            let index = data[xAxisColumn.name];
+            if ((typeof index === "object") && ("value" in index)) {
+              index = index.value;
             }
-            a.push({
-              index: data[xAxisColumn.name],
-              value: +data[key],
-              type
-            })
+
+            let value = data[key];
+            if ((typeof value === "object") && ("value" in value)) {
+              value = value.value;
+            }
+
+            let type = catName ? data[catName] : yColumnsMap[key];
+            if ((typeof type === "object") && ("value" in type)) {
+              type = type.value;
+            }
+
+            if (index && !strictNaN(value) && type) {
+              a.push({ index, value: +value, type });
+            }
           }
         }
         return a;
       }, []);
+
+console.log("useGetViewData::data", data)
 
     const { sortMethod } = xAxisColumn;
 
@@ -282,9 +298,6 @@ export const useGetColumnDomain = ({ activeView, column, pgEnv }) => {
     return d3range(length)
       .reduce((a, c) => {
         const data = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "databyIndex", c]);
-
-console.log("DATAAAAAAAAAAAAAAAAAAAAAAA????????????????", data);
-
         if (data) {
           a.push({
             value: data[column.name],

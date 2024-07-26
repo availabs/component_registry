@@ -7,6 +7,7 @@ import { Select } from "~/modules/avl-components/src"
 import { Button } from "./GraphOptionsEditor"
 import { useGetColumnDomain } from "./utils"
 import { getColumnDisplay } from "./XAxisSelector"
+import { strictNaN } from "./utils"
 
 const NoData = () => {
   return (
@@ -20,14 +21,14 @@ const columnName = c => c.name;
 
 const FilterTypes = [
   "equals",
-  "includes",
-  "not equal"
+  "includes"
 ]
 
 const intFormat = d3format(",d");
 const floatFormat = d3format(",.2f");
 const displayFormat = v => {
-  if (Math.floor(v) === v) {
+  if (strictNaN(v)) return v;
+  if (Math.floor(+v) === +v) {
     return intFormat(v);
   }
   return floatFormat(v);
@@ -97,7 +98,7 @@ export const GraphFilters = props => {
   const doAddFilter = React.useCallback(e => {
     e.stopPropagation();
     addFilter({
-      column: selectedColumn.name,
+      column: selectedColumn,
       type: filterType,
       values: _filterValues
     })
@@ -183,7 +184,7 @@ const FilterRow = ({ filter, remove }) => {
   return (
     <tr>
       <td className="py-1">
-        { filter.column }
+        { getColumnDisplay(filter.column) }
       </td>
       <td className="py-1">
         { filter.type }
@@ -240,7 +241,7 @@ const FilterTable = ({ filters, remove }) => {
 
         <tbody className="text-center">
           { filters.map(f =>
-              <FilterRow key={ f.column }
+              <FilterRow key={ f.column.name }
                 filter={ f }
                 remove={ remove }/>
             )

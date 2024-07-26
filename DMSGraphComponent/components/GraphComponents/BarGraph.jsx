@@ -102,6 +102,59 @@ const BarGraph = props => {
     if (!ref) return;
     if (!data.length) return;
 
+    const marks = [
+      rule([0]),
+      bar(
+        data,
+        isStacked ? (
+          { x: isVertical ? "index" : "value",
+            y: isVertical ? "value" : "index",
+            fill: isPalette ? "type" : "value",
+            sort: isVertical ?
+                    ({ x: "x", order: null }) :
+                    ({ y: "y", order: null }),
+          }
+        ) : (
+          { x: isVertical ? "type" : "value",
+            fx: isVertical ? "index" : undefined,
+            y: isVertical ? "value" : "type",
+            fy: isVertical ? undefined : "index",
+            fill: isPalette ? "type" : "value",
+            sort: isVertical ?
+                    ({ fx: "x", order: null }) :
+                    ({ fy: "y", order: null }),
+          }
+        )
+      )
+    ]
+
+    if (tooltip.show && isVertical) {
+      marks.push(
+        Plot.tip(
+          data,
+          Plot.pointerX(
+            Plot.stackY({
+              x: "index",
+              y: "value",
+            })
+          )
+        )
+      )
+    }
+    else if (tooltip.show && !isVertical) {
+      marks.push(
+        Plot.tip(
+          data,
+          Plot.pointerY({
+            fill: bgColor,
+            fontSize: tooltip.fontSize,
+            x: "value",
+            y: "index",
+          })
+        )
+      )
+    }
+
     const plot = Plot.plot({
       x: xOptions,
       fx: fxOptions,
@@ -120,46 +173,14 @@ const BarGraph = props => {
       height: graphHeight,
       width,
       ...margins,
-      marks: [
-        rule([0]),
-        bar(
-          data,
-          isStacked ? (
-            { x: isVertical ? "index" : "value",
-              y: isVertical ? "value" : "index",
-              fill: isPalette ? "type" : "value",
-              sort: isVertical ?
-                      ({ x: "x", order: null }) :
-                      ({ y: "y", order: null }),
-            }
-          ) : (
-            { x: isVertical ? "type" : "value",
-              fx: isVertical ? "index" : undefined,
-              y: isVertical ? "value" : "type",
-              fy: isVertical ? undefined : "index",
-              fill: isPalette ? "type" : "value",
-              sort: isVertical ?
-                      ({ fx: "x", order: null }) :
-                      ({ fy: "y", order: null }),
-            }
-          )
-        ),
-        // Plot.tip(
-        //   data,
-        //   Plot.pointerY({
-        //     fill: bgColor,
-        //     x: isVertical ? "index" : "value",
-        //     y: isVertical ? "value" : "index",
-        //   })
-        // )
-      ]
+      marks
     });
 
     ref.append(plot);
 
     return () => plot.remove();
 
-  }, [ref, data, margins, graphHeight, width, yAxis,
+  }, [ref, data, margins, graphHeight, width, yAxis, tooltip,
       colors, legend, isPalette, isStacked, isVertical,
       xOptions, yOptions, fxOptions, fyOptions]
   );
