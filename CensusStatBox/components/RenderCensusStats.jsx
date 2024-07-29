@@ -1,8 +1,8 @@
 import React, {useMemo} from "react";
-import {fnumIndex} from "~/utils/macros.jsx";
+import {fnumIndex} from "../../utils/macros.jsx";
 import {Link} from "react-router-dom";
 import {Attribution} from "../../shared/attribution.jsx";
-import {fnum} from "~/utils/macros.jsx";
+import {fnum} from "../../utils/macros.jsx";
 
 const blockClass = `bg-slate-100 p-5 text-center flex flex-col border rounded-md`
 

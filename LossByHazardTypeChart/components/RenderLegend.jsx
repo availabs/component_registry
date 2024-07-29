@@ -1,4 +1,4 @@
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
 import get from "lodash/get.js";
 import React from "react";
 

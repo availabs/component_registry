@@ -1,4 +1,4 @@
-import { fnum } from "~/utils/macros.jsx";
+import { fnum } from "../../utils/macros.jsx";
 import React from "react";
 import get from "lodash/get";
 import {Link} from "react-router-dom";

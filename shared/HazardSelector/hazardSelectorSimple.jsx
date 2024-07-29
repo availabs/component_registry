@@ -1,5 +1,5 @@
 import React from "react";
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
 
 export const HazardSelectorSimple = ({hazard, setHazard, showTotal=false}) => {
     return (

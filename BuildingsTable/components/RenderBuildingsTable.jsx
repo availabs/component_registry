@@ -2,8 +2,8 @@ import React, {useMemo} from "react";
 import get from "lodash/get";
 import {Link} from "react-router-dom";
 import {Table} from "~/modules/avl-components/src";
-import { fnum } from "~/utils/macros.jsx";
-import {hazardsMeta} from "~/utils/colors.jsx";
+import { fnum } from "../../utils/macros.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
 import {Attribution} from "../../shared/attribution.jsx";
 
 const colAccessNameMapping = {

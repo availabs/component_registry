@@ -1,5 +1,5 @@
 import {Link} from "react-router-dom";
-import {formatDate} from "~/utils/macros.jsx";
+import {formatDate} from "../utils/macros.jsx";
 import React from "react";
 
 export const Attribution = ({baseUrl = '/', attributionData}) => (

@@ -99,7 +99,16 @@ const XAxisColumnItem = ({ column, update }) => {
   )
 }
 
-export const XAxisSelector = ({ columns, xAxisColumn, setXAxisColumn, updateXAxisColumn }) => {
+export const XAxisSelector = props => {
+
+  const {
+    columns,
+    xAxisColumn,
+    setXAxisColumn,
+    updateXAxisColumn,
+    activeSource
+  } = props;
+
   const [hover, setHover] = React.useState(false);
   const onMouseEnter = React.useCallback(e => {
     e.stopPropagation();
@@ -129,6 +138,8 @@ export const XAxisSelector = ({ columns, xAxisColumn, setXAxisColumn, updateXAxi
       >
         <span className="fa fa-list py-1 px-2"/>
         { xAxisColumn ? null :
+          !activeSource ?
+          <span className="ml-2 py-1">Select a source...</span> :
           <span className="ml-2 py-1">Select a column...</span>
         }
         <div className={ `

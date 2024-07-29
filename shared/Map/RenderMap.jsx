@@ -1,10 +1,10 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {AvlMap} from '~/modules/avl-maplibre/src';
-import {Protocol, PMTiles} from '~/pages/DataManager/utils/pmtiles/index.ts'
+import {Protocol, PMTiles} from '../../utils/pmtiles/index.ts'
 import {ChoroplethCountyFactory} from "./layers/choroplethCountyLayer.jsx";
 import * as d3scale from "d3-scale";
 import * as d3 from 'd3'
-import {d3Formatter} from "~/utils/macros.jsx";
+import {d3Formatter} from "../../utils/macros.jsx";
 import {CirclesFactory} from "./layers/circlesLayer.jsx";
 import {scaleLinear, scaleSqrt} from "d3-scale";
 
@@ -210,8 +210,12 @@ export const RenderMap = ({falcor, layerProps, legend, interactive=true, layers=
                                     "id": "background",
                                     "type": "background",
                                     "layout": {"visibility": "visible"},
-                                    "paint": {"background-color": 'rgba(208, 208, 206, 0)'}
-                                }]
+                                    "paint": {"background-color": 'rgba(208, 208, 206, 0)'},
+                                    
+                                }],
+                                glyphs:"https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=mU28JQ6HchrQdneiq6k9",
+                                sprite:"https://api.maptiler.com/maps/satellite/sprite"
+      
                             }
                         },
                         {

@@ -61,7 +61,16 @@ const YAxisColumnItem = ({ column, update }) => {
   )
 }
 
-export const YAxisSelector = ({ columns, yAxisColumns, setYAxisColumns, updateYAxisColumn }) => {
+export const YAxisSelector = props => {
+
+  const {
+    columns,
+    yAxisColumns,
+    setYAxisColumns,
+    updateYAxisColumn,
+    activeSource
+  } = props;
+
   const [hover, setHover] = React.useState(false);
   const onMouseEnter = React.useCallback(e => {
     e.stopPropagation();
@@ -102,6 +111,8 @@ export const YAxisSelector = ({ columns, yAxisColumns, setYAxisColumns, updateYA
       >
         <span className="fa fa-list py-1 px-2"/>
         { yAxisColumns.length ? null :
+          !activeSource ?
+          <span className="ml-2 py-1">Select a source...</span> :
           <span className="ml-2 py-1">Select a column...</span>
         }
         <div className={ `

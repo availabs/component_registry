@@ -1,8 +1,8 @@
 import {RenderHazardStatBox} from "./RenderHazardStatBox.jsx";
 import React from "react";
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
 import {Link} from "react-router-dom";
-import {formatDate} from "~/utils/macros.jsx";
+import {formatDate} from "../../utils/macros.jsx";
 import get from "lodash/get.js";
 import {Attribution} from "../../shared/attribution.jsx";
 

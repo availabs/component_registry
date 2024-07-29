@@ -1,6 +1,6 @@
 import React from "react";
 import get from "lodash/get.js";
-import {hazardsMeta} from "~/utils/colors.jsx";
+import {hazardsMeta} from "../../utils/colors.jsx";
 
 export const ProcessDataForMap = (data=[], disasterNames) => {
     const years = [...new Set(data.map(d => d.year))];

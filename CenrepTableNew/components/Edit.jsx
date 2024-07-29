@@ -6,11 +6,11 @@ import {RenderSwitch} from "./RenderSwitch.jsx";
 import {RenderColumnControls} from "../../shared/columnControls.jsx";
 import {RenderBuildingsTable} from "./RenderBuildingsTable.jsx";
 import {useFalcor} from '~/modules/avl-falcor';
-import {isJson} from "../../../utils/macros.jsx";
+import {isJson} from "../../utils/macros.jsx";
 import {getData} from "../utils/getData.js";
 import {isValid} from "../utils/isValid.js";
-import {pgEnv} from "~/utils";
-import {Loading} from "~/utils/loading.jsx";
+import {pgEnv} from "../../utils";
+import {Loading} from "../../utils/loading.jsx";
 
 export const EditComp = ({value, onChange}) => {
     const {falcor, falcorCache} = useFalcor();

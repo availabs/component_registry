@@ -1,13 +1,13 @@
 import React, {useEffect, useMemo, useState} from "react";
 import get from "lodash/get";
 import { useFalcor } from '~/modules/avl-falcor';
-import { pgEnv } from "~/utils";
-import { isJson } from "~/utils/macros.jsx";
+import { pgEnv } from "../utils";
+import { isJson } from "../utils/macros.jsx";
 import { RenderBarChart } from "./components/RenderBarChart.jsx";
 import { ProcessDataForMap } from "./utils";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
-import { Loading } from "~/utils/loading.jsx"
+import { Loading } from "../utils/loading.jsx"
 import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimple.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 
@@ -45,9 +45,8 @@ async function getData({
     const lossRes = await falcor.get(
         dataPath,
         ['dama', pgEnv, 'views', 'byId', fusionView.view_id, 'attributes', ['source_id', 'view_id', 'version']]
-    );
-    console.log('lossRes', get(lossRes,
-        ['json', ...dataPath], []), lossRes)
+    )//.then(res => console.log("RES:", res));
+    console.log('lossRes', get(lossRes, ['json', ...dataPath], []), lossRes)
 
     const disasterNumbers = get(lossRes,
         ['json', ...dataPath], [])
@@ -128,6 +127,8 @@ const Edit = ({value, onChange}) => {
                 geoid,
             }, falcor);
 
+// console.log("DATA:", data);
+
             onChange(JSON.stringify({
                 ...data
             }));
@@ -187,7 +188,7 @@ const View = ({value}) => {
     if(!value) return ''
 
     let data = typeof value === 'object' ?
-        value['element-data'] : 
+        value['element-data'] :
         JSON.parse(value)
     return (
         <div className='relative w-full p-6'>
@@ -197,7 +198,7 @@ const View = ({value}) => {
                     <RenderBarChart {...JSON.parse(value)} baseUrl={'/'}/>
             }
         </div>
-    )           
+    )
 }
 
 

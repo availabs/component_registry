@@ -1,14 +1,14 @@
 import React, {useEffect, useMemo, useState} from "react";
 import { useFalcor } from '~/modules/avl-falcor';
-import { isJson } from "~/utils/macros.jsx";
+import { isJson } from "../utils/macros.jsx";
 import { RenderCensusLineChart } from "./components/RenderCensusLineChart.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
-import { Loading } from "~/utils/loading.jsx";
+import { Loading } from "../utils/loading.jsx";
 import {getCensusKeyLabel, processBaseConfig} from "../utils/graphConfig/utils.js";
 import BASE_GRAPH_CONFIG from '../utils/graphConfig/'
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import get from "lodash/get";
-import {range} from '~/utils/macros'
+import {range} from '../utils/macros'
 function processConfig(geoid, category) {
     //get you census variables/keys you pass to the comp
     const CONFIG = { [category]: BASE_GRAPH_CONFIG[category] };

@@ -113,7 +113,6 @@ export const GraphComponent = props => {
             height={ get(graphFormat, "height", 300) }
             width={ get(graphFormat, "width", width) }
             bgColor={ get(graphFormat, "bgColor", "#ffffff") }
-            textColor={ get(graphFormat, "textColor", "#ffffff") }
             colors={ get(graphFormat, "colors") }
 
             orientation={ get(graphFormat, "orientation", "vertical") }

@@ -1,5 +1,5 @@
 import React, {useMemo} from "react";
-import {fnumIndex} from "~/utils/macros.jsx";
+import {fnumIndex} from "../../utils/macros.jsx";
 import {Link} from "react-router-dom";
 import {Attribution} from "../../shared/attribution.jsx";
 

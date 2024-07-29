@@ -1,6 +1,6 @@
 import React from "react";
 import {metaData} from "./config.js";
-import {fnum} from "~/utils/macros.jsx";
+import {fnum} from "../utils/macros.jsx";
 const valueFormat = ({ cell, textCols = [], isDollar = false }) => {
     let value = cell?.value?.value?.join(", ") || cell.value || 0;
 
