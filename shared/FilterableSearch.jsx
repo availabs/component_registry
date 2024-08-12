@@ -70,6 +70,7 @@ const renderMenu = ({results, menuProps, labelKey, filter, filters, setFilter, o
 
 export default ({
                     className,
+                    label,
                     value,
                     onChange,
                     options = [],
@@ -94,9 +95,11 @@ export default ({
     }, [options, filter])
 
     return (
-        <div className={'flex justify-between'}>
-            <div className={`flex flex row ${className} w-full shrink my-1 bg-white p-1 pl-3 rounded-l-md`}>
-                <i className={`fa fa-search font-light text-xl bg-white rounded-r-md`}/>
+        <div
+            className={`flex flex-row flex-wrap justify-between`}>
+            <label className={'shrink-0 pr-2 py-1 my-1 w-1/4'}>{label} Version:</label>
+            <div className={`flex flex row ${className} w-3/4 shrink my-1`}>
+                <i className={`fa fa-search font-light text-xl bg-white pr-2 pt-1 rounded-r-md`}/>
                 <Typeahead
                     className={'w-full'}
                     // multiple={true}
@@ -110,10 +113,11 @@ export default ({
                     defaultSelected={selected}
                     onChange={(selected) => onChangeFilter(selected, setSelected, onChange, options)}
                     selected={selected}
-                    inputProps={{className: 'w-full flex flex-row flex-wrap p-2'}}
+                    inputProps={{className: 'bg-white w-full p-1 pl-3 rounded-l-md'}}
                     renderMenu={(results, menuProps, labelKey) =>
                         renderMenu({results, menuProps, labelKey, filters, filter, setFilter, onChange})}
-                    renderToken={(props) => <RenderToken props={props} selected={selected} setSelected={setSelected} onChange={onChange}/>}
+                    renderToken={(props) => <RenderToken props={props} selected={selected} setSelected={setSelected}
+                                                         onChange={onChange}/>}
                 />
             </div>
         </div>
