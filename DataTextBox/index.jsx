@@ -209,7 +209,7 @@ const Edit = ({value, onChange}) => {
                     <FilterableSearch
                         className={'flex-row-reverse p-0'}
                         label={'Data Source:'}
-                        options={dataSources.map(ds => ({label: ds.name, key: ds.source_id}))}
+                        options={dataSources.map(ds => ({label: ds.name, key: ds.source_id})).sort((a,b) => a.label.localeCompare(b.label))}
                         value={dataSource}
                         onChange={(value) => {
                             setVisibleCols([])
