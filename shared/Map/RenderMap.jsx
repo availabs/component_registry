@@ -192,7 +192,7 @@ export const RenderMap = ({falcor, layerProps, legend, interactive=true, layers=
     );
 
     return (
-        <>
+        <div className='relative w-full h-full '>
             <DrawLegend {...legend} />
             <AvlMap
                 falcor={falcor}
@@ -229,6 +229,7 @@ export const RenderMap = ({falcor, layerProps, legend, interactive=true, layers=
                 layerProps={layerProps}
                 CustomSidebar={() => <div/>}
             />
-        </>
+            <div className='px-6 py-10 absolute bottom-0 right-0'><i className=' text-2xl text-slate-400 -rotate-45 fal fa-location-circle'/></div> 
+        </div>
     )
 }

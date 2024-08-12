@@ -12,7 +12,7 @@ export const EditMap = ({falcor, layerProps, legend, layerType}) => {
     const mapLayer = React.useRef(layerType ? layerType() : SimpleMapLayerFactory())
     
     return (
-        <div className='w-full h-full border border-pink-400'>
+        <div className='w-full h-full border border-pink-400 relative'>
             {legend && <DrawLegend {...legend} />}
             <AvlMap
                 falcor={falcor}
@@ -39,6 +39,7 @@ export const EditMap = ({falcor, layerProps, legend, layerType}) => {
                 layerProps={layerProps}
                 CustomSidebar={() => <div/>}
             />
+           <div className='px-6 py-10 absolute bottom-0 right-0'><i className=' text-2xl text-slate-400 -rotate-45 fal fa-location-circle'/></div> 
         </div>
     )
 }
@@ -49,7 +50,7 @@ export const ViewMap = ({falcor, layerProps, legend, layerType}) => {
     const mapLayer = React.useRef(layerType ? layerType() : SimpleMapLayerFactory())
 
     return (
-        <div className='w-full h-full'>
+        <div className='w-full h-full relative'>
             <DrawLegend {...legend} />
             <AvlMap
                 mapOptions={{
@@ -78,6 +79,7 @@ export const ViewMap = ({falcor, layerProps, legend, layerType}) => {
                 layerProps={layerProps}
                 CustomSidebar={() => <div/>}
             />
+            <div className='px-6 py-10 absolute bottom-0 right-0'><i className=' text-2xl text-slate-400 -rotate-45 fal fa-location-circle'/></div> 
         </div>
     )
 }
