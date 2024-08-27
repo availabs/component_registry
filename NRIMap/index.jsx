@@ -310,7 +310,10 @@ const Edit = ({value, onChange, size}) => {
                         label={'Consequence:'}
                         types={
                             Object.keys(metaData.consequences)
-                                .filter(c => (!hazard || hazard === 'total') ? !['Population', 'Population $'].includes(c) : true)
+                                .filter(c =>
+                                    (!hazard || hazard === 'total') ?
+                                        !['Population', 'Population $'].includes(c) :
+                                        hazardsMeta[hazard]?.consequences?.includes(metaData.consequences[c]))
                                 .map(t => ({label: t.replace('_', ' '), value: metaData.consequences[t]}))
                         }
                         type={consequence}
