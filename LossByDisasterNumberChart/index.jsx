@@ -24,7 +24,7 @@ async function getData({
     const dependencyPath = ["dama", pgEnv, "viewDependencySubgraphs", "byViewId", ealViewId];
     const disasterNameAttributes = ['distinct disaster_number as disaster_number', 'declaration_title'],
         disasterNamePath = (view_id) => ['dama', pgEnv,  "viewsbyId", view_id, "options"];
-
+    let disasterNames = {};
     const res = await falcor.get(dependencyPath);
     const deps = get(res, ["json", ...dependencyPath, "dependencies"], []);
 
@@ -54,39 +54,41 @@ async function getData({
         ?.filter(dns => dns !== 'SWD')
         .sort((a, b) => +a - +b);
 
-    if(disasterNumbers?.length){
+    if(disasterNumbers?.length) {
         const ddcView = deps.find(d => d.type === "disaster_declarations_summaries_v2");
 
-        await falcor.get([...disasterNamePath(ddcView.view_id), JSON.stringify({ filter: { disaster_number: disasterNumbers.sort((a, b) => +a - +b)}}),
+        await falcor.get([...disasterNamePath(ddcView.view_id), JSON.stringify({filter: {disaster_number: disasterNumbers.sort((a, b) => +a - +b)}}),
             'databyIndex', {from: 0, to: disasterNumbers.length - 1}, disasterNameAttributes]);
 
         const falcorCache = falcor.getCache();
 
-        const disasterNames = Object.values(get(falcorCache, [...disasterNamePath(ddcView?.view_id)], {}))
+        disasterNames = Object.values(get(falcorCache, [...disasterNamePath(ddcView?.view_id)], {}))
             .reduce((acc, d) => [...acc, ...Object.values(d?.databyIndex || {})], [])
             .reduce((acc, disaster) => {
                 acc[disaster['distinct disaster_number as disaster_number']] = disaster.declaration_title;
                 return acc;
             }, {});
 
-        const lossByYearByDisasterNumber = get(falcorCache, [...dataPath, "value"], []),
-            { processed_data: chartDataActiveView, disaster_numbers } =
-                ProcessDataForMap(lossByYearByDisasterNumber, disasterNames);
-
-        const attributionData = get(falcorCache, ['dama', pgEnv, 'views', 'byId', fusionViewId, 'attributes'], {});
-
-        return {
-            chartDataActiveView,
-            disaster_numbers,
-            attributionData,
-            ealSourceId,
-            ealViewId,
-            fusionViewId,
-            geoid,
-            hazard,
-            consequence
-        }
     }
+    const falcorCache = falcor.getCache();
+    const lossByYearByDisasterNumber = get(falcorCache, [...dataPath, "value"], []),
+        { processed_data: chartDataActiveView, disaster_numbers } =
+            ProcessDataForMap(lossByYearByDisasterNumber, disasterNames);
+
+    const attributionData = get(falcorCache, ['dama', pgEnv, 'views', 'byId', fusionViewId, 'attributes'], {});
+
+    return {
+        chartDataActiveView,
+        disaster_numbers,
+        attributionData,
+        ealSourceId,
+        ealViewId,
+        fusionViewId,
+        geoid,
+        hazard,
+        consequence
+    }
+
 }
 
 const Edit = ({value, onChange}) => {
