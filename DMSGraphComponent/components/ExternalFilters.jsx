@@ -5,7 +5,6 @@ import { format as d3format } from "d3-format"
 import { Select } from "~/modules/avl-components/src"
 
 import { Button } from "./uicomponents"
-import { useGetColumnDomain } from "./utils"
 import { getColumnDisplay } from "./XAxisSelector"
 import { strictNaN } from "./utils"
 
@@ -18,20 +17,10 @@ const NoData = () => {
 }
 
 const FilterTypes = [
-  "equals",
-  "includes"
+  "equals"
 ]
 
-const intFormat = d3format(",d");
-const floatFormat = d3format(",.2f");
-const displayFormat = v => {
-  if (strictNaN(v)) return v;
-  if (Math.floor(+v) === +v) {
-    return intFormat(v);
-  }
-  return floatFormat(v);
-}
-export const GraphFilters = props => {
+export const ExternalFilters = props => {
 
   const {
     columns,
@@ -40,74 +29,35 @@ export const GraphFilters = props => {
     addFilter,
     removeFilter,
     activeView,
+    xAxisColumn,
     pgEnv
   } = props;
 
   const [selectedColumn, setSelectedcolumn] = React.useState(null);
-  const [filterType, _setFilterType] = React.useState(null);
-  const isMulti = filterType === "includes";
-
-  const domain = useGetColumnDomain({ activeView, column: selectedColumn, pgEnv });
-
-  const [_filterValues, setFilterValues] = React.useState([]);
-
-  const setFilterType = React.useCallback(fType => {
-    if (fType === "equals") {
-      setFilterValues(prev => prev.slice(0, 1));
-    }
-    _setFilterType(fType);
-  }, [])
-
-  const setEquals = React.useCallback(v => {
-    setFilterValues([v]);
-  }, []);
-  const setIncludes = React.useCallback(v => {
-    setFilterValues(v);
-  }, []);
-
-  const doOnChange = React.useCallback(v => {
-    if (isMulti) {
-      setIncludes(v);
-    }
-    else {
-      setEquals(v);
-    }
-  }, [isMulti, setEquals, setIncludes]);
-
-  const filterValues = React.useMemo(() => {
-    if (isMulti) {
-      return _filterValues;
-    }
-    return _filterValues[0];
-  }, [_filterValues, isMulti]);
+  const [filterType, setFilterType] = React.useState("equals");
 
   const okToAdd = React.useMemo(() => {
-    return Boolean(_filterValues.length);
-  }, [_filterValues]);
+    return Boolean(selectedColumn);
+  }, [selectedColumn]);
 
   const doAddFilter = React.useCallback(e => {
     e.stopPropagation();
     addFilter({
       column: selectedColumn,
-      type: filterType,
-      values: _filterValues
+      type: filterType
     })
     setSelectedcolumn(null);
-    _setFilterType(null);
-    setFilterValues([]);
-  }, [selectedColumn, filterType, _filterValues, addFilter]);
+  }, [selectedColumn, filterType, addFilter]);
 
   const doResetFilter = React.useCallback(e => {
     setSelectedcolumn(null);
-    _setFilterType(null);
-    setFilterValues([]);
   }, []);
 
   return (
     <div className="grid grid-cols-2 gap-4">
 
       <div className="font-bold text-xl col-span-2">
-        Graph Filters
+        External Filters
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -121,27 +71,6 @@ export const GraphFilters = props => {
             onChange={ setSelectedcolumn }/>
         }
 
-        { !selectedColumn ? null :
-          <Select
-            placeholder="Select a filter type..."
-            options={ FilterTypes }
-            value={ filterType }
-            onChange={ setFilterType }/>
-        }
-
-      </div>
-
-      <div className="grid grid-cols-1 gap-4">
-
-        { !domain.length || !filterType ? null :
-          <Select multi={ isMulti } removable
-            placeholder={ `Select filter ${ isMulti ? "values" : "value" }` }
-            options={ domain }
-            accessor={ d => `${ d.value } (count ${ d.count })` }
-            valueAccessor={ d => d.value }
-            value={ filterValues }
-            onChange={ doOnChange }/>
-        }
       </div>
 
       <div className="col-span-2 grid grid-cols-2 gap-4">
@@ -176,17 +105,11 @@ const FilterRow = ({ filter, remove }) => {
       <td className="py-1">
         { getColumnDisplay(filter.column) }
       </td>
+{/*
       <td className="py-1">
         { filter.type }
       </td>
-      <td className="py-1">
-        { filter.values.map(v => (
-            <div key={ v }>
-              { displayFormat(v) }
-            </div>
-          ))
-        }
-      </td>
+*/}
       <td className="py-1">
         <button onClick={ doRemove }
           className={ `
@@ -202,7 +125,7 @@ const FilterRow = ({ filter, remove }) => {
   )
 }
 
-export const FilterTable = ({ filters, remove }) => {
+const FilterTable = ({ filters, remove }) => {
   return (
     <div>
 
@@ -217,12 +140,11 @@ export const FilterTable = ({ filters, remove }) => {
             <th className="py-1 border-b border-current">
               Column Name
             </th>
+{/*
             <th className="py-1 border-b border-current">
               Filter Type
             </th>
-            <th className="py-1 border-b border-current">
-              Filter Value
-            </th>
+*/}
             <th className="py-1 border-b border-current">
               Remove Filter
             </th>

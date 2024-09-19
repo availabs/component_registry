@@ -19,10 +19,12 @@ const BarGraph = props => {
     legend,
     tooltip,
     groupMode = "stacked",
-    orientation = "vertical"
+    orientation = "vertical",
+    showCategories,
+    xAxisColumn
   } = props;
 
-  const isPalette = colors.type === "palette";
+  const isPalette = ((colors.type === "palette") || (colors.type === "custom"));
   const isStacked = groupMode === "stacked";
   const isVertical = orientation === "vertical";
 
@@ -102,6 +104,93 @@ const BarGraph = props => {
     if (!ref) return;
     if (!data.length) return;
 
+    const marks = [
+      rule([0]),
+      bar(
+        data,
+        isStacked ? (
+          { x: isVertical ? "index" : "value",
+            y: isVertical ? "value" : "index",
+            fill: isPalette ? "type" : "value",
+            sort: isVertical ?
+                    ({ x: "x", order: null }) :
+                    ({ y: "y", order: null }),
+          }
+        ) : (
+          { x: isVertical ? "type" : "value",
+            fx: isVertical ? "index" : undefined,
+            y: isVertical ? "value" : "type",
+            fy: isVertical ? undefined : "index",
+            fill: isPalette ? "type" : "value",
+            sort: isVertical ?
+                    ({ fx: "x", order: null }) :
+                    ({ fy: "y", order: null }),
+          }
+        )
+      )
+    ]
+
+    if (tooltip.show && isVertical) {
+      marks.push(
+        Plot.tip(
+          data,
+          Plot.pointerX(
+            Plot.stackY({
+              x: "index",
+              y: "value",
+              channels: {
+                index: {
+                  value: "index",
+                  label: xAxisColumn.display_name || xAxisColumn.name
+                },
+                Type: "type",
+                Value: "value"
+              },
+              format: {
+                x: false,
+                y: false,
+                index: true,
+                Type: showCategories,
+                Value: true
+              },
+              fill: bgColor,
+              fontSize: tooltip.fontSize,
+            })
+          )
+        )
+      )
+    }
+    else if (tooltip.show && !isVertical) {
+      marks.push(
+        Plot.tip(
+          data,
+          Plot.pointerY(
+            Plot.stackX({
+              x: "value",
+              y: "index",
+              channels: {
+                index: {
+                  value: "index",
+                  label: xAxisColumn.display_name || xAxisColumn.name
+                },
+                Type: "type",
+                Value: "value"
+              },
+              format: {
+                x: false,
+                y: false,
+                index: true,
+                Type: showCategories,
+                Value: true
+              },
+              fill: bgColor,
+              fontSize: tooltip.fontSize
+            })
+          )
+        )
+      )
+    }
+
     const plot = Plot.plot({
       x: xOptions,
       fx: fxOptions,
@@ -112,56 +201,24 @@ const BarGraph = props => {
         width: legend.width,
         height: legend.height,
         label: legend.label,
-        range: isPalette ? colors.value : colors.value.range,
         domain: colors.value.domain || undefined,
+        range: isPalette ? colors.value : colors.value.range,
         type: isPalette ? undefined : colors.value.type,
         tickFormat: isPalette ? undefined : TickFormatOptionsMap[yAxis.tickFormat]
       },
       height: graphHeight,
       width,
       ...margins,
-      marks: [
-        rule([0]),
-        bar(
-          data,
-          isStacked ? (
-            { x: isVertical ? "index" : "value",
-              y: isVertical ? "value" : "index",
-              fill: isPalette ? "type" : "value",
-              sort: isVertical ?
-                      ({ x: "x", order: null }) :
-                      ({ y: "y", order: null }),
-            }
-          ) : (
-            { x: isVertical ? "type" : "value",
-              fx: isVertical ? "index" : undefined,
-              y: isVertical ? "value" : "type",
-              fy: isVertical ? undefined : "index",
-              fill: isPalette ? "type" : "value",
-              sort: isVertical ?
-                      ({ fx: "x", order: null }) :
-                      ({ fy: "y", order: null }),
-            }
-          )
-        ),
-        // Plot.tip(
-        //   data,
-        //   Plot.pointerY({
-        //     fill: bgColor,
-        //     x: isVertical ? "index" : "value",
-        //     y: isVertical ? "value" : "index",
-        //   })
-        // )
-      ]
+      marks
     });
 
     ref.append(plot);
 
     return () => plot.remove();
 
-  }, [ref, data, margins, graphHeight, width, yAxis,
-      colors, legend, isPalette, isStacked, isVertical,
-      xOptions, yOptions, fxOptions, fyOptions]
+  }, [ref, data, margins, graphHeight, width, yAxis, tooltip,
+      colors, legend, isPalette, isStacked, isVertical, xAxisColumn,
+      xOptions, yOptions, fxOptions, fyOptions, showCategories]
   );
 
   return (
