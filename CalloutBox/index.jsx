@@ -46,7 +46,7 @@ Edit.settings = {
 }
 
 const View = ({value}) => {
-    if (!value) return ''
+    if (!value) return <div className='h-6' />
     let data = typeof value === 'object' ?
         value['element-data'] :
         JSON.parse(value)
@@ -55,7 +55,7 @@ const View = ({value}) => {
     if(!dataOrValue ||
         (dataOrValue?.root?.children?.length === 1 && dataOrValue?.root?.children?.[0]?.children?.length === 0) ||
         (dataOrValue?.root?.children?.length === 0)
-    ) return null;
+    ) return <div className='h-6' />;
 
     const LexicalComp = dmsDataTypes.lexical.ViewComp;
     return (

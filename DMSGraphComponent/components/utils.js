@@ -189,6 +189,8 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, filters,
     if (!activeView) return [[], 0];
     if (!xAxisColumn) return [[], 0];
 
+console.log("???????????????", xAxisColumn, yAxisColumns)
+
     const vid = activeView.view_id;
 
     let length = get(falcorCache, ["dama", pgEnv, "viewsbyId", vid, "options", options, "length"], 0);

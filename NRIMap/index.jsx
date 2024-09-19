@@ -94,7 +94,7 @@ async function getData({
     });
 
     // mapFocus
-    const geomColTransform = [`st_asgeojson(st_envelope(ST_Simplify(geom, ${geoid?.toString()?.length === 5 ? `0.1` : `0.5`})), 9, 1) as geom`],
+    const geomColTransform = [`st_asgeojson(st_orientedenvelope(st_union(geom)), 9, 1)  as geom`],
         geoIndices = {from: 0, to: 0},
         stateFips = get(data, [0, 'geoid']) || geoid?.toString()?.substring(0, 2),
         geoPath = (view_id) =>
@@ -310,7 +310,10 @@ const Edit = ({value, onChange, size}) => {
                         label={'Consequence:'}
                         types={
                             Object.keys(metaData.consequences)
-                                .filter(c => (!hazard || hazard === 'total') ? !['Population', 'Population $'].includes(c) : true)
+                                .filter(c =>
+                                    (!hazard || hazard === 'total') ?
+                                        !['Population', 'Population $'].includes(c) :
+                                        hazardsMeta[hazard]?.consequences?.includes(metaData.consequences[c]))
                                 .map(t => ({label: t.replace('_', ' '), value: metaData.consequences[t]}))
                         }
                         type={consequence}

@@ -11,6 +11,7 @@ import {Loading} from "../utils/loading.jsx";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import {RenderColumnControls} from "../shared/columnControls.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
+import FilterableSearch from "../shared/FilterableSearch.jsx";
 
 async function getData({pgEnv, geoid, dataSource, version, geoAttribute, visibleCols, id, bgColor,
                            columnHeader, columnColors}, falcor) {
@@ -155,7 +156,6 @@ const Edit = ({value, onChange}) => {
             // fetch columns, data
 
             setLoading(false);
-
         }
 
         getData()
@@ -200,33 +200,24 @@ const Edit = ({value, onChange}) => {
 
         load()
     }, [dataSource, version, geoid, geoAttribute, visibleCols, bgColor, columnHeader, columnColors]);
-
+    console.log('version', version)
     return (
         <div className='w-full'>
             <div className='relative'>
                 <div className={'border rounded-md border-blue-500 bg-blue-50 p-2 m-1'}>
                     Edit Controls
-                    <div className={`flex justify-between`}>
-                        <label
-                            className={`shrink-0 pr-2 py-1 my-1 w-1/4`}
-                        >
-                            Data Source:
-                        </label>
-                        <select
-                            className={`bg-white w-full pl-3 rounded-md my-1`}
-                            value={dataSource}
-                            onChange={e => {
-                                setVisibleCols([])
-                                setGeoAttribute(undefined)
-                                setDataSource(+e.target.value);
-                            } }
-                        >
-                            <option key={'undefined'} value={undefined} selected disabled>Please select a data source</option>
-                            {
-                                dataSources.map(ds => <option key={ds.source_id} value={ds.source_id}> {ds.name} </option>)
-                            }
-                        </select>
-                    </div>
+                    <FilterableSearch
+                        className={'flex-row-reverse p-0'}
+                        label={'Data Source:'}
+                        options={dataSources.map(ds => ({label: ds.name, key: ds.source_id})).sort((a,b) => a.label.localeCompare(b.label))}
+                        value={dataSource}
+                        onChange={(value) => {
+                            setVisibleCols([])
+                            setGeoAttribute(undefined)
+                            setDataSource(+value);
+                        }}
+                        placeholder={'Please select a data source'}
+                    />
                     <VersionSelectorSearchable
                         source_id={dataSource}
                         view_id={version}
