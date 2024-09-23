@@ -14,13 +14,13 @@ const floodPlainColors = {
 }
 
 const buildingTypeLabels = {
-    [JSON.stringify({value_source: ['ogs']})]: 'State Owned',
+    [JSON.stringify({value_source: ['ogs']})]: 'State-owned',
     [JSON.stringify({critical: ['not null']})] : 'Critical'
 }
 export const RenderLegend = ({floodPlain=[], hazard=[], buildingType}) =>
     (
         <div className={'flex flex-col'}>
-            <label>{buildingTypeLabels[buildingType]} assets in high hazard risk areas</label>
+            <label>{buildingTypeLabels[buildingType]} Assets in High Hazard Risk Areas</label>
             <div className={"flex flex-rows flex-wrap gap-2 text-xs align-middle"}>
                 {
                     Array.isArray(floodPlain) && floodPlain?.length ?
