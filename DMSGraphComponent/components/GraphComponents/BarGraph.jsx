@@ -19,10 +19,12 @@ const BarGraph = props => {
     legend,
     tooltip,
     groupMode = "stacked",
-    orientation = "vertical"
+    orientation = "vertical",
+    showCategories,
+    xAxisColumn
   } = props;
 
-  const isPalette = colors.type === "palette";
+  const isPalette = ((colors.type === "palette") || (colors.type === "custom"));
   const isStacked = groupMode === "stacked";
   const isVertical = orientation === "vertical";
 
@@ -136,6 +138,23 @@ const BarGraph = props => {
             Plot.stackY({
               x: "index",
               y: "value",
+              channels: {
+                index: {
+                  value: "index",
+                  label: xAxisColumn.display_name || xAxisColumn.name
+                },
+                Type: "type",
+                Value: "value"
+              },
+              format: {
+                x: false,
+                y: false,
+                index: true,
+                Type: showCategories,
+                Value: true
+              },
+              fill: bgColor,
+              fontSize: tooltip.fontSize,
             })
           )
         )
@@ -145,12 +164,29 @@ const BarGraph = props => {
       marks.push(
         Plot.tip(
           data,
-          Plot.pointerY({
-            fill: bgColor,
-            fontSize: tooltip.fontSize,
-            x: "value",
-            y: "index",
-          })
+          Plot.pointerY(
+            Plot.stackX({
+              x: "value",
+              y: "index",
+              channels: {
+                index: {
+                  value: "index",
+                  label: xAxisColumn.display_name || xAxisColumn.name
+                },
+                Type: "type",
+                Value: "value"
+              },
+              format: {
+                x: false,
+                y: false,
+                index: true,
+                Type: showCategories,
+                Value: true
+              },
+              fill: bgColor,
+              fontSize: tooltip.fontSize
+            })
+          )
         )
       )
     }
@@ -165,8 +201,8 @@ const BarGraph = props => {
         width: legend.width,
         height: legend.height,
         label: legend.label,
-        range: isPalette ? colors.value : colors.value.range,
         domain: colors.value.domain || undefined,
+        range: isPalette ? colors.value : colors.value.range,
         type: isPalette ? undefined : colors.value.type,
         tickFormat: isPalette ? undefined : TickFormatOptionsMap[yAxis.tickFormat]
       },
@@ -181,8 +217,8 @@ const BarGraph = props => {
     return () => plot.remove();
 
   }, [ref, data, margins, graphHeight, width, yAxis, tooltip,
-      colors, legend, isPalette, isStacked, isVertical,
-      xOptions, yOptions, fxOptions, fyOptions]
+      colors, legend, isPalette, isStacked, isVertical, xAxisColumn,
+      xOptions, yOptions, fxOptions, fyOptions, showCategories]
   );
 
   return (

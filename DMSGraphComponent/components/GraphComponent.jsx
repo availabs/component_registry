@@ -1,6 +1,11 @@
 import React from "react"
 
 import * as Plot from "@observablehq/plot";
+import {
+  groups as d3groups,
+  mean as d3mean,
+  sum as d3sum
+} from "d3-array"
 import get from "lodash/get"
 import uniq from "lodash/uniq"
 
@@ -75,12 +80,24 @@ const GraphTitle = ({ title, position, fontSize, fontWeight }) => {
   )
 }
 
+const AggFuncs = {
+  SUM: d3sum,
+  AVG: d3mean,
+  COUNT: d3sum
+}
+const getAggFunc = aggMethod => {
+  return AggFuncs[aggMethod] || d3sum;
+}
+
 export const GraphComponent = props => {
 
   const {
     graphFormat,
     activeGraphType,
-    viewData
+    viewData,
+    showCategories,
+    xAxisColumn,
+    yAxisColumns
   } = props;
 
   const GraphComponent = React.useMemo(() => {
@@ -95,6 +112,32 @@ export const GraphComponent = props => {
     setWidth(width);
   }, [ref]);
 
+  const groupedData = React.useMemo(() => {
+    const grouped = d3groups(viewData, d => d.index, d => d.type, d => d.aggMethod);
+
+    return grouped.reduce((a, c) => {
+      const [index, group1] = c;
+
+      return group1.reduce((aa, cc) => {
+        const [type, group2] = cc;
+
+        return group2.reduce((aaa, ccc) => {
+          const [aggMethod, group3] = ccc;
+
+          const aggFunc = getAggFunc(aggMethod);
+
+          aaa.push({
+            index,
+            type,
+            value: aggFunc(group3, d => d.value)
+          })
+
+          return aaa;
+        }, aa);
+      }, a);
+    }, []);
+  }, [viewData, yAxisColumns]);
+
   return (
     <div ref={ setRef } className="w-full h-fit"
       style={ {
@@ -108,12 +151,15 @@ export const GraphComponent = props => {
       <div className="h-fit">
         { !activeGraphType ? null :
           <GraphComponent
-            data={ viewData }
+            data={ groupedData }
             title={ get(graphFormat, "title", "") }
             height={ get(graphFormat, "height", 300) }
             width={ get(graphFormat, "width", width) }
             bgColor={ get(graphFormat, "bgColor", "#ffffff") }
             colors={ get(graphFormat, "colors") }
+
+            showCategories={ showCategories }
+            xAxisColumn={ xAxisColumn }
 
             orientation={ get(graphFormat, "orientation", "vertical") }
             groupMode={ get(graphFormat, "groupMode", "stacked") }

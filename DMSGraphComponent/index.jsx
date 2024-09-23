@@ -4,10 +4,9 @@ import get from "lodash/get"
 import set from "lodash/set"
 import merge from "lodash/merge"
 import isEqual from "lodash/isEqual"
+import uniq from "lodash/uniq"
 
 import { format as d3format } from "d3-format"
-
-
 
 import {
   SourceSelector,
@@ -19,15 +18,23 @@ import {
   DefaultPalette,
 
   GraphFilters,
+  FilterTable,
+  ExternalFilters,
   CategorySelector,
 
   GraphTypes,
 
   XAxisSelector,
   YAxisSelector,
+
   useGetViewData,
-  getNewGraphFormat
+  getNewGraphFormat,
+  getColumnDisplay
 } from "./components"
+
+import { Button } from "./components/uicomponents"
+
+import { Select } from "~/modules/avl-components/src"
 
 const IntFormat = d3format(",d");
 
@@ -52,6 +59,7 @@ const getInitialState = value => {
     yAxisColumns: get(state, "yAxisColumns", []),
     graphFormat: get(state, "graphFormat", getNewGraphFormat()),
     filters: get(state, "filters", []),
+    externalFilters: get(state, "externalFilters", []),
     category: get(state, "category", null)
   }
 }
@@ -138,6 +146,16 @@ const Reducer = (state, action) => {
         ...state,
         filters: state.filters.filter(f => f !== payload.filter)
       }
+    case "add-external-filter":
+      return {
+        ...state,
+        externalFilters: [...state.externalFilters, payload.filter]
+      }
+    case "remove-external-filter":
+      return {
+        ...state,
+        externalFilters: state.externalFilters.filter(f => f !== payload.filter)
+      }
     case "set-category":
       return {
         ...state,
@@ -216,6 +234,19 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     })
   }, []);
 
+  const addExternalFilter = React.useCallback(filter => {
+    dispatch({
+      type: "add-external-filter",
+      filter
+    })
+  }, []);
+  const removeExternalFilter = React.useCallback(filter => {
+    dispatch({
+      type: "remove-external-filter",
+      filter
+    })
+  }, []);
+
   const setCategory = React.useCallback(category => {
     dispatch({
       type: "set-category",
@@ -231,6 +262,7 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     yAxisColumns,
     graphFormat,
     filters,
+    externalFilters,
     category
   } = state;
 
@@ -238,7 +270,7 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     return get(state, ["activeSource", "metadata", "value", "columns"]) || [];
   }, [activeSource]);
 
-  const [viewData, viewDataLength] = useGetViewData({ pgEnv, activeView, xAxisColumn, yAxisColumns, filters, category });
+  const [viewData, viewDataLength] = useGetViewData({ pgEnv, activeView, xAxisColumn, yAxisColumns, filters, externalFilters, category });
 
   const dataDomain = React.useMemo(() => {
     return viewData.map(vd => vd.value);
@@ -299,7 +331,20 @@ console.log("DMSGraphComponent::index::viewData", viewData);
       <GraphComponent
         graphFormat={ graphFormat }
         activeGraphType={ activeGraphType }
-        viewData={ viewData }/>
+        viewData={ viewData }
+        showCategories={ Boolean(category) || (yAxisColumns.length > 1) }
+        xAxisColumn={ xAxisColumn }
+        yAxisColumns={ yAxisColumns }/>
+
+      <ExternalFilters
+        columns={ columns }
+        xAxisColumn={ xAxisColumn }
+        viewData={ viewData }
+        filters={ externalFilters }
+        addFilter={ addExternalFilter }
+        removeFilter={ removeExternalFilter }
+        activeView={ activeView }
+        pgEnv={ pgEnv }/>
 
       <GraphFilters
         columns={ columns }
@@ -321,10 +366,25 @@ console.log("DMSGraphComponent::index::viewData", viewData);
         format={ graphFormat }
         edit={ editGraphFormat }
         activeGraphType={ activeGraphType }
-        dataDomain={ dataDomain }/>
+        dataDomain={ dataDomain }
+        viewData={ viewData }/>
 
     </div>
   )
+}
+
+const useFilterViewData = ({ viewData, filters }) => {
+  return React.useMemo(() => {
+    if (!filters.length) return viewData;
+    return viewData.filter(vd => {
+      return filters.reduce((a, c) => {
+        const col = c.column.name;
+        const fValues = c.values;
+        const vdValue = get(vd, ["externalData", col], null);
+        return fValues.includes(vdValue);
+      }, true);
+    })
+  }, [viewData, filters]);
 }
 
 const ViewComp = ({ value }) => {
@@ -339,18 +399,96 @@ const ViewComp = ({ value }) => {
 
   const {
     graphFormat,
-    activeGraphType
+    activeGraphType,
+    category,
+    xAxisColumn,
+    yAxisColumns,
+    externalFilters = []
   } = state;
 
   if (!get(viewData, "length", 0)) {
     return null;
   }
 
+  const [filters, setFilters] = React.useState([]);
+
+  const addFilter = React.useCallback(f => {
+    setFilters(filters => [...filters, f]);
+  }, []);
+  const removeFilter = React.useCallback(f => {
+    setFilters(filters => filters.filter(filter => filter !== f));
+  }, []);
+
+  const colorMap = React.useMemo(() => {
+
+    const colorType = get(graphFormat, ["colors", "type"]);
+
+    const isPalette = ((colorType === "palette") || (colorType === "custom"));
+
+    if (!isPalette) return {};
+
+    const types = viewData.reduce((a, c) => {
+      const type = c.type;
+      if (!a.includes(type)) {
+        a.push(type);
+      }
+      return a;
+    }, []).sort((a, b) => a.localeCompare(b));
+
+    const palette = get(graphFormat, ["colors", "value"], []);
+
+    return types.reduce((a, c, i) => {
+      a[c] = palette[i % palette.length];
+      return a;
+    }, {});
+  }, [viewData, graphFormat])
+
+  const filteredData = useFilterViewData({ viewData, filters });
+
+  const updatedGraphFormat = React.useMemo(() => {
+
+    const colorType = get(graphFormat, ["colors", "type"]);
+
+    const isPalette = ((colorType === "palette") || (colorType === "custom"));
+
+    if (!isPalette) return graphFormat;
+
+    const types = filteredData.reduce((a, c) => {
+      const type = c.type;
+      if (!a.includes(type)) {
+        a.push(type);
+      }
+      return a;
+    }, []).sort((a, b) => a.localeCompare(b));
+
+    const palette = types.map(type => colorMap[type]);
+
+    return {
+      ...graphFormat,
+      colors: {
+        ...graphFormat.colors,
+        value: palette
+      }
+    }
+  }, [colorMap, filteredData, graphFormat]);
+
   return (
-    <GraphComponent
-      graphFormat={ graphFormat }
-      activeGraphType={ activeGraphType }
-      viewData={ viewData }/>
+    <div>
+      <ExternalFilterSelector
+        viewData={ viewData }
+        externalFilters={ externalFilters }
+        activeFilters={ filters }
+        addFilter={ addFilter }
+        removeFilter={ removeFilter }/>
+
+      <GraphComponent
+        graphFormat={ updatedGraphFormat }
+        activeGraphType={ activeGraphType }
+        viewData={ filteredData }
+        showCategories={ Boolean(category) || (yAxisColumns.length > 1) }
+        xAxisColumn={ xAxisColumn }
+        yAxisColumns={ yAxisColumns }/>
+    </div>
   )
 }
 
@@ -361,3 +499,139 @@ const GraphComp = {
   ViewComp
 }
 export default GraphComp
+
+const FilterTypes = [
+  "equals",
+  "includes"
+]
+
+const ExternalFilterSelector = ({ viewData, externalFilters, activeFilters, addFilter, removeFilter }) => {
+
+  const filterableColumns = React.useMemo(() => {
+    return externalFilters.map(f => f.column);
+  }, [externalFilters]);
+
+  const [selectedColumn, setSelectedcolumn] = React.useState(null);
+  const [filterType, _setFilterType] = React.useState("equals");
+  const isMulti = filterType === "includes";
+
+  const filterDomain = React.useMemo(() => {
+    if (!selectedColumn) return [];
+    const domain = viewData.map(d => get(d, ["externalData", selectedColumn.name], null));
+    return uniq(domain).sort((a, b) => a.localeCompare(b));
+  }, [selectedColumn, viewData]);
+
+  const [_filterValues, setFilterValues] = React.useState([]);
+
+  const setFilterType = React.useCallback(fType => {
+    if (fType === "equals") {
+      setFilterValues(prev => prev.slice(0, 1));
+    }
+    _setFilterType(fType);
+  }, [])
+
+  const setEquals = React.useCallback(v => {
+    setFilterValues([v]);
+  }, []);
+  const setIncludes = React.useCallback(v => {
+    setFilterValues(v);
+  }, []);
+
+  const doOnChange = React.useCallback(v => {
+    if (isMulti) {
+      setIncludes(v);
+    }
+    else {
+      setEquals(v);
+    }
+  }, [isMulti, setEquals, setIncludes]);
+
+  const filterValues = React.useMemo(() => {
+    if (isMulti) {
+      return _filterValues;
+    }
+    return _filterValues[0];
+  }, [_filterValues, isMulti]);
+
+  const okToAdd = React.useMemo(() => {
+    return Boolean(_filterValues.length);
+  }, [_filterValues]);
+
+  const doAddFilter = React.useCallback(e => {
+    e.stopPropagation();
+    addFilter({
+      column: selectedColumn,
+      type: filterType,
+      values: _filterValues
+    })
+    setSelectedcolumn(null);
+    _setFilterType("equals");
+    setFilterValues([]);
+  }, [selectedColumn, filterType, _filterValues, addFilter]);
+
+  const doResetFilter = React.useCallback(e => {
+    setSelectedcolumn(null);
+    _setFilterType("equals");
+    setFilterValues([]);
+  }, []);
+
+  if (!externalFilters.length) return null;
+
+  return (
+    <div className="grid grid-cols-2 gap-4 bg-gray-300 p-4">
+
+      <div className="font-bold text-xl col-span-2">
+        Filters
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+
+        <Select
+          placeholder="Select a column..."
+          options={ filterableColumns }
+          accessor={ getColumnDisplay }
+          value={ selectedColumn }
+          onChange={ setSelectedcolumn }/>
+
+        <Select
+          placeholder="Select a filter type..."
+          options={ FilterTypes }
+          value={ filterType }
+          onChange={ setFilterType }/>
+
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+
+        { !filterDomain.length || !filterType ? null :
+          <Select multi={ isMulti } removable
+            placeholder={ `Select filter ${ isMulti ? "values" : "value" }` }
+            options={ filterDomain }
+            accessor={ d => d }
+            valueAccessor={ d => d }
+            value={ filterValues }
+            onChange={ doOnChange }/>
+        }
+      </div>
+
+      <div className="col-span-2 grid grid-cols-2 gap-4">
+        <Button onClick={ doResetFilter }>
+          Reset Filter Settings
+        </Button>
+        <Button disabled={ !okToAdd }
+          onClick={ doAddFilter }
+        >
+          Add Filter
+        </Button>
+      </div>
+
+      { !activeFilters.length ? null :
+        <div className="col-span-2">
+          <FilterTable filters={ activeFilters }
+            remove={ removeFilter }/>
+        </div>
+      }
+
+    </div>
+  )
+}
