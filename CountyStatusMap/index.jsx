@@ -29,7 +29,7 @@ class CountyMapLayer extends SimpleMapLayer {
               <div className='text-blue-500 font-bold'>{data?.county}</div>
               <div className='text-xs text-slate-400 uppercase font-bold'>Plan status</div>
               <div className='text-sm'>{data?.plan_status}</div>
-              <div className='text-xs text-slate-400 uppercase font-bold'>Plan Approval Date</div>
+              <div className='text-xs text-slate-400 uppercase font-bold'>Plan Expiration Date</div>
               <div className='text-sm'>{data?.approval_date}</div>
             </div>
           );
@@ -97,7 +97,7 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
     //return {}
     const geoAttribute = 'geoid'
     // console.log('version', version)
-    version = 880
+    version = 1456
     const columns = ['county','approval_date', 'under_fema_review_yes_no', 'update_in_progress'];
 
     const options = JSON.stringify({
@@ -143,10 +143,10 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
     data.forEach(record => {
         let value = (getDateDiff(record['approval_date']) || -5);
         record.plan_status = "Plan Approved"
-        if(value < 0 && (record['under_fema_review_yes_no'] || record['update_in_progress'])) {
+        if((record['under_fema_review_yes_no'] === 't' || record['update_in_progress'] === 't')) {
             value = -23
             record.plan_status = 'Update in Progress'
-        } else if (value < 0) {
+        } else if (value < 0 && record['update_in_progress'] === 'f') {
           record.plan_status = "Plan Expired, No Update in Progress"
         } else {
            record.plan_status = "Plan Approved"
@@ -229,7 +229,7 @@ const Edit = ({value, onChange, size}) => {
 
     const [dataSources, setDataSources] = useState(cachedData?.dataSources || []);
     const [dataSource, setDataSource] = useState(cachedData?.dataSource);
-    const [version, setVersion] = useState(cachedData?.version || 880);
+    const [version, setVersion] = useState(cachedData?.version || 1456);
     const [geoAttribute, setGeoAttribute] = useState(cachedData?.geoAttribute || 'geoid');
     // const [attribute, setAttribute] = useState(/*cachedData?.attribute ||*/ 'plan_approval_date');
     
