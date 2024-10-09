@@ -91,7 +91,7 @@ function calculateValues(graph, censusKeys, subtractKeys, sumType, divisorKeys, 
 async function getData ({geoid, category, title}, falcor) {
     const graph_config = processConfig(geoid, category).filter(c => c.type === 'CensusStatBox').find(c => c.title === title);
     if(!graph_config) {
-        console.log('config', title, processConfig(geoid, category).filter(c => c.type === 'CensusStatBox'))
+        // console.log('config', title, processConfig(geoid, category).filter(c => c.type === 'CensusStatBox'))
         return {}
     }
     const {

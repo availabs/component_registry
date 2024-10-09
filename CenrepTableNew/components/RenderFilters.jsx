@@ -74,7 +74,7 @@ const getFilterMeta = async ({column, meta, values, pgEnv, falcor}) => {
         }, {});
     // console.timeEnd('processing meta')
 
-    console.log('returning meta', dataRes, data)
+    // console.log('returning meta', dataRes, data)
     return data;
 }
 const getFilterData = async ({falcor, filter, pgEnv, version, setFilterData, metadata, setIsLoadingData}) => {

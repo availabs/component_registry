@@ -22,7 +22,7 @@ export async function getData({
     //console.log('getData called. fetchData:', fetchData)
 
     //console.time(`getData ${version}`)
-    console.log('additional variables', additionalVariables)
+    // console.log('additional variables', additionalVariables)
     const additionalFilters = additionalVariables.filter(f => f.action === 'include').reduce((acc, curr) => ({
         ...acc,
         [cleanColName(curr.name)]: acc[curr.name] ?
@@ -94,7 +94,7 @@ export async function getData({
                 }
             });
 
-        console.time(`getData falcor calls ${version}`)
+        // console.time(`getData falcor calls ${version}`)
         await falcor.get(lenPath(options({groupBy, notNull, sortBy})));
         const len = Math.min(
             get(falcor.getCache(), lenPath(options({groupBy, notNull, sortBy})), 0),

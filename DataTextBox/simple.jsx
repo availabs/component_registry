@@ -22,7 +22,7 @@ const Edit = ({value, onChange}) => {
         onChange(JSON.stringify({backgroundColor, text}))
     }, [backgroundColor, text])
 
-    console.log('color, text', text)
+    // console.log('color, text', text)
     return (
         <div className='w-full'>
             <div className='relative'>
@@ -75,7 +75,7 @@ const View = ({value}) => {
     let data = typeof value === 'object' ?
         value['element-data'] :
         JSON.parse(value)
-    console.log('value', value, data)
+    // console.log('value', value, data)
 
     return (
         <RenderCalloutBox {...data} />

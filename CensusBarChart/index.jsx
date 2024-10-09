@@ -97,7 +97,7 @@ const getBarData = (state, props) => {
 async function getData ({geoid, category, title}, falcor) {
     const graph_config = processConfig(geoid, category).filter(c => c.type === 'CensusBarChart').find(c => c.title === title);
     if(!graph_config) {
-        console.log('config', title, processConfig(geoid, category))
+        // console.log('config', title, processConfig(geoid, category))
         return {}
     }
     const {censusKeys=[], divisorKeys=[], subtractKeys=[], groupBy} = graph_config;

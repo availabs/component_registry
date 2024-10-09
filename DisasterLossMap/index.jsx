@@ -63,7 +63,7 @@ const getGeoColors = ({geoid, data = [], columns = [], paintFn, colors = [], ...
 async function getData({geoid,disasterNumber,ealViewId, type='total_losses', numColors='5', colors=defaultColors, size="1", height=500}, falcor) {
     //return {}
     if(!ealViewId ||  !geoid || !disasterNumber ) {
-        console.log('getdata not running',ealViewId ,  geoid , disasterNumber  )
+        // console.log('getdata not running',ealViewId ,  geoid , disasterNumber  )
         return {}
     }
     // console.log('test', ealViewId)

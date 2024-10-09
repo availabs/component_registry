@@ -76,14 +76,14 @@ const Edit = ({value, onChange}) => {
 
     useEffect( () => {
         async function load () {
-            console.log('got to load', ealViewId, geoid, disasterNumber)
+            // console.log('got to load', ealViewId, geoid, disasterNumber)
             if(!geoid || !disasterNumber){
                 setStatus('Please Select a Geography and a Disaster.');
                 return Promise.resolve();
             } else{
                 setStatus(undefined);
             }
-            console.log()
+            // console.log()
             setLoading(true);
             setStatus(undefined);
             let data = await getData({ealViewId, geoid,disasterNumber}, falcor)

@@ -22,6 +22,6 @@ export const addTotalRow = ({showTotal, data, columns, setLoading}) => {
     } else {
         data.push(totalRow)
     }
-    console.log('show total', showTotal, totalRow, columns, data)
+    // console.log('show total', showTotal, totalRow, columns, data)
     setLoading(false)
 }

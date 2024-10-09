@@ -98,7 +98,7 @@ function getMapLayer(geoid) {
 
 const getData = ({geoid, title, subTitle, link='2023 Update'}) =>{
   
-  console.log('county header getData', title)
+  // console.log('county header getData', title)
   return new Promise((resolve, reject) => {
     resolve({
       title,

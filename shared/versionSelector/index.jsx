@@ -9,7 +9,7 @@ export default function VersionSelector ({ source_id, view_id, onChange}) {
 
     useEffect(() => {
         async function fetchData() {
-            console.time("fetch data");
+            // console.time("fetch data");
             const lengthPath = ["dama", pgEnv, "sources", "byId", source_id, "views", "length"];
             const resp = await falcor.get(lengthPath);
             let data = await falcor.get(

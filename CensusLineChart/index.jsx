@@ -66,7 +66,7 @@ async function getData ({geoid, category, title}, falcor) {
     const graph_config = processConfig(geoid, category).filter(c => c.type === 'CensusLineChart').find(c => c.title === title);
 
     if(!graph_config) {
-        console.log('config', graph_config, title, processConfig(geoid, category))
+        // console.log('config', graph_config, title, processConfig(geoid, category))
         return {}
     }
 

@@ -118,7 +118,7 @@ async function getData({geoAttribute, geoid, version, hazard, colors, title, dat
 
     await falcor.get([...dataPath, {from: 0, to: len - 1}, [geoAttribute, ...attributes]]);
     await falcor.get([...attributionPath, attributionAttributes]);
-    console.log('d?', Object.values(get(falcor.getCache(), dataPath, {})), hazard, floodPlain)
+    // console.log('d?', Object.values(get(falcor.getCache(), dataPath, {})), hazard, floodPlain)
     const data = Object.values(get(falcor.getCache(), dataPath, {}))
         .filter(d =>
             // at least one hazard is above threshold
@@ -313,7 +313,7 @@ const Edit = ({value, onChange, size}) => {
         geoAttribute, geoid, version, colors, title, dataSource, size, height, hazard, floodPlain,
         numColors, buildingType, hazardScoreThreshold
     ]);
-    console.log('data', data)
+    // console.log('data', data)
     return (
         <div className='w-full'>
             <div className='relative'>

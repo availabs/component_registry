@@ -92,7 +92,10 @@ async function getData({ealSourceId=343, ealViewId, isTotal, geoid, hazard, seve
         ["dama", pgEnv, "viewDependencySubgraphs", "byViewId", ealViewId],
         ["comparative_stats", pgEnv, "byEalIds", "source", ealSourceId, "view", ealViewId, "byGeoid", geoid]
     )
-
+    // console.log('hps? 1', ealSourceId, ealViewId, geoid,
+    //
+    //     get(res, ['json', "comparative_stats", pgEnv, "byEalIds", "source", ealSourceId, "view", ealViewId, "byGeoid", geoid])
+    // )
     const deps = get(res, ["json", "dama", pgEnv, "viewDependencySubgraphs", "byViewId", ealViewId, "dependencies"]);
     const nriView = deps.find(d => d.type === "nri");
     const fusionView = deps.find(d => d.type === "fusion");
@@ -122,12 +125,10 @@ async function getData({ealSourceId=343, ealViewId, isTotal, geoid, hazard, seve
             from: 0,
             to: len - 1
         }, [...Object.values(freqCol), ...Object.values(expCol), ...Object.values(evntsCol)]], fusionByIndexRoute, fusionTotalByIndexRoute, attributionRoute] : [];
-    await falcor.get(...routes);
+    const fusionRes = await falcor.get(...routes);
 
     // set data
-    const falcorCache = falcor.getCache();
-
-    const attributionDataFn = view_id => get(falcorCache, ['dama', pgEnv, 'views', 'byId', view_id, 'attributes'], {});
+    const attributionDataFn = view_id => get(falcor.getCache(), ['dama', pgEnv, 'views', 'byId', view_id, 'attributes'], {});
 
     const attributionData = [ealViewId, nriView.view_id, fusionView.view_id].map(d => (
         {
@@ -138,8 +139,9 @@ async function getData({ealSourceId=343, ealViewId, isTotal, geoid, hazard, seve
         }
     ))
 
+    const falcorCache = falcor.getCache();
     const hazardPercentileArray =
-        get(falcorCache, ["comparative_stats", pgEnv, "byEalIds", "source", ealSourceId, "view", ealViewId, "byGeoid", geoid, "value"], [])
+        get(res, ['json', "comparative_stats", pgEnv, "byEalIds", "source", ealSourceId, "view", ealViewId, "byGeoid", geoid])
             .filter(row => row.geoid == geoid && hazardsMeta[row.nri_category])
             .map(d => ({
                 key: d.nri_category,
@@ -149,34 +151,36 @@ async function getData({ealSourceId=343, ealViewId, isTotal, geoid, hazard, seve
                 eal: get(d, ealCol, 0),
                 nationalPercentile: get(d, npCol, 0) * 100,
                 actualLoss: (Object.values(
-                    get(falcorCache,
-                        isTotal ? [...fusionPathTotal(fusionView.view_id), "databyIndex"] : [...fusionPath(fusionView.view_id), "databyIndex"],
+                    get(fusionRes,
+                        isTotal ? ['json', ...fusionPathTotal(fusionView.view_id), "databyIndex"] :
+                                  ['json', ...fusionPath(fusionView.view_id), "databyIndex"],
                         {}))
                     .find(fc => fc.nri_category === d.nri_category) || {})[actualLossCol],
                 actualLossWithPop: (Object.values(
-                    get(falcorCache,
-                        isTotal ? [...fusionPathTotal(fusionView.view_id), "databyIndex"] : [...fusionPath(fusionView.view_id), "databyIndex"],
+                    get(fusionRes,
+                        isTotal ? ['json', ...fusionPathTotal(fusionView.view_id), "databyIndex"] :
+                                  ['json', ...fusionPath(fusionView.view_id), "databyIndex"],
                         {}))
                     .find(fc => fc.nri_category === d.nri_category) || {})[actualLossWithPopCol],
-                numSevereEvents: (Object.values(get(falcorCache, [...fusionPath(fusionView.view_id), "databyIndex"], {}))
+                numSevereEvents: (Object.values(get(fusionRes, ['json', ...fusionPath(fusionView.view_id), "databyIndex"], {}))
                     .find(fc => fc.nri_category === d.nri_category) || {})[numSevereEventsCol],
-                numEvents: (Object.values(get(falcorCache, [...fusionPath(fusionView.view_id), "databyIndex"], {}))
+                numEvents: (Object.values(get(fusionRes, ['json', ...fusionPath(fusionView.view_id), "databyIndex"], {}))
                     .find(fc => fc.nri_category === d.nri_category) || {})[numEventsCol],
-                numFEMADeclared: (Object.values(get(falcorCache, [...fusionPath(fusionView.view_id), "databyIndex"], {}))
+                numFEMADeclared: (Object.values(get(fusionRes, ['json', ...fusionPath(fusionView.view_id), "databyIndex"], {}))
                     .find(fc => fc.nri_category === d.nri_category) || {})[numFEMADeclaredCol],
-                deaths: (Object.values(get(falcorCache, [...fusionPath(fusionView.view_id), "databyIndex"], {}))
+                deaths: (Object.values(get(fusionRes, ['json', ...fusionPath(fusionView.view_id), "databyIndex"], {}))
                     .find(fc => fc.nri_category === d.nri_category) || {})[deathsCol],
-                injuries: (Object.values(get(falcorCache, [...fusionPath(fusionView.view_id), "databyIndex"], {}))
+                injuries: (Object.values(get(fusionRes, ['json', ...fusionPath(fusionView.view_id), "databyIndex"], {}))
                     .find(fc => fc.nri_category === d.nri_category) || {})[injuriesCol],
-                exposure: get(falcorCache, [...nriPath(nriView.view_id), "databyIndex", 0, expCol[d.nri_category]]),
-                frequency: get(falcorCache, [...nriPath(nriView.view_id), "databyIndex", 0, freqCol[d.nri_category]], 0),
+                exposure: get(fusionRes, ['json', ...nriPath(nriView.view_id), "databyIndex", 0, expCol[d.nri_category]]),
+                frequency: get(fusionRes, ['json', ...nriPath(nriView.view_id), "databyIndex", 0, freqCol[d.nri_category]], 0),
             }))
             .sort((a, b) => +b.value - +a.value);
 
     const size =
         type === 'card' && hazard !== 'total' ? 'small' :
             type === 'card' && hazard === 'total' ? 'large' : 'small';
-
+    // console.log('hps?', hazardPercentileArray.length, ealSourceId, ealViewId, geoid, falcorCache)
     return {
         hazardPercentileArray,
         attributionData,
@@ -352,7 +356,7 @@ const View = ({value}) => {
     let data = typeof value === 'object' ?
         value['element-data'] :
         JSON.parse(value)
-
+    console.log('data', data)
     return (
         <div className=''>
             <RenderGridOrBox {...data} baseUrl={'/'}/>
@@ -400,6 +404,11 @@ export default {
             hidden: true
         },
         {
+            name: 'hazardPercentileArray',
+            default: [],
+            hidden: true
+        },
+        {
             name: 'severeEventThreshold',
             default: 1_000_000,
             hidden: true
@@ -407,6 +416,11 @@ export default {
         {
             name: 'style',
             default: 'compact',
+            hidden: true
+        },
+        {
+            name: 'size',
+            default: 'small',
             hidden: true
         },
     ],

@@ -46,7 +46,7 @@ async function getData({pgEnv, geoid, dataSource, version, geoAttribute, visible
             color: columnColors?.[vc]
         }
     })?.filter(val => {
-        console.log('???????????/', val?.text)
+        // console.log('???????????/', val?.text)
         return val.text && typeof val.text !== 'object' && val?.text?.toString()?.trim()?.toLowerCase() !== 'null'
     });
 

@@ -13,7 +13,7 @@ const handleSearch = (text, selected, setSelected) => {
 
 const onChangeFilter = (selected, setSelected, view_id, views, navigate, onChange) => {
     const id = get(selected, [0, 'key']);
-    console.log('changed', id)
+    // console.log('changed', id)
     // if (id) {
         setSelected(selected);
         onChange ? onChange(id) : navigate(`/disaster/${id}`)
