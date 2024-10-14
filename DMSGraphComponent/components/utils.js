@@ -117,10 +117,30 @@ export const useGetViews = ({ pgEnv, sourceId = null } = {}) => {
   }, [falcorCache, pgEnv, sourceId]);
 }
 
+export const capitalize = string => {
+  return string
+          .split(/\s+/g)
+          .map(word => {
+            return word.split("")
+                        .map((letter, i) => i === 0 ? letter.toUpperCase() : letter)
+                        .join("")
+          }).join(" ")
+}
+
 const splitColumnName = cn => cn.split(/\s(?:as|AS)\s/);
 const cleanColumnName = cn => splitColumnName(cn)[0];
 
-export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, filters, externalFilters, pgEnv, category }) => {
+export const useGetViewData = args => {
+
+  const {
+    activeView,
+    xAxisColumn,
+    yAxisColumns,
+    filters,
+    externalFilters,
+    pgEnv,
+    category
+  } = args;
 
   const { falcor, falcorCache } = useFalcor();
 
@@ -181,15 +201,13 @@ export const useGetViewData = ({ activeView, xAxisColumn, yAxisColumns, filters,
     if (length && !strictNaN(length) && columns.length) {
       falcor.get([
         "dama", pgEnv, "viewsbyId", vid, "options", options, "databyIndex", d3range(length), columns
-      ]).then(res => console.log("useGetViewData::res", res));
+      ])//.then(res => console.log("useGetViewData::res", res));
     }
   }, [falcor, falcorCache, pgEnv, activeView, xAxisColumn, options, yColumnsMap, externalFilters, category]);
 
   return React.useMemo(() => {
     if (!activeView) return [[], 0];
     if (!xAxisColumn) return [[], 0];
-
-console.log("???????????????", xAxisColumn, yAxisColumns)
 
     const vid = activeView.view_id;
 
@@ -241,7 +259,7 @@ console.log("???????????????", xAxisColumn, yAxisColumns)
         return a;
       }, []);
 
-console.log("useGetViewData::data", data)
+// console.log("useGetViewData::data", data)
 
     const { sortMethod } = xAxisColumn;
 

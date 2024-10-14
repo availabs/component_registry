@@ -16,25 +16,16 @@ const NoData = () => {
   )
 }
 
-const FilterTypes = [
-  "equals"
-]
-
 export const ExternalFilters = props => {
 
   const {
     columns,
-    viewData,
     filters,
     addFilter,
-    removeFilter,
-    activeView,
-    xAxisColumn,
-    pgEnv
+    removeFilter
   } = props;
 
   const [selectedColumn, setSelectedcolumn] = React.useState(null);
-  const [filterType, setFilterType] = React.useState("equals");
 
   const okToAdd = React.useMemo(() => {
     return Boolean(selectedColumn);
@@ -44,10 +35,10 @@ export const ExternalFilters = props => {
     e.stopPropagation();
     addFilter({
       column: selectedColumn,
-      type: filterType
+      values: []
     })
     setSelectedcolumn(null);
-  }, [selectedColumn, filterType, addFilter]);
+  }, [selectedColumn, addFilter]);
 
   const doResetFilter = React.useCallback(e => {
     setSelectedcolumn(null);
@@ -105,11 +96,6 @@ const FilterRow = ({ filter, remove }) => {
       <td className="py-1">
         { getColumnDisplay(filter.column) }
       </td>
-{/*
-      <td className="py-1">
-        { filter.type }
-      </td>
-*/}
       <td className="py-1">
         <button onClick={ doRemove }
           className={ `
@@ -130,7 +116,7 @@ const FilterTable = ({ filters, remove }) => {
     <div>
 
       <div className="font-bold text-center">
-        Current Filters
+        Current External Filters
       </div>
 
       <table className="w-full text-sm">
@@ -140,11 +126,6 @@ const FilterTable = ({ filters, remove }) => {
             <th className="py-1 border-b border-current">
               Column Name
             </th>
-{/*
-            <th className="py-1 border-b border-current">
-              Filter Type
-            </th>
-*/}
             <th className="py-1 border-b border-current">
               Remove Filter
             </th>

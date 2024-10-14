@@ -31,12 +31,14 @@ const displayFormat = v => {
   }
   return floatFormat(v);
 }
-export const GraphFilters = props => {
+
+export const ExternalFilters = props => {
 
   const {
     columns,
     filters,
     addFilter,
+    updateFilter,
     removeFilter,
     activeView,
     pgEnv
@@ -45,6 +47,12 @@ export const GraphFilters = props => {
   const [selectedColumn, setSelectedcolumn] = React.useState(null);
   const [filterType, _setFilterType] = React.useState("equals");
   const isMulti = filterType === "includes";
+  const [filterLabel, _setFilterLabel] = React.useState("");
+
+  const setFilterLabel = React.useCallback(e => {
+    e.stopPropagation();
+    _setFilterLabel(e.target.value);
+  }, []);
 
   const domain = useGetColumnDomain({ activeView, column: selectedColumn, pgEnv });
 
@@ -80,31 +88,40 @@ export const GraphFilters = props => {
     return _filterValues[0];
   }, [_filterValues, isMulti]);
 
+  const hasValues = React.useMemo(() => {
+    return Boolean(_filterValues.length);
+  }, [_filterValues]);
+
   const doResetFilter = React.useCallback(e => {
     setSelectedcolumn(null);
     _setFilterType("equals");
     setFilterValues([]);
+    _setFilterLabel("");
   }, []);
 
   const okToAdd = React.useMemo(() => {
-    return Boolean(_filterValues.length);
-  }, [_filterValues]);
+    return Boolean(_filterValues.length && filterLabel);
+  }, [_filterValues, filterLabel]);
 
   const doAddFilter = React.useCallback(e => {
     e.stopPropagation();
     addFilter({
       column: selectedColumn,
       type: filterType,
-      values: _filterValues
+      values: _filterValues,
+      label: filterLabel,
+      startActive: false
     })
     doResetFilter();
-  }, [selectedColumn, filterType, _filterValues, addFilter, doResetFilter]);
+  }, [selectedColumn, filterType, _filterValues, addFilter, filterLabel, doResetFilter]);
+
+// console.log("ExternalFilters::filters", filters);
 
   return (
     <div className="grid grid-cols-2 gap-4">
 
       <div className="font-bold text-xl col-span-2">
-        Graph Filters
+        External Filters
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -136,6 +153,13 @@ export const GraphFilters = props => {
             value={ filterValues }
             onChange={ doOnChange }/>
         }
+        { !_filterValues.length ? null :
+          <input
+            className="px-4 py-2 bg-white w-full"
+            value={ filterLabel }
+            onChange={ setFilterLabel }
+            placeholder="Set a filter label.."/>
+        }
       </div>
 
       <div className="col-span-2 grid grid-cols-2 gap-4">
@@ -151,7 +175,9 @@ export const GraphFilters = props => {
 
       { !filters.length ? null :
         <div className="col-span-2">
-          <FilterTable filters={ filters }
+          <ExternalFiltersTable
+            filters={ filters }
+            update={ updateFilter }
             remove={ removeFilter }/>
         </div>
       }
@@ -160,13 +186,27 @@ export const GraphFilters = props => {
   )
 }
 
-const FilterRow = ({ filter, remove }) => {
+const FilterRow = ({ filter, update, remove }) => {
   const doRemove = React.useCallback(e => {
     e.stopPropagation();
     remove(filter);
   }, [remove, filter]);
+  const doUpdateFilterLabel = React.useCallback(e => {
+    e.stopPropagation();
+    update(filter, { label: e.target.value });
+  }, [update, filter]);
+  const doUpdateStartActive = React.useCallback(e => {
+    e.stopPropagation();
+    update(filter, { startActive: Boolean(e.target.checked) });
+  }, [update, filter]);
   return (
     <tr>
+      <td>
+        <input
+          className="px-2 py-1"
+          value={ filter.label }
+          onChange={ doUpdateFilterLabel }/>
+      </td>
       <td className="py-1">
         { getColumnDisplay(filter.column) }
       </td>
@@ -180,6 +220,12 @@ const FilterRow = ({ filter, remove }) => {
             </div>
           ))
         }
+      </td>
+      <td className="py-1">
+        <input type="checkbox"
+          className="cursor-pointer"
+          checked={ filter.startActive }
+          onChange={ doUpdateStartActive }/>
       </td>
       <td className="py-1">
         <button onClick={ doRemove }
@@ -196,18 +242,21 @@ const FilterRow = ({ filter, remove }) => {
   )
 }
 
-export const FilterTable = ({ filters, remove }) => {
+const ExternalFiltersTable = ({ filters, update, remove }) => {
   return (
     <div>
 
       <div className="font-bold text-center">
-        Current Filters
+        Current External Filters
       </div>
 
       <table className="w-full text-sm">
 
         <thead>
           <tr>
+            <th className="py-1 border-b border-current">
+              Filter Label
+            </th>
             <th className="py-1 border-b border-current">
               Column Name
             </th>
@@ -216,6 +265,9 @@ export const FilterTable = ({ filters, remove }) => {
             </th>
             <th className="py-1 border-b border-current">
               Filter Value
+            </th>
+            <th className="py-1 border-b border-current">
+              Start Active
             </th>
             <th className="py-1 border-b border-current">
               Remove Filter
@@ -227,12 +279,14 @@ export const FilterTable = ({ filters, remove }) => {
           { filters.map(f =>
               <FilterRow key={ f.column.name }
                 filter={ f }
+                update={ update }
                 remove={ remove }/>
             )
           }
         </tbody>
 
       </table>
+
     </div>
   )
 }
