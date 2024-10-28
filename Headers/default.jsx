@@ -4,10 +4,11 @@ import {isJson} from "../utils/macros.jsx";
 
 
 
-export function Header ({position = 'above',bgImg = '/img/header.png', logo = '/img/nygov-logo.png', title = 'MitigateNY', bgClass='', subTitle='New York State Hazard Mitigation Plan', note='2023 Update'}) {
-  
+
+
+export function Header ({position = 'above',bgImg = '', logo = '', title = 'Title', bgClass='', subTitle='subTitle', note='note', height=300}) {
   return (
-    <div className={`h-[300px] bg-cover bg-center w-full flex ${bgClass}`} style={{ backgroundImage: `url("${bgImg}")` }}>
+    <div className={`bg-cover bg-center w-full flex ${bgClass}`} style={{ backgroundImage: `url("${bgImg}")`, height: `${height+''}px` }}>
       <div className='p-2'>
         {logo && <img src={logo} alt="NYS Logo" />}
       </div>
@@ -28,15 +29,9 @@ export function Header ({position = 'above',bgImg = '/img/header.png', logo = '/
   )
 }
 
-async function getData ({
-                     position='above',
-                     bgImg='/img/header.png',
-                     logo='/img/nygov-logo.png',
-                     bgClass = '',
-                     title='MitigateNY',
-                     subTitle='New York State Hazard Mitigation Plan',
-                     note='2023 Update'}) {
-  return {
+const getData = ({position='above',bgImg='/img/header.png', logo='/img/nygov-logo.png',bgClass = '', title='MitigateNY', subTitle='New York State Hazard Mitigation Plan', note='2023 Update'}) =>{
+  return new Promise((resolve, reject) => {
+    resolve({
       position,
       bgImg,
       bgClass,
@@ -44,7 +39,8 @@ async function getData ({
       title,
       subTitle,
       note
-  }
+    })
+  })
 }
 
 const Edit = ({value, onChange, size}) => {
@@ -61,13 +57,13 @@ const Edit = ({value, onChange, size}) => {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState('');
     const [compData, setCompData] = useState({
-        position: cachedData.position || 'above',
         bgImg: cachedData.bgImg || '',//'/img/header.png', 
         logo: cachedData.logo || '',//'/img/nygov-logo.png', 
-        title: cachedData.title || 'MitigateNY', 
-        subTitle: cachedData.subTitle || 'New York State Hazard Mitigation Plan', 
-        note: cachedData.note || '2023 Update',
-        bgClass: cachedData.bgClass || ''
+        title: cachedData.title || 'Title', 
+        subTitle: cachedData.subTitle || 'subTitle', 
+        note: cachedData.note || 'note',
+        bgClass: cachedData.bgClass || '',
+        height: cachedData.height || 300
     })
 
     useEffect(() => {
@@ -121,14 +117,12 @@ const Edit = ({value, onChange, size}) => {
                 <input type='text' value={compData.logo} onChange={(e) => setCompData({...compData, logo: e.target.value})} />
               </div>
             </div>
-
-            <ButtonSelector
-                label={'Position:'}
-                types={[{label: 'Above', value: 'above'}, {label: 'Below', value: 'below'}]}
-                type={compData.position}
-                setType={(e) => setCompData({...compData, position: e})}
-            />
-
+             <div className={'flex flex-row flex-wrap justify-between'}>
+              <label className={'shrink-0 pr-2 py-1 my-1 w-1/4'}>height:</label>
+              <div className={`flex flex row w-3/4 shrink my-1`}>
+                <input type='text' value={compData.height} onChange={(e) => setCompData({...compData, height: e.target.value})} />
+              </div>
+            </div>
           </div>
           <Header {...compData}/>
         </div>
@@ -180,6 +174,10 @@ export default {
         { 
           name:'note',
           default: '2023 Update',
+        },
+         { 
+          name:'height',
+          default: 300,
         }
     ],
     getData,

@@ -312,7 +312,7 @@ class CirclesOptions extends LayerContainer {
         }
         return out
       },[])
-      console.log('rendered features', resultFeatures, sourceUnion)
+      //console.log('rendered features', resultFeatures, sourceUnion)
       //console.log('feature label points', ;
       map.getSource('cousub-label-points').setData({
         "type": "FeatureCollection",
@@ -330,22 +330,22 @@ class CirclesOptions extends LayerContainer {
             }
           })
       });
-      console.log('label features', {
-        "type": "FeatureCollection",
-        features: Object.values(sourceUnion)
-          //.filter(d => sourceNames.includes(d.properties.namelsad))
-          .map((feat,i) => { 
-            return {
-              type: "Feature",
-              id: i,
-              properties: feat.properties,
-              geometry: {
-                "type": "Point",
-                "coordinates": centroid(feat.geometry).geometry.coordinates//polylabel(feat.geometry.coordinates)
-              } 
-            }
-          })
-      });
+      // console.log('label features', {
+      //   "type": "FeatureCollection",
+      //   features: Object.values(sourceUnion)
+      //     //.filter(d => sourceNames.includes(d.properties.namelsad))
+      //     .map((feat,i) => { 
+      //       return {
+      //         type: "Feature",
+      //         id: i,
+      //         properties: feat.properties,
+      //         geometry: {
+      //           "type": "Point",
+      //           "coordinates": centroid(feat.geometry).geometry.coordinates//polylabel(feat.geometry.coordinates)
+      //         } 
+      //       }
+      //     })
+      // });
     }, 500);  
   
   }
