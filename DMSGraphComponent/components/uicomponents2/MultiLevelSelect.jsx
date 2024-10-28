@@ -10,7 +10,15 @@ import {
   useTheme
 } from "./index"
 
-import { hasValue } from "../utils"
+
+const hasValue = value => {
+  if ((value === null) || (value === undefined)) return false;
+  if ((typeof value === "string") && !value.length) return false;
+  if (Array.isArray(value)) return value.reduce((a, c) => a || hasValue(c), false);
+  if ((typeof value === "number") && isNaN(value)) return false;
+  if ((typeof value === "object")) return Object.values(value).reduce((a, c) => a || hasValue(c), false);
+  return true;
+}
 
 const EmptyArray = [];
 const NoOp = () => {};
