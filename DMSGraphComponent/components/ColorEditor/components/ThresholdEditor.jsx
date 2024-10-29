@@ -7,6 +7,7 @@ import {
   range as d3range
 } from "d3-array"
 import { format as d3format } from "d3-format"
+import isEqual from "lodash/isEqual"
 
 import { Button } from "../../uicomponents"
 

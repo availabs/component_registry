@@ -8,6 +8,7 @@ const ScaleTypeOptions = [
   "quantize",
   "quantile",
   "linear",
+  "log",
   "threshold"
 ]
 

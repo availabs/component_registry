@@ -25,6 +25,7 @@ const BarGraph = props => {
   } = props;
 
   const isPalette = ((colors.type === "palette") || (colors.type === "custom"));
+  const isLog = (!isPalette && colors.value.type === "log");
   const isStacked = groupMode === "stacked";
   const isVertical = orientation === "vertical";
 
@@ -57,17 +58,19 @@ const BarGraph = props => {
       ticks: isStacked ? xAxisTicks : undefined
     }) : ({
       axis: "bottom",
+      type: isLog ? "log" : undefined,
       grid: yAxis.showGridLines,
       tickFormat: TickFormatOptionsMap[yAxis.tickFormat],
       textAnchor: yAxis.rotateLabels ? "start" : "middle",
       tickRotate: yAxis.rotateLabels ? 45 : 0,
       label: isStacked ? yAxis.label : null
     })
-  }, [isVertical, isStacked, xAxis, yAxis, xAxisTicks]);
+  }, [isVertical, isStacked, xAxis, yAxis, xAxisTicks, isLog]);
 
   const yOptions = React.useMemo(() => {
     return isVertical ? ({
       axis: "left",
+      type: isLog ? "log" : undefined,
       grid: yAxis.showGridLines,
       textAnchor: yAxis.rotateLabels ? "start" : "middle",
       tickRotate: yAxis.rotateLabels ? 45 : 0,
@@ -82,7 +85,7 @@ const BarGraph = props => {
       tickRotate: xAxis.rotateLabels ? 45 : 0,
       ticks: isStacked ? xAxisTicks : undefined
     })
-  }, [isVertical, isStacked, xAxis, yAxis, xAxisTicks]);
+  }, [isVertical, isStacked, xAxis, yAxis, xAxisTicks, isLog]);
 
   const fxOptions = React.useMemo(() => {
     return isStacked || !isVertical ? undefined : {
@@ -109,8 +112,14 @@ const BarGraph = props => {
       bar(
         data,
         isStacked ? (
-          { x: isVertical ? "index" : "value",
-            y: isVertical ? "value" : "index",
+          { x: isVertical ? "index" : isLog ? undefined : "value",
+            x1: !isLog ? undefined : isVertical ? undefined : 1,
+            x2: !isLog ? undefined : isVertical ? "index" : "value",
+
+            y: !isVertical ? "index" : isLog ? undefined : "value",
+            y1: !isLog ? undefined : isVertical ? 1 : undefined,
+            y2: !isLog ? undefined : isVertical ? "value" : "index",
+
             fill: isPalette ? "type" : "value",
             sort: isVertical ?
                     ({ x: "x", order: null }) :
@@ -216,7 +225,7 @@ const BarGraph = props => {
 
     return () => plot.remove();
 
-  }, [ref, data, margins, graphHeight, width, yAxis, tooltip,
+  }, [ref, data, margins, graphHeight, width, yAxis, tooltip, isLog,
       colors, legend, isPalette, isStacked, isVertical, xAxisColumn,
       xOptions, yOptions, fxOptions, fyOptions, showCategories]
   );

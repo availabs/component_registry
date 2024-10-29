@@ -84,20 +84,17 @@ const Reducer = (state, action) => {
         activeView: payload.view
       }
     case "set-active-graph-type": {
-      const nextState = {
+      return {
         ...state,
-        activeGraphType: payload.graph
-      }
-      if ((payload.graph.type === "Line Graph") && (nextState.graphFormat.colors.type !== "palette")) {
-        nextState.graphFormat = {
-          ...nextState.graphFormat,
+        activeGraphType: payload.graph,
+        graphFormat: {
+          ...state.graphFormat,
           colors: {
             type: "palette",
             value: [...DefaultPalette]
           }
         }
       }
-      return nextState;
     }
     case "set-x-axis-column":
       return {
