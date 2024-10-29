@@ -73,6 +73,8 @@ async function getData({
 
     const attributionPath = view_id => ['dama', pgEnv, 'views', 'byId', view_id, 'attributes', ['source_id', 'view_id', 'version', '_modified_timestamp']];
 
+    console.log('datalenres', typeId, [...dataPath(typeId), 'length'], attributionPath(typeId) )
+
     const dataLenRes = await falcor.get(
         [...dataPath(typeId), 'length'],
         attributionPath(typeId)
@@ -86,6 +88,7 @@ async function getData({
     }, Object.values(attributes)]);
 
     let data = Object.values(get(dataRes, ['json', ...dataPath(typeId), 'databyIndex'], {}));
+    console.log('data',typeId, data)
     data = [...Array(len).keys()].map(i => {
         return Object.keys(attributes).reduce((acc, curr) => ({
             ...acc,

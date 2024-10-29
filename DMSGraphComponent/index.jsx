@@ -36,7 +36,7 @@ import {
 import { Button } from "./components/uicomponents"
 
 import { Select } from "~/modules/avl-components/src"
-import { MultiLevelSelect } from "~/modules/avl-map-2/src/uicomponents"
+import { MultiLevelSelect } from "./components/uicomponents2"
 
 const IntFormat = d3format(",d");
 
