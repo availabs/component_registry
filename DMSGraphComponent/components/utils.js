@@ -2,6 +2,7 @@ import React from "react"
 
 import get from "lodash/get"
 import uniq from "lodash/uniq"
+import isEqual from "lodash/isEqual"
 import { range as d3range } from "d3-array"
 import colorbrewer from "colorbrewer"
 
@@ -42,6 +43,130 @@ const NaNValues = ["", null]
 export const strictNaN = v => {
   if (NaNValues.includes(v)) return true;
   return isNaN(v);
+}
+
+export const useRefreshState = (currentState, pgEnv, refreshState) => {
+// console.log("useRefreshState::currentState", currentState);
+
+  const checkForRefresh = currentState.checkForRefresh;
+
+  const { falcor, falcorCache } = useFalcor();
+
+  const { activeSource, activeView, xAxisColumn, yAxisColumns, filters, externalFilters } = currentState;
+
+  const [updatedActiveSource, setUpdatedActiveSource] = React.useState(null);
+  React.useEffect(() => {
+    if (!checkForRefresh) return;
+
+    if (activeSource?.source_id &&
+        updatedActiveSource?.source_id &&
+        (activeSource.source_id !== updatedActiveSource.source_id)
+      ) {
+        const path = ["dama", pgEnv, "sources", "byId", activeSource.source_id, "attributes"];
+        falcor.get([
+          ...path,
+          ["source_id", "name", "metadata", "categories", "type"]
+        ]);
+        const updated = get(falcorCache, path, null);
+        if (updated?.source_id === activeSource.source_id) {
+          setUpdatedActiveSource(updated);
+        }
+      }
+  }, [falcor, falcorCache, pgEnv, activeSource, updatedActiveSource, checkForRefresh]);
+
+  const [updatedActiveView, setUpdatedActiveView] = React.useState(null);
+  React.useEffect(() => {
+    if (!checkForRefresh) return;
+
+    if (activeView?.view_id &&
+        updatedActiveView?.view_id &&
+        (activeView.view_id !== updatedActiveView.view_id)
+      ) {
+        const path = ["dama", pgEnv, "views", "byId", activeView.view_id, "attributes"];
+        falcor.get([
+          ...path,
+          ["view_id", "source_id", "version", "metadata"]
+        ]);
+        const updated = get(falcorCache, path, null);
+        if (updated?.view_id === activeView.view_id) {
+          setUpdatedActiveView(updated);
+        }
+      }
+  }, [falcor, falcorCache, pgEnv, activeView, updatedActiveView, checkForRefresh]);
+
+  const updatedColumns = React.useMemo(() => {
+    return get(updatedActiveSource, ["metadata", "value", "columns"]) || [];
+  }, [updatedActiveSource]);
+
+  const refreshedState = React.useMemo(() => {
+
+      if (!checkForRefresh) return currentState;
+
+      const refreshedState = { ...currentState };
+
+      if (updatedActiveSource?.source_id) {
+        refreshedState.activeSource = updatedActiveSource;
+      }
+
+      if (updatedActiveView?.view_id) {
+        refreshedState.activeView = updatedActiveView;
+      }
+
+      if (updatedColumns.length) {
+        const xAxisCol = updatedColumns.find(col => col.name === xAxisColumn.name);
+        if (xAxisCol) {
+          refreshedState.xAxisColumn = {
+            ...xAxisColumn,
+            ...xAxisCol
+          }
+        }
+
+        const yAxisCols = yAxisColumns.map(yAxisColumn => {
+          const yAxisCol = updatedColumns.find(col => col.name === yAxisColumn.name);
+          if (yAxisCol) {
+            return {
+              ...yAxisColumn,
+              ...yAxisCol
+            }
+          }
+        }).filter(Boolean);
+        if (yAxisCols.length === yAxisColumns.length) {
+          refreshedState.yAxisColumns = yAxisCols;
+        }
+
+        const updatedFilters = filters.map(filter => {
+          return {
+            ...filter,
+            column: updatedColumns.find(col => col.name === filter.column.name)
+          }
+        }).filter(filter => Boolean(filter.column));
+        if (updatedFilters.length === filters.length) {
+          refreshedState.filters = updatedFilters;
+        }
+
+        const updatedExternalFilters = externalFilters.map(filter => {
+          return {
+            ...filter,
+            column: updatedColumns.find(col => col.name === filter.column.name)
+          }
+        }).filter(filter => Boolean(filter.column));
+        if (updatedExternalFilters.length === externalFilters.length) {
+          refreshedState.externalFilters = updatedExternalFilters;
+        }
+      }
+      return refreshedState;
+    }, [currentState, updatedActiveSource, updatedActiveView,
+        updatedColumns, xAxisColumn, yAxisColumns, checkForRefresh
+      ]
+  );
+
+  React.useEffect(() => {
+    if (checkForRefresh && !isEqual(currentState, refreshedState)) {
+      refreshState(refreshedState);
+    }
+  }, [currentState, refreshedState, checkForRefresh, refreshState]);
+
+  return refreshedState;
 }
 
 export const useGetSources = ({ pgEnv } = {}) => {

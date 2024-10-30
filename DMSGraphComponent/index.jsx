@@ -27,6 +27,7 @@ import {
   XAxisSelector,
   YAxisSelector,
 
+  useRefreshState,
   useGetViewData,
   getNewGraphFormat,
   getColumnDisplay,
@@ -36,7 +37,7 @@ import {
 import { Button } from "./components/uicomponents"
 
 import { Select } from "~/modules/avl-components/src"
-import { MultiLevelSelect } from "./components/uicomponents2"
+import { MultiLevelSelect } from "~/modules/avl-map-2/src/uicomponents"
 
 const IntFormat = d3format(",d");
 
@@ -62,7 +63,8 @@ const getInitialState = value => {
     graphFormat: get(state, "graphFormat", getNewGraphFormat()),
     filters: get(state, "filters", []),
     externalFilters: get(state, "externalFilters", []),
-    category: get(state, "category", null)
+    category: get(state, "category", null),
+    checkForRefresh: Boolean(value)
   }
 }
 
@@ -172,6 +174,8 @@ const Reducer = (state, action) => {
         ...state,
         category: payload.category
       }
+    case "refresh-state":
+      return { ...state, ...payload.state };
     default:
       return state;
   }
@@ -272,6 +276,13 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     })
   }, []);
 
+  const refreshState = React.useCallback(state => {
+    dispatch({
+      type: "refresh-state",
+      state
+    })
+  }, []);
+
   const {
     activeSource,
     activeView,
@@ -282,7 +293,7 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
     filters,
     externalFilters,
     category
-  } = state;
+  } = useRefreshState(state, pgEnv, refreshState);
 
   const columns = React.useMemo(() => {
     return get(state, ["activeSource", "metadata", "value", "columns"]) || [];
