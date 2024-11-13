@@ -416,7 +416,7 @@ const EditComp = ({ onChange, value, pgEnv = "hazmit_dama" }) => {
         activeSource={ activeSource }/>
 
       <div>
-        <ExternalFiltersControls
+        <ExternalFiltersControls editMode
           filters={ externalFilters }
           updateFilter={ updateExternalFilter }
           viewData={ viewData }
@@ -471,7 +471,7 @@ const FilterSelect = ({ options, value, onChange }) => {
   )
 }
 
-const ExternalFilterSelect = ({ filter, update, viewData, textColor }) => {
+const ExternalFilterSelect = ({ filter, update, viewData, textColor, editMode }) => {
 
   const domain = React.useMemo(() => {
     const domain = viewData.map(d => get(d, ["externalData", filter.column.name], null));
@@ -512,6 +512,12 @@ const ExternalFilterSelect = ({ filter, update, viewData, textColor }) => {
     update(filter, { values: v });
   }, [filter, update, domain]);
 
+  const placeholder = React.useMemo(() => {
+    return editMode ?
+            "Set default filter values..." :
+            "Set filter values..."
+  }, [editMode]);
+
   return (
     <div>
       <div className="font-bold"
@@ -520,7 +526,7 @@ const ExternalFilterSelect = ({ filter, update, viewData, textColor }) => {
         { capitalize(filter.column.name) } Filter
       </div>
       <MultiLevelSelect isMulti removable
-        placeholder="Set default filter values..."
+        placeholder={ placeholder }
         options={ domainOptions }
         value={ filter.values }
         onChange={ onChange }
@@ -536,7 +542,8 @@ const ExternalFiltersControls = props => {
     updateFilter,
     viewData,
     bgColor,
-    textColor
+    textColor,
+    editMode = false
   } = props;
 
   if (!filters.length) return null;
@@ -550,7 +557,8 @@ const ExternalFiltersControls = props => {
             filter={ f }
             update={ updateFilter }
             viewData={ viewData }
-            textColor={ textColor }/>
+            textColor={ textColor }
+            editMode={ editMode }/>
         ))
       }
     </div>

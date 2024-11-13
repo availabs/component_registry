@@ -255,6 +255,16 @@ export const capitalize = string => {
 const splitColumnName = cn => cn.split(/\s(?:as|AS)\s/);
 const cleanColumnName = cn => splitColumnName(cn)[0];
 
+const FilterTypeMap = {
+  "equals": "filter",
+  "includes": "filter",
+  "greater than": "gt",
+  "greater than or equals": "gte",
+  "less than": "lt",
+  "less than or equals": "lte",
+  "like": "like"
+}
+
 export const useGetViewData = args => {
 
   const {
@@ -272,6 +282,18 @@ export const useGetViewData = args => {
   const options = React.useMemo(() => {
     if (!xAxisColumn) return "{}";
 
+    const filtersByType = filters.reduce((a, c) => {
+      const type = FilterTypeMap[c.type];
+      if (!(type in a)) {
+        a[type] = {}
+      }
+      const ccn = cleanColumnName(c.column.name);
+      a[type][ccn] = ["equals", "includes"].includes(c.type) ? c.values : c.values[0];
+      return a;
+    }, {});
+
+// console.log(filters, filtersByType)
+
     return JSON.stringify({
       aggregatedLen: true,
       groupBy: uniq([
@@ -279,10 +301,11 @@ export const useGetViewData = args => {
         cleanColumnName(get(category, "name", "")),
         ...externalFilters.map(f => cleanColumnName(f.column.name))
       ].filter(Boolean)),
-      filter: filters.reduce((a, c) => {
-        a[cleanColumnName(c.column.name)] = c.values
-        return a;
-      }, {})
+      ...filtersByType
+      // filter: filters.reduce((a, c) => {
+      //   a[cleanColumnName(c.column.name)] = c.values
+      //   return a;
+      // }, {})
     });
   }, [xAxisColumn, filters, externalFilters, category]);
 

@@ -17,10 +17,36 @@ const NoData = () => {
   )
 }
 
-const FilterTypes = [
-  "equals",
-  "includes"
+// const FilterTypes = [
+//   "equals",
+//   "includes"
+// ]
+const NumericTypes = [
+  "integer",
+  "number"
 ]
+const NumericFilterTypes = [
+  "equals",
+  "includes",
+  "greater than",
+  "greater than or equals",
+  "less than",
+  "less than or equals"
+]
+const StringFilterTypes = [
+  "equals",
+  "includes",
+  "like"
+]
+const InputTypes = [
+  "greater than",
+  "greater than or equals",
+  "less than",
+  "less than or equals",
+  "like"
+]
+
+const coerceFilterValues = type => NumericTypes.includes(type) ? Number : String;
 
 const intFormat = d3format(",d");
 const floatFormat = d3format(",.2f");
@@ -31,6 +57,16 @@ const displayFormat = v => {
   }
   return floatFormat(v);
 }
+
+export const hasValue = value => {
+  if ((value === null) || (value === undefined)) return false;
+  if ((typeof value === "string") && !value.length) return false;
+  if (Array.isArray(value)) return value.reduce((a, c) => a || hasValue(c), false);
+  if ((typeof value === "number") && isNaN(value)) return false;
+  if ((typeof value === "object")) return Object.values(value).reduce((a, c) => a || hasValue(c), false);
+  return true;
+}
+
 export const GraphFilters = props => {
 
   const {
@@ -42,7 +78,7 @@ export const GraphFilters = props => {
     pgEnv
   } = props;
 
-  const [selectedColumn, setSelectedcolumn] = React.useState(null);
+  const [selectedColumn, _setSelectedcolumn] = React.useState(null);
   const [filterType, _setFilterType] = React.useState("equals");
   const isMulti = filterType === "includes";
 
@@ -50,11 +86,28 @@ export const GraphFilters = props => {
 
   const [_filterValues, setFilterValues] = React.useState([]);
 
-  const setFilterType = React.useCallback(fType => {
-    if (fType === "equals") {
-      setFilterValues(prev => prev.slice(0, 1));
+  const [inputValue, setInputValue] = React.useState("");
+  const handleInputChange = React.useCallback(e => {
+    const value = coerceFilterValues(filterType)(e.target.value);
+    setInputValue(value);
+    if (hasValue(value)) {
+      setFilterValues([]);
     }
+  }, [filterType]);
+
+  const setSelectedcolumn = React.useCallback(col => {
+    _setSelectedcolumn(col);
+    _setFilterType("equals");
+    setFilterValues([]);
+    setInputValue("");
+  }, []);
+
+  const setFilterType = React.useCallback(fType => {
     _setFilterType(fType);
+    setFilterValues([]);
+    if (InputTypes.includes(fType)) {
+      setInputValue("");
+    }
   }, []);
 
   const setEquals = React.useCallback(v => {
@@ -81,24 +134,37 @@ export const GraphFilters = props => {
   }, [_filterValues, isMulti]);
 
   const doResetFilter = React.useCallback(e => {
-    setSelectedcolumn(null);
+    _setSelectedcolumn(null);
     _setFilterType("equals");
     setFilterValues([]);
+    setInputValue("");
   }, []);
 
   const okToAdd = React.useMemo(() => {
-    return Boolean(_filterValues.length);
-  }, [_filterValues]);
+    return Boolean(_filterValues.length) || hasValue(inputValue);
+  }, [_filterValues, inputValue]);
 
   const doAddFilter = React.useCallback(e => {
     e.stopPropagation();
     addFilter({
       column: selectedColumn,
       type: filterType,
-      values: _filterValues
+      values: hasValue(inputValue) ?
+                [inputValue] :
+                _filterValues.map(coerceFilterValues(selectedColumn.type))
     })
     doResetFilter();
-  }, [selectedColumn, filterType, _filterValues, addFilter, doResetFilter]);
+  }, [selectedColumn, filterType, _filterValues, inputValue, addFilter, doResetFilter]);
+
+  const FilterTypes = React.useMemo(() => {
+    if (!selectedColumn) return [];
+    const type = selectedColumn.type;
+    return NumericTypes.includes(type) ? NumericFilterTypes : StringFilterTypes;
+  }, [selectedColumn]);
+
+  const disableValueSelector = React.useMemo(() => {
+    return hasValue(inputValue);
+  }, [inputValue]);
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -128,13 +194,25 @@ export const GraphFilters = props => {
 
       <div className="grid grid-cols-1 gap-4">
         { !domain.length || !filterType ? null :
-          <Select multi={ isMulti } removable
-            placeholder={ `Select filter ${ isMulti ? "values" : "value" }` }
-            options={ domain }
-            accessor={ d => `${ d.value } (count ${ d.count })` }
-            valueAccessor={ d => d.value }
-            value={ filterValues }
-            onChange={ doOnChange }/>
+          <div className={ disableValueSelector ? "cursor-not-allowed opacity-50" : null }>
+            <div className={ disableValueSelector ? "pointer-events-none" : null }>
+              <Select multi={ isMulti } removable
+                placeholder={ `Select filter ${ isMulti ? "values" : "value" }` }
+                options={ domain }
+                accessor={ d => `${ d.value } (count ${ d.count })` }
+                valueAccessor={ d => d.value }
+                value={ filterValues }
+                onChange={ doOnChange }
+                diabled={ disableValueSelector }/>
+            </div>
+          </div>
+        }
+        { !InputTypes.includes(filterType) ? null :
+          <input type={ NumericTypes.includes(filterType) ? "number" : "text" }
+            className="px-4 py-2"
+            value={ inputValue }
+            onChange={ handleInputChange }
+            placeholder="Enter a custom value..."/>
         }
       </div>
 
