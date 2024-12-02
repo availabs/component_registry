@@ -167,7 +167,7 @@ async function getData({geoid='36',ealViewId, size="1", height=500}, falcor) {
         title: 'Flood Plain Map',
         sources,
         layers,
-        attributionData: {},
+        attributionData: {source_id: 379, view_id: 841, version: 'AVAIL NYS Floodplains Merged - September 2024'},
         size,
         height,
         domain: ['FEMA Preliminary Maps','FEMA DFIRM','BLE','FEMA Q3 Map'],
