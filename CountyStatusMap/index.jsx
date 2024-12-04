@@ -18,6 +18,7 @@ import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimpl
 import {hazardsMeta} from "../utils/colors.jsx";
 import {Attribution} from "../shared/attribution.jsx";
 import {useNavigate} from "react-router-dom";
+import {isEqual} from "lodash-es";
 
 
 class CountyMapLayer extends SimpleMapLayer {
@@ -30,7 +31,7 @@ class CountyMapLayer extends SimpleMapLayer {
               <div className='text-xs text-slate-400 uppercase font-bold'>Plan status</div>
               <div className='text-sm'>{data?.plan_status}</div>
               <div className='text-xs text-slate-400 uppercase font-bold'>Plan Expiration Date</div>
-              <div className='text-sm'>{data?.approval_date}</div>
+              <div className='text-sm'>{data?.expiration_date}</div>
             </div>
           );
         },
@@ -42,33 +43,14 @@ class CountyMapLayer extends SimpleMapLayer {
   };
 }
 
-/*
-
-Expired
-Date is null || > 5 years :  Red
-> 4 years : ..
-> 3 years : ..
-> 2 years : ..
-> 1 years : orange
-
-Approved
------------
-approved > 4 years : yellow
-approved > 3 years : ..
-approved > 2 years : ..
-approved > 1 years : green
-
-*/
-
 const defaultColors = ['#a50026','#fee08b','#1a9850']
-//  ['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837']
 
 const CountyStatusLegend = () => (
     <div className='absolute top-4 left-4 bg-white p-4'>
         County LHMP Status
         {[
             {name: 'Approved Plan', color: '#1a9850'},
-            {name: 'Plan Update in Progress', color: '#fee08b'},
+            {name: 'Update in Progress', color: '#fee08b'},
             {name: 'Plan Expired. No Update in Progress.', color: '#a50026'}
         ].map(d => (
             <div className='flex items-center py-1'>
@@ -94,18 +76,15 @@ const getDateDiff = (date) => {
 
 
 async function getData({geoid,  version,  colors = defaultColors, size = 1, height=500, ...rest}, falcor) {
-    //return {}
     const geoAttribute = 'geoid'
-    // console.log('version', version)
-    version = 1456
-    const columns = ['county','approval_date', 'under_fema_review_yes_no', 'update_in_progress'];
+    version = 1602
+    const columns = ['county','plan_approval_date', 'plan_status', 'expiration_date'];
 
     const options = JSON.stringify({
         filter: {...geoAttribute && {[`substring(${geoAttribute}::text, 1, ${geoid?.toString()?.length})`]: [geoid]}},
     });
     const lenPath = ['dama', pgEnv, 'viewsbyId', version, 'options', options, 'length'];
     const dataPath = ['dama', pgEnv, 'viewsbyId', version, 'options', options, 'databyIndex'];
-    //const dataSourceByCategoryPath = ['dama', pgEnv, 'sources', 'byCategory', category];
     const attributionPath = ['dama', pgEnv, 'views', 'byId', version, 'attributes'],
         attributionAttributes = ['source_id', 'view_id', 'version', '_modified_timestamp'];
 
@@ -118,46 +97,32 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
     const dataResponse = await falcor.get([...dataPath, {from: 0, to: len - 1}, [geoAttribute, ...columns]]);
     const attrResp = await falcor.get([...attributionPath, attributionAttributes]);
     const attributionData = get(attrResp, ['json', ...attributionPath], {});
-
     const data =  Object.values(get(dataResponse, ['json',...dataPath], {}))
   
 
     if (!data?.length || !colors?.length) return {};
 
     const geoids = data.map(d => d[geoAttribute] + '');
-    const stateFips = (geoid?.substring(0, 2) || geoids[0] || '00').substring(0, 2);
     const geoColors = {}
-    const geoLayer = geoids[0]?.toString().length === 5 ? 'counties' : 'tracts';
-
-    const diffData = data.map((d) => {
-        return getDateDiff(d[columns?.[0]]) || -5
-    })
 
 
-    const colorScale = scaleThreshold()
-        .domain([-22,-0.01,0])
-        .range(['#efb700','#d73027','#1a9850']);
+    const colorScale = {
+        'Update in Progress': '#efb700',
+        'Plan Expired, No Update in Progress': '#d73027',
+        'Plan Approved': '#1a9850'
+    }
     
     const domain = [-22,-1,0]
 
     data.forEach(record => {
-        let value = (getDateDiff(record['approval_date']) || -5);
-        record.plan_status = "Plan Approved"
-        if((record['under_fema_review_yes_no'] === 't' || record['update_in_progress'] === 't')) {
-            value = -23
-            record.plan_status = 'Update in Progress'
-        } else if (value < 0 && record['update_in_progress'] === 'f') {
+        let value = (getDateDiff(record['plan_approval_date']) || -5);
+
+        if (value < 0 && record['plan_status'] === "Plan Approved") {
           record.plan_status = "Plan Expired, No Update in Progress"
-        } else {
-           record.plan_status = "Plan Approved"
         }
-        geoColors[(record[geoAttribute]+'')] = value ? colorScale(value) : '#d0d0ce';
+
+        geoColors[(record[geoAttribute]+'')] = value ? colorScale[record.plan_status] : '#d0d0ce';
     })
-
-    
-    //console.log('test', geoColors)
-    //const geoids = [...new Set(Object.keys(geoColors || {}).map(geoId => geoId.substring(0, 5)))]
-
 
    
     const sources =  [{
@@ -167,8 +132,6 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
             "url": "https://tiles.availabs.org/data/tiger_carto.json"
           },
         }]
-
-    // console.log('geoids', geoids)
 
     const layers = [{
       "id": "counties",
@@ -200,11 +163,9 @@ async function getData({geoid,  version,  colors = defaultColors, size = 1, heig
       }
     }]
     
-    //console.log('mapfocus', geom ? get(JSON.parse(geom), 'bbox', null ) : null)
     const title = 'County Plan Status Map'
     
     return {
-        //view: metaData[type],
         geoid,
         title,
         domain,
@@ -226,13 +187,7 @@ const Edit = ({value, onChange, size}) => {
 
     let cachedData = value && isJson(value) ? JSON.parse(value) : {};
     const baseUrl = '/';
-
-    const [dataSources, setDataSources] = useState(cachedData?.dataSources || []);
-    const [dataSource, setDataSource] = useState(cachedData?.dataSource);
     const [version, setVersion] = useState(cachedData?.version || 1456);
-    const [geoAttribute, setGeoAttribute] = useState(cachedData?.geoAttribute || 'geoid');
-    // const [attribute, setAttribute] = useState(/*cachedData?.attribute ||*/ 'plan_approval_date');
-    
 
 
     const [loading, setLoading] = useState(true);
@@ -252,30 +207,7 @@ const Edit = ({value, onChange, size}) => {
         size: 1,
         
     })
-  
-    const category = 'county statuses';
 
-    
-    const dataSourceByCategoryPath = ['dama', pgEnv, 'sources', 'byCategory', category];
-    
-
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        async function getData() {
-            setLoading(true);
-            setStatus(undefined);
-            // fetch data sources from categories that match passed prop
-            await falcor.get(dataSourceByCategoryPath);
-            setDataSources(get(falcor.getCache(), [...dataSourceByCategoryPath, 'value'], []))
-            // fetch columns, data
-            setLoading(false);
-        }
-        getData()
-    }, []);
-
-    
-    
     useEffect(() => {
         const load = async () => {
             console.log('load on compdataChange')
@@ -304,8 +236,8 @@ const Edit = ({value, onChange, size}) => {
                 // console.log(
                 //     'testing got data', value === JSON.stringify({...cachedData, ...out}), 
                 //     'args', )
-                if(value !== JSON.stringify({...cachedData, ...out})) {
-                    //console.log('changing value')
+                if(!isEqual(value, {...cachedData, ...out})) {
+                    console.log('changing value', out)
                     onChange(JSON.stringify({...cachedData, ...out}))
                 }
                 setLoading(false)
@@ -340,26 +272,6 @@ const Edit = ({value, onChange, size}) => {
             <div className='relative'>
                 <div className={'border rounded-md border-blue-500 bg-blue-50 p-2 m-1'}>
                     Edit Controls
-                    <ButtonSelector
-                        label={'Data Source:'}
-                        types={dataSources.map(ds => ({label: ds.name, value: ds.source_id}))}
-                        type={dataSource}
-                      
-                        setType={e => {
-                            // setAttribute(undefined);
-                            setGeoAttribute(undefined);
-                            setVersion(undefined);
-                            // setData([]);
-
-                            setDataSource(e);
-                        }}
-                    />
-                    <VersionSelectorSearchable
-                        source_id={dataSource}
-                        view_id={version}
-                        onChange={setVersion}
-                        className={'flex-row-reverse'}
-                    />
                     <GeographySearch value={compData.geoid} 
                         onChange={(v) => setCompData({...compData, "geoid": v})} 
                         className={'flex-row-reverse'}
