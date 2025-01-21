@@ -607,7 +607,7 @@ const ViewComp = ({ value }) => {
   const [filters, setFilters] = React.useState([]);
 
   React.useEffect(() => {
-    setFilters([...externalFilters]);
+    setFilters([...(externalFilters || [])]);
   }, [externalFilters]);
 
   const updateFilter = React.useCallback((filter, update) => {

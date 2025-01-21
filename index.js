@@ -50,16 +50,16 @@ const ComponentRegistry = {
     "Table: NRI": NRITable,
     "Table: Social Vulnerability": SocialVulnerabilityTable, // deprecated
     "Table: Social Vulnerability Summary": SocialVulnerabilitySummaryTable,
-    "Table: Buildings": BuildingsTable, // deprecated
-    "Table: Open Fema Data": OpenFemaDataTable, // deprecated
+    // "Table: Buildings": BuildingsTable, // deprecated
+    // "Table: Open Fema Data": OpenFemaDataTable, // deprecated
     "Table: Cenrep": CenrepTable,
     "Table: Cenrep II": CenrepTableNew,
     "Graph: Historic Loss by Disaster Number": LossByDisasterNumberChart,
     "Graph: Historic Loss by Hazard Type": LossByHazardTypeChart,
     "Graph: Declared vs Non-Declared Loss": LossDistributionPieChart,
-    "Graph: Census Bar": CensusBarChart,
-    "Graph: Census Stacked Bar": CensusStackedBarChart,
-    "Graph: Census Line": CensusLineChart,
+    // "Graph: Census Bar": CensusBarChart,
+    // "Graph: Census Stacked Bar": CensusStackedBarChart,
+    // "Graph: Census Line": CensusLineChart,
 
     "Graph: DMS Graph Component": DMSGraphComponent,
 
