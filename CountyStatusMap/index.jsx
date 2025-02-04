@@ -77,7 +77,7 @@ const getDateDiff = (date) => {
 
 async function getData({geoid,  version,  colors = defaultColors, size = 1, height=500, ...rest}, falcor) {
     const geoAttribute = 'geoid'
-    version = 1602
+    version = 1621
     const columns = ['county','plan_approval_date', 'plan_status', 'expiration_date'];
 
     const options = JSON.stringify({
