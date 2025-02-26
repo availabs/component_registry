@@ -39,7 +39,7 @@ import DMSGraphComponent from "./DMSGraphComponent"
 
 const ComponentRegistry = {
     // "ColorBox": ColorBox,
-    "Card: Callout": CalloutBox,
+    // "Card: Callout": CalloutBox,
     "Card: Hazard Risk": HazardStatBox,
     "Card: Declared vs Non-Declared Loss": LossDistributionHeroStats,
     "Card: FEMA Disaster Info": DisasterInfoStats,
@@ -73,11 +73,11 @@ const ComponentRegistry = {
     "Map: County Highlight": CountyHighlightMap,
     "Header: Default Header": DefaultHeader,
     "Header: County Header": CountyHeader,
-    "lexical": {
-        ...CalloutBox,
-        name: 'Rich Text',
-        hideInSelector: false
-    },
+    // "lexical": {
+    //     ...CalloutBox,
+    //     name: 'Rich Text',
+    //     hideInSelector: false
+    // },
     "Data Text Box": DataTextBox,
     "Search Bar": SearchBar
 }
