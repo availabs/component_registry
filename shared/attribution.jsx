@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {formatDate} from "../utils/macros.jsx";
 import React from "react";
 

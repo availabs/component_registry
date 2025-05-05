@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import {fnumIndex} from "../../utils/macros.jsx";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {Attribution} from "../../shared/attribution.jsx";
 import {fnum} from "../../utils/macros.jsx";
 

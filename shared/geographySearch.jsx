@@ -1,5 +1,5 @@
 import {AsyncTypeahead, Menu, MenuItem} from 'react-bootstrap-typeahead';
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import get from "lodash/get";
 import { useEffect, useState } from "react";
 import { useFalcor } from '~/modules/avl-falcor';

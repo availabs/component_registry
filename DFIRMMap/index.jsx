@@ -5,7 +5,7 @@ import {pgEnv} from "../utils";
 import VersionSelectorSearchable from "../shared/versionSelector/searchable.jsx";
 import GeographySearch from "../shared/geographySearch.jsx";
 import {Loading} from "../utils/loading.jsx";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {scaleThreshold} from "d3-scale";
 import {EditMap,ViewMap} from "../shared/TemplateMap";
