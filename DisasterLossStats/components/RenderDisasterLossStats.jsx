@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import {fnumIndex} from "../../utils/macros.jsx";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {Attribution} from "../../shared/attribution.jsx";
 
 const blockClass = `w-full h-[90px] bg-white p-1 text-center flex flex-col`,

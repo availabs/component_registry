@@ -1,7 +1,7 @@
 import { fnum } from "../../utils/macros.jsx";
 import React from "react";
 import get from "lodash/get";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {Attribution} from "../../shared/attribution.jsx";
 
 export const RenderStatBoxes = ({ total, numDeclaredEvents, numNonDeclaredEvents, attributionData, baseUrl }) => {

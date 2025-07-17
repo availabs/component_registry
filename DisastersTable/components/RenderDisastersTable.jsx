@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import get from "lodash/get";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {Table} from "~/modules/avl-components/src";
 import {fnum} from "../../utils/macros.jsx";
 import {hazardsMeta} from "../../utils/colors.jsx";

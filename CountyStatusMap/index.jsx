@@ -17,7 +17,7 @@ import { SimpleMapLayer } from "../shared/TemplateMap/layers/simpleLayer"
 import {HazardSelectorSimple} from "../shared/HazardSelector/hazardSelectorSimple.jsx";
 import {hazardsMeta} from "../utils/colors.jsx";
 import {Attribution} from "../shared/attribution.jsx";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import {isEqual} from "lodash-es";
 
 

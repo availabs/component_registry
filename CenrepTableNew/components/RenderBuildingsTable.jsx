@@ -3,7 +3,7 @@ import {Table} from "~/modules/avl-components/src";
 import {fnum} from "../../utils/macros.jsx";
 import {Attribution} from "../../shared/attribution.jsx";
 import {RenderExternalTableFilter} from "../../shared/externalTableFilter.jsx";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {formatFunctions} from "../../shared/formatFunctions.js";
 
 const colAccessNameMapping = {

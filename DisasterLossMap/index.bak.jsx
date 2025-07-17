@@ -8,7 +8,7 @@ import GeographySearch from "../shared/geographySearch.jsx";
 import DisasterSearch from "../shared/disasterSearch.jsx";
 import {Loading} from "~/utils/loading.jsx";
 import {metaData} from "./config.js";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {formatDate} from "~/utils/macros.jsx";
 import {ButtonSelector} from "../shared/buttonSelector.jsx";
 import {RenderColorPicker} from "../shared/colorPicker.jsx";

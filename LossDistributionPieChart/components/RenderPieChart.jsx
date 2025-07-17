@@ -1,7 +1,7 @@
 import { fnumIndex, HoverComp } from "../../utils/macros.jsx";
 import React from "react";
 import {PieGraph} from "~/modules/avl-graph/src/index.js";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {Attribution} from "../../shared/attribution.jsx";
 
 const colNameMapping = {
